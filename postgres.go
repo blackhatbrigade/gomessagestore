@@ -1,3 +1,5 @@
+package messagestore
+
 import (
   "fmt"
   "os"
@@ -22,14 +24,14 @@ var (
 //  DB_USER - Database User.
 //  DB_USER_PASS - Password for the provided user.
 //  DB_NAME - Name of the database to use.
-func GetSQLInfo() string {
+func getSQLInfo() string {
   return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
     host, port, user, password, dbName)
 }
 
 // Retrieves the DB interface.
 func GetDBInstance() *sql.DB {
-  db, err := sql.Open("postgres", GetSQLInfo())
+  db, err := sql.Open("postgres", getSQLInfo())
   if err != nil {
     panic(err)
   }
