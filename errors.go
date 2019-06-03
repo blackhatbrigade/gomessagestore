@@ -1,7 +1,7 @@
 package gomessagestore
 
 import (
-  "errors"
+	"errors"
 )
 
 //Errors
@@ -19,6 +19,7 @@ var (
 	ErrMissingMessageCategory          = errors.New("All message require a category")
 	ErrInvalidMessageCategory          = errors.New("Hyphens are not allowed in category names")
 	ErrMissingMessageCategoryID        = errors.New("All message require a category ID")
-	ErrMissingMessageData              = errors.New("All message require a category")
+	ErrMissingMessageData              = errors.New("Messages payload must not be nil")
 	ErrUnserializableData              = errors.New("Message data could not be encoded as json")
+	ErrDataIsNilPointer                = errors.New("Message data is a nil pointer")
 )

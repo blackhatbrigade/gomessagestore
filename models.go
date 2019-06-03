@@ -1,59 +1,72 @@
 package gomessagestore
 
 import (
-  "time"
-  "strings"
+	"reflect"
+	"strings"
+	"time"
 )
 
 type Message interface {
-  ToEnvelope() (*MessageEnvelope, error)
+	ToEnvelope() (*MessageEnvelope, error)
 }
 
 //Command the model for writing a command to the Message Store
 type Command struct {
-	NewID         string
-	Type          string
-	Category      string
-	CausedByID    string
-	OwnerID        string
-	Data          interface{}
+	NewID      string
+	Type       string
+	Category   string
+	CausedByID string
+	OwnerID    string
+	Data       interface{}
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
-  me := new(MessageEnvelope)
-  if cmd.Type == "" {
-    return  nil, ErrMissingMessageType
-  }
+	me := new(MessageEnvelope)
+	if cmd.Type == "" {
+		return nil, ErrMissingMessageType
+	}
 
-  if cmd.Category == "" {
-    return  nil, ErrMissingMessageCategory
-  }
+	if cmd.Category == "" {
+		return nil, ErrMissingMessageCategory
+	}
 
-  if strings.Contains(cmd.Category, "-") {
-    return nil, ErrInvalidMessageCategory
-  }
+	if strings.Contains(cmd.Category, "-") {
+		return nil, ErrInvalidMessageCategory
+	}
 
-//  me = &MessageEnvelope{
-//		MessageID:     cmd.NewID,
-//		Type:          cmd.Type,
-//		Stream:        fmt.Sprintf("%s:command", cmd.Category),
-//		StreamType:    cmd.Category,
-//    CausedByID:    cmd.CausedByID,
-//		Data:          data,
-//  }
-  return me, nil
+	if cmd.NewID == "" {
+		return nil, ErrMessageNoID
+	}
+
+	if cmd.Data == nil {
+		return nil, ErrMissingMessageData
+	}
+
+	if reflect.ValueOf(cmd.Data).Kind() == reflect.Ptr && reflect.ValueOf(cmd.Data).IsNil() {
+		return nil, ErrDataIsNilPointer
+	}
+
+	//  me = &MessageEnvelope{
+	//		MessageID:     cmd.NewID,
+	//		Type:          cmd.Type,
+	//		Stream:        fmt.Sprintf("%s:command", cmd.Category),
+	//		StreamType:    cmd.Category,
+	//    CausedByID:    cmd.CausedByID,
+	//		Data:          data,
+	//  }
+	return me, nil
 }
 
 //Event the model for writing an event to the Message Store
 type Event struct {
-	NewID         string
-	Type          string
-	CategoryID    string
-	Category      string
-	CausedByID    string
-	OwnerID       string
-	Data          interface{}
+	NewID      string
+	Type       string
+	CategoryID string
+	Category   string
+	CausedByID string
+	OwnerID    string
+	Data       interface{}
 }
 
 //MessageEnvelope the model for data read from the Message Store
