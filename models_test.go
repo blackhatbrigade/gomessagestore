@@ -25,12 +25,71 @@ func getSampleEvent() *Event {
 	return &Event{
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
-    CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f97d6",
+    CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
 		Category:   "test cat",
     CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
     OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
 		Data:       dummyData{"a", "b"},
 	}
+}
+
+func getSampleEventMissing(key string) *Event {
+  event := getSampleEvent()
+
+  switch key {
+  case "NewID":
+    event.NewID = ""
+  case "Type":
+    event.Type = ""
+  case "CategoryID":
+    event.CategoryID = ""
+  case "Category":
+    event.Category = ""
+  case "CausedByID":
+    event.CausedByID = ""
+  case "OwnerID":
+    event.OwnerID = ""
+  case "Data":
+    event.Data = nil
+  }
+
+  return event
+}
+
+func getSampleEventMalformed(key string) *Event {
+  event := getSampleEvent()
+
+  switch key {
+  case "DataNil":
+    var nilPointer *int
+    event.Data = nilPointer
+  case "CategoryHyphen":
+    event.Category = "something-bad"
+  }
+
+  return event
+}
+
+
+func getSampleCommandMissing(key string) *Command {
+  cmd := getSampleCommand()
+
+  switch key {
+  case "Type":
+    cmd.Type = ""
+  case "Category":
+    cmd.Category = ""
+  case "NewID":
+    cmd.NewID = ""
+  case "CausedByID":
+    cmd.CausedByID = ""
+  case "OwnerID":
+    cmd.OwnerID = ""
+  case "Data":
+    cmd.Data = nil
+  }
+
+  return cmd
 }
 
 func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
@@ -150,5 +209,123 @@ func TestCommandToEnvelopeReturnsValidEnvelopeMapping(t *testing.T) {
 
   if !reflect.DeepEqual(msgEnv, testEnvelope) {
     t.Error("Expected MessageEnvelope contents to match original Command contents")
+  }
+}
+
+//TestEventToEnvelope tests event.ToEnvelope
+func TestEventToEnvelope(t *testing.T) {
+  tests := []struct {
+    name string
+    inputEvent *Event
+    expectedEnvelope *MessageEnvelope
+    expectedError error
+    failEnvMessage string
+    failErrMessage string
+  }{{
+    name: "Returns message envelope",
+    inputEvent: getSampleEvent(),
+    failEnvMessage: "Didn't render the MessageEnvelope correctly",
+    expectedEnvelope: &MessageEnvelope{
+      MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+      Type:          "test type",
+      Stream:        "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+      StreamType:    "test cat",
+      OwnerID:       "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+      CausedByID:    "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+      Data:          []byte(`{"Field1":"a","Field2":"b"}`),
+    },
+  }, {
+    name: "Errors if no NewID",
+    inputEvent: getSampleEventMissing("NewID"),
+    expectedError: ErrMessageNoID,
+    failErrMessage: "Expected a NEW ID for Event",
+  }, {
+    name: "Errors if no CategoryID",
+    inputEvent: getSampleEventMissing("CategoryID"),
+    expectedError: ErrMissingMessageCategoryID,
+    failErrMessage: "Expected a NEW ID for Event",
+  }, {
+    name: "Errors if a hyphen is present in the Category name",
+    inputEvent: getSampleEventMalformed("CategoryHyphen"),
+    expectedError: ErrInvalidMessageCategory,
+    failErrMessage: "Hyphen not allowed in Category name",
+  }, {
+    name: "Errors if the category is left blank",
+    inputEvent: getSampleEventMissing("Category"),
+    expectedError: ErrMissingMessageCategory,
+    failErrMessage: "Category Name must not be blank",
+  }, {
+    name: "Errors if data is nil",
+    inputEvent: getSampleEventMissing("Data"),
+    expectedError: ErrMissingMessageData,
+    failErrMessage: "Data must not be nil",
+  }, {
+    name: "Errors if Type is left blank",
+    inputEvent: getSampleEventMissing("Type"),
+    expectedError: ErrMissingMessageType,
+    failErrMessage: "Type must not be empty",
+  }, {
+    name: "Errors if Data is given an empty pointer",
+    inputEvent: getSampleEventMalformed("DataNil"),
+    expectedError: ErrDataIsNilPointer,
+    failErrMessage: "Can not provide an empty pointer",
+  }}
+
+  for _, test := range tests {
+    t.Run(test.name, func(t *testing.T) {
+      msgEnv, err := test.inputEvent.ToEnvelope()
+
+      if err != test.expectedError {
+        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failErrMessage, test.expectedError, err)
+      }
+
+      if !reflect.DeepEqual(msgEnv, test.expectedEnvelope) {
+        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failEnvMessage, test.expectedEnvelope, msgEnv)
+      }
+    })
+  }
+}
+
+//TestCommandToEnvelope tests command.ToEnvelope
+func TestCommandToEnvelope(t *testing.T) {
+  tests := []struct {
+    name string
+    inputCommand *Command
+    expectedEnvelope *MessageEnvelope
+    expectedError error
+    failEnvMessage string
+    failErrMessage string
+  }{{
+    name: "Returns message envelope",
+    inputCommand: getSampleCommand(),
+    failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
+    expectedEnvelope: &MessageEnvelope{
+      MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+      Type:          "test type",
+      Stream:        "test cat:command",
+      StreamType:    "test cat",
+      OwnerID:       "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+      CausedByID:    "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+      Data:          []byte(`{"Field1":"a","Field2":"b"}`),
+    },
+  }, {
+    name: "Errors if no Type",
+    inputCommand: getSampleCommandMissing("Type"),
+    expectedError: ErrMissingMessageType,
+    failErrMessage: "Expected ErrMissingMessageType from ToEnvelope Call",
+  }}
+
+  for _, test := range tests {
+    t.Run(test.name, func(t *testing.T) {
+      msgEnv, err := test.inputCommand.ToEnvelope()
+
+      if err != test.expectedError {
+        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failErrMessage, test.expectedError, err)
+      }
+
+      if !reflect.DeepEqual(msgEnv, test.expectedEnvelope) {
+        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failEnvMessage, test.expectedEnvelope, msgEnv)
+      }
+    })
   }
 }

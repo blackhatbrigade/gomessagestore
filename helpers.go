@@ -1,4 +1,0 @@
-package gomessagestore
-
-//import
-

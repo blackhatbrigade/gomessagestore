@@ -8,6 +8,7 @@ import (
   "encoding/json"
 )
 
+//Message Defines an interface that can consume Commands or Events.
 type Message interface {
 	ToEnvelope() (*MessageEnvelope, error)
 }
@@ -24,7 +25,6 @@ type Command struct {
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
-	msgEnv := new(MessageEnvelope)
 	if cmd.Type == "" {
 		return nil, ErrMissingMessageType
 	}
@@ -54,7 +54,7 @@ func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
     return nil, ErrUnserializableData
   }
 
-	msgEnv = &MessageEnvelope{
+  msgEnv := &MessageEnvelope{
 		MessageID:     cmd.NewID,
 		Type:          cmd.Type,
 		Stream:        fmt.Sprintf("%s:command", cmd.Category),
@@ -79,7 +79,51 @@ type Event struct {
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (event *Event) ToEnvelope() (*MessageEnvelope, error) {
-  return nil, nil
+  if event.Type == "" {
+    return nil, ErrMissingMessageType
+  }
+
+  if strings.Contains(event.Category, "-") {
+    return nil, ErrInvalidMessageCategory
+  }
+
+  if event.Data == nil {
+    return nil, ErrMissingMessageData
+  }
+
+  if event.NewID == "" {
+    return nil, ErrMessageNoID
+  }
+
+  if event.CategoryID == "" {
+    return nil, ErrMissingMessageCategoryID
+  }
+
+  if event.Category == "" {
+    return nil, ErrMissingMessageCategory
+  }
+
+	if reflect.ValueOf(event.Data).Kind() == reflect.Ptr && reflect.ValueOf(event.Data).IsNil() {
+		return nil, ErrDataIsNilPointer
+	}
+
+  data, err := json.Marshal(event.Data)
+
+  if err != nil {
+    return nil, ErrUnserializableData
+  }
+
+  msgEnv := &MessageEnvelope{
+		MessageID:     event.NewID,
+		Type:          event.Type,
+		Stream:        fmt.Sprintf("%s-%s", event.Category, event.CategoryID),
+		StreamType:    event.Category,
+    OwnerID:       event.OwnerID,
+	  CausedByID:    event.CausedByID,
+		Data:          data,
+  }
+
+  return msgEnv, nil
 }
 
 //MessageEnvelope the model for data read from the Message Store
@@ -92,7 +136,7 @@ type MessageEnvelope struct {
 	CorrelationID  string    `json:"correlation_id" db:"correlation_id"`
 	CausedByID     string    `json:"caused_by_id" db:"caused_by_id"`
 	UserID         string    `json:"user_id" db:"user_id"`
-	OwnerID        string    `json:"user_id" db:"user_id"`
+	OwnerID        string    `json:"owner_id" db:"owner_id"`
 	Position       int64     `json:"position" db:"position"`
 	Data           []byte    `json:"data" db:"data"`
 	Timestamp      time.Time `json:"timestamp" db:"timestamp"`
