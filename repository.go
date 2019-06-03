@@ -4,7 +4,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-//go:generate bash -c "mockgen dataIQ-application-redIQ/src/messagestore Repository > mocks/repository.go"
+//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Repository > mocks/repository.go"
 
 //Repository the storage implementation for messagestore
 type Repository interface {

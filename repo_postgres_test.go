@@ -1,4 +1,4 @@
-package gomessagestore
+package gomessagestore_test
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ import (
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+  . "github.com/blackhatbrigade/gomessagestore"
 )
 
 func metadataJSON(message *MessageEnvelope) []byte {

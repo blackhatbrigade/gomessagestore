@@ -1,7 +1,9 @@
-package gomessagestore
+package gomessagestore_test
 
 import (
 	"time"
+
+  . "github.com/blackhatbrigade/gomessagestore"
 )
 
 var mockMessages = []*MessageEnvelope{{

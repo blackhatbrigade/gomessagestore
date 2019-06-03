@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore MessageStore > mocks/messagestore.go"
+
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
   Write(ctx context.Context, message Message) error
