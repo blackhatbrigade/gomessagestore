@@ -1,4 +1,4 @@
-package messagestore
+package gomessagestore
 
 import (
   "fmt"
@@ -30,12 +30,17 @@ func getSQLInfo() string {
 }
 
 // Retrieves the DB interface.
-func GetDBInstance() *sql.DB {
+func GetDBInstance() (*sql.DB, error) {
   db, err := sql.Open("postgres", getSQLInfo())
   if err != nil {
-    panic(err)
+    return nil, err
+  }
+
+  err = db.Ping()
+  if err != nil {
+    return nil, err
   }
 
   fmt.Println("Connection established!")
-  return db
+  return db, nil
 }
