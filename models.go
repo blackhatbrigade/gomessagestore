@@ -1,9 +1,11 @@
 package gomessagestore
 
 import (
+  "fmt"
 	"reflect"
 	"strings"
 	"time"
+  "encoding/json"
 )
 
 type Message interface {
@@ -22,7 +24,7 @@ type Command struct {
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
-	me := new(MessageEnvelope)
+	msgEnv := new(MessageEnvelope)
 	if cmd.Type == "" {
 		return nil, ErrMissingMessageType
 	}
@@ -47,15 +49,21 @@ func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
 		return nil, ErrDataIsNilPointer
 	}
 
-	//  me = &MessageEnvelope{
-	//		MessageID:     cmd.NewID,
-	//		Type:          cmd.Type,
-	//		Stream:        fmt.Sprintf("%s:command", cmd.Category),
-	//		StreamType:    cmd.Category,
-	//    CausedByID:    cmd.CausedByID,
-	//		Data:          data,
-	//  }
-	return me, nil
+  data, err := json.Marshal(cmd.Data)
+  if err != nil {
+    return nil, ErrUnserializableData
+  }
+
+	msgEnv = &MessageEnvelope{
+		MessageID:     cmd.NewID,
+		Type:          cmd.Type,
+		Stream:        fmt.Sprintf("%s:command", cmd.Category),
+		StreamType:    cmd.Category,
+    OwnerID:       cmd.OwnerID,
+	  CausedByID:    cmd.CausedByID,
+		Data:          data,
+	}
+	return msgEnv, nil
 }
 
 //Event the model for writing an event to the Message Store
@@ -67,6 +75,11 @@ type Event struct {
 	CausedByID string
 	OwnerID    string
 	Data       interface{}
+}
+
+//ToEnvelope Allows for exporting to a MessageEnvelope type.
+func (event *Event) ToEnvelope() (*MessageEnvelope, error) {
+  return nil, nil
 }
 
 //MessageEnvelope the model for data read from the Message Store

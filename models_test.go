@@ -1,24 +1,44 @@
 package gomessagestore
 
 import (
+  "reflect"
 	"testing"
 )
 
+type dummyData struct {
+  Field1 string
+  Field2 string
+}
+
 func getSampleCommand() *Command {
 	return &Command{
-		Type:     "test type",
-		Category: "test cat",
-		NewID:    "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Data:     "DataDataData",
+		Type:       "test type",
+		Category:   "test cat",
+		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+    OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+    CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+		Data:       dummyData{"a", "b"},
+	}
+}
+
+func getSampleEvent() *Event {
+	return &Event{
+		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		Type:       "test type",
+    CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f97d6",
+		Category:   "test cat",
+    CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+    OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+		Data:       dummyData{"a", "b"},
 	}
 }
 
 func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
 	cmd := getSampleCommand()
 
-	me, _ := cmd.ToEnvelope()
+	msgEnv, _ := cmd.ToEnvelope()
 
-	if me == nil {
+	if msgEnv == nil {
 		t.Error("Did not get a valid MessageEnvelope back from ToEnvelope")
 	}
 }
@@ -107,4 +127,28 @@ func TestCommandToEnvelopeErrorsIfDataCantBeMarshalledToJSON(t *testing.T) {
 	if err != ErrUnserializableData {
 		t.Error("Expected ErrUnserializableData error from ToEnvelope Call")
 	}
+}
+
+func TestCommandToEnvelopeReturnsValidEnvelopeMapping(t *testing.T) {
+  cmd := getSampleCommand()
+
+  msgEnv, err := cmd.ToEnvelope()
+
+  if err != nil {
+    t.Error("Should not error, should create an envelope")
+  }
+
+  testEnvelope := &MessageEnvelope{
+		MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		Type:          "test type",
+		Stream:        "test cat:command",
+		StreamType:    "test cat",
+    OwnerID:       "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+    CausedByID:    "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+    Data:          []byte(`{"Field1":"a","Field2":"b"}`),
+	}
+
+  if !reflect.DeepEqual(msgEnv, testEnvelope) {
+    t.Error("Expected MessageEnvelope contents to match original Command contents")
+  }
 }
