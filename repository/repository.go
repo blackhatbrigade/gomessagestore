@@ -35,6 +35,7 @@ type MessageEnvelope struct {
 	Timestamp      time.Time `json:"timestamp" db:"timestamp"`
 }
 
+//Errors
 var (
 	ErrInvalidSubscriberID       = errors.New("Subscriber ID cannot be blank")
 	ErrInvalidStreamID           = errors.New("Stream ID cannot be blank")
