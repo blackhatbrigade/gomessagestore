@@ -71,6 +71,22 @@ func getSampleCommandMissing(key string) *Command {
   return cmd
 }
 
+func getSampleCommandMalformed(key string) *Command {
+  cmd := getSampleCommand()
+
+  switch key {
+  case "DataNil":
+    var nilPointer *int
+    cmd.Data = nilPointer
+  case "DataUnserialized":
+    cmd.Data = make(map[*string]int)
+  case "CategoryHyphen":
+    cmd.Category = "something-bad"
+  }
+
+  return cmd
+}
+
 func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
 	cmd := getSampleCommand()
 
@@ -129,67 +145,70 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 	}
 }
 
-func TestCommandToEnvelopeErrorsIfDataIsNil(t *testing.T) {
-	cmd := getSampleCommand()
+//TestCommandToEnvelope tests command.ToEnvelope
+func TestCommandToEnvelope(t *testing.T) {
+  tests := []struct {
+    name string
+    inputCommand *Command
+    expectedEnvelope *MessageEnvelope
+    expectedError error
+    failEnvMessage string
+    failErrMessage string
+  }{{
+    name: "Returns message envelope",
+    inputCommand: getSampleCommand(),
+    failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
+    expectedEnvelope: &MessageEnvelope{
+      MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+      Type:          "test type",
+      Stream:        "test cat:command",
+      StreamType:    "test cat",
+      OwnerID:       "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+      CausedByID:    "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+      Data:          []byte(`{"Field1":"a","Field2":"b"}`),
+    },
+  }, {
+    name: "Errors if no Type",
+    inputCommand: getSampleCommandMissing("Type"),
+    expectedError: ErrMissingMessageType,
+    failErrMessage: "Expected ErrMissingMessageType from ToEnvelope Call",
+  }, {
+    name: "Errors if Data Can't be marshalled to JSON",
+    inputCommand: getSampleCommandMalformed("DataUnserialized"),
+    expectedError: ErrUnserializableData,
+    failErrMessage: "Expected ErrUnserializableData from ToEnvelope Call",
+  }, {
+    name: "Errors if Data is a Pointer to Nil",
+    inputCommand: getSampleCommandMalformed("DataNil"),
+    expectedError: ErrDataIsNilPointer,
+    failErrMessage: "Expected ErrDataIsNilPointer from ToEnvelope Call",
+  }, {
+    name: "Errors if Data is empty",
+    inputCommand: getSampleCommandMissing("Data"),
+    expectedError: ErrMissingMessageData,
+    failErrMessage: "Expected ErrMissingMessageData from ToEnvelope",
+  }, {
+    name: "Errors if no ID is present",
+    inputCommand: getSampleCommandMissing("NewID"),
+    expectedError: ErrMessageNoID,
+    failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
+  }}
 
-	cmd.Data = nil
+  for _, test := range tests {
+    t.Run(test.name, func(t *testing.T) {
+      msgEnv, err := test.inputCommand.ToEnvelope()
 
-	_, err := cmd.ToEnvelope()
+      if err != test.expectedError {
+        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failErrMessage, test.expectedError, err)
+      }
 
-	if err != ErrMissingMessageData {
-		t.Error("Expected ErrMissingMessageData error from ToEnvelope Call")
-	}
-}
-
-func TestCommandToEnvelopeErrorsIfDataIsAPointerToNil(t *testing.T) {
-	cmd := getSampleCommand()
-
-	var nilPointer *int
-
-	cmd.Data = nilPointer
-
-	_, err := cmd.ToEnvelope()
-
-	if err != ErrDataIsNilPointer {
-		t.Error("Expected ErrDataIsNilPointer error from ToEnvelope Call")
-	}
-}
-
-func TestCommandToEnvelopeErrorsIfDataCantBeMarshalledToJSON(t *testing.T) {
-	cmd := getSampleCommand()
-
-	cmd.Data = make(map[*string]int)
-
-	_, err := cmd.ToEnvelope()
-
-	if err != ErrUnserializableData {
-		t.Error("Expected ErrUnserializableData error from ToEnvelope Call")
-	}
-}
-
-func TestCommandToEnvelopeReturnsValidEnvelopeMapping(t *testing.T) {
-  cmd := getSampleCommand()
-
-  msgEnv, err := cmd.ToEnvelope()
-
-  if err != nil {
-    t.Error("Should not error, should create an envelope")
+      if !reflect.DeepEqual(msgEnv, test.expectedEnvelope) {
+        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failEnvMessage, test.expectedEnvelope, msgEnv)
+      }
+    })
   }
-
-  testEnvelope := &MessageEnvelope{
-		MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:          "test type",
-		Stream:        "test cat:command",
-		StreamType:    "test cat",
-    OwnerID:       "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-    CausedByID:    "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-    Data:          []byte(`{"Field1":"a","Field2":"b"}`),
-	}
-
-  if !reflect.DeepEqual(msgEnv, testEnvelope) {
-    t.Error("Expected MessageEnvelope contents to match original Command contents")
-  }
 }
+
 
 //TestEventToEnvelope tests event.ToEnvelope
 func TestEventToEnvelope(t *testing.T) {
@@ -265,46 +284,3 @@ func TestEventToEnvelope(t *testing.T) {
   }
 }
 
-//TestCommandToEnvelope tests command.ToEnvelope
-func TestCommandToEnvelope(t *testing.T) {
-  tests := []struct {
-    name string
-    inputCommand *Command
-    expectedEnvelope *MessageEnvelope
-    expectedError error
-    failEnvMessage string
-    failErrMessage string
-  }{{
-    name: "Returns message envelope",
-    inputCommand: getSampleCommand(),
-    failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
-    expectedEnvelope: &MessageEnvelope{
-      MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-      Type:          "test type",
-      Stream:        "test cat:command",
-      StreamType:    "test cat",
-      OwnerID:       "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-      CausedByID:    "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-      Data:          []byte(`{"Field1":"a","Field2":"b"}`),
-    },
-  }, {
-    name: "Errors if no Type",
-    inputCommand: getSampleCommandMissing("Type"),
-    expectedError: ErrMissingMessageType,
-    failErrMessage: "Expected ErrMissingMessageType from ToEnvelope Call",
-  }}
-
-  for _, test := range tests {
-    t.Run(test.name, func(t *testing.T) {
-      msgEnv, err := test.inputCommand.ToEnvelope()
-
-      if err != test.expectedError {
-        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failErrMessage, test.expectedError, err)
-      }
-
-      if !reflect.DeepEqual(msgEnv, test.expectedEnvelope) {
-        t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failEnvMessage, test.expectedEnvelope, msgEnv)
-      }
-    })
-  }
-}
