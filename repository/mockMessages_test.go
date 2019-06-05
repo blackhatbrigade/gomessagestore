@@ -72,4 +72,3 @@ var mockMessages = []*MessageEnvelope{{
 	Data:           []byte("{a:{b:1}, c:\"123\"}"),
 	Timestamp:      time.Unix(1545549339, 0),
 }}
-

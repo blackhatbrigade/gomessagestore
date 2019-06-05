@@ -1,12 +1,12 @@
 package gomessagestore
 
 import (
-  "fmt"
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"strings"
-  "encoding/json"
 
-  . "github.com/blackhatbrigade/gomessagestore/repository"
+	. "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 //Message Defines an interface that can consume Commands or Events.
@@ -50,19 +50,19 @@ func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
 		return nil, ErrDataIsNilPointer
 	}
 
-  data, err := json.Marshal(cmd.Data)
-  if err != nil {
-    return nil, ErrUnserializableData
-  }
+	data, err := json.Marshal(cmd.Data)
+	if err != nil {
+		return nil, ErrUnserializableData
+	}
 
-  msgEnv := &MessageEnvelope{
-		MessageID:     cmd.NewID,
-		Type:          cmd.Type,
-		Stream:        fmt.Sprintf("%s:command", cmd.Category),
-		StreamType:    cmd.Category,
-    OwnerID:       cmd.OwnerID,
-	  CausedByID:    cmd.CausedByID,
-		Data:          data,
+	msgEnv := &MessageEnvelope{
+		MessageID:  cmd.NewID,
+		Type:       cmd.Type,
+		Stream:     fmt.Sprintf("%s:command", cmd.Category),
+		StreamType: cmd.Category,
+		OwnerID:    cmd.OwnerID,
+		CausedByID: cmd.CausedByID,
+		Data:       data,
 	}
 	return msgEnv, nil
 }
@@ -80,50 +80,49 @@ type Event struct {
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (event *Event) ToEnvelope() (*MessageEnvelope, error) {
-  if event.Type == "" {
-    return nil, ErrMissingMessageType
-  }
+	if event.Type == "" {
+		return nil, ErrMissingMessageType
+	}
 
-  if strings.Contains(event.Category, "-") {
-    return nil, ErrInvalidMessageCategory
-  }
+	if strings.Contains(event.Category, "-") {
+		return nil, ErrInvalidMessageCategory
+	}
 
-  if event.Data == nil {
-    return nil, ErrMissingMessageData
-  }
+	if event.Data == nil {
+		return nil, ErrMissingMessageData
+	}
 
-  if event.NewID == "" {
-    return nil, ErrMessageNoID
-  }
+	if event.NewID == "" {
+		return nil, ErrMessageNoID
+	}
 
-  if event.CategoryID == "" {
-    return nil, ErrMissingMessageCategoryID
-  }
+	if event.CategoryID == "" {
+		return nil, ErrMissingMessageCategoryID
+	}
 
-  if event.Category == "" {
-    return nil, ErrMissingMessageCategory
-  }
+	if event.Category == "" {
+		return nil, ErrMissingMessageCategory
+	}
 
 	if reflect.ValueOf(event.Data).Kind() == reflect.Ptr && reflect.ValueOf(event.Data).IsNil() {
 		return nil, ErrDataIsNilPointer
 	}
 
-  data, err := json.Marshal(event.Data)
+	data, err := json.Marshal(event.Data)
 
-  if err != nil {
-    return nil, ErrUnserializableData
-  }
+	if err != nil {
+		return nil, ErrUnserializableData
+	}
 
-  msgEnv := &MessageEnvelope{
-		MessageID:     event.NewID,
-		Type:          event.Type,
-		Stream:        fmt.Sprintf("%s-%s", event.Category, event.CategoryID),
-		StreamType:    event.Category,
-    OwnerID:       event.OwnerID,
-	  CausedByID:    event.CausedByID,
-		Data:          data,
-  }
+	msgEnv := &MessageEnvelope{
+		MessageID:  event.NewID,
+		Type:       event.Type,
+		Stream:     fmt.Sprintf("%s-%s", event.Category, event.CategoryID),
+		StreamType: event.Category,
+		OwnerID:    event.OwnerID,
+		CausedByID: event.CausedByID,
+		Data:       data,
+	}
 
-  return msgEnv, nil
+	return msgEnv, nil
 }
-

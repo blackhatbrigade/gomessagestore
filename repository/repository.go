@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"errors"
 	"golang.org/x/net/context"
-  "time"
-  "errors"
+	"time"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/repository Repository > mocks/repository.go"
@@ -12,11 +12,11 @@ import (
 type Repository interface {
 	FindAllMessagesSince(ctx context.Context, position int64) ([]*MessageEnvelope, error)
 	FindAllMessagesInStream(ctx context.Context, streamID string) ([]*MessageEnvelope, error)
-  FindLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error)
+	FindLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error)
 	FindSubscriberPosition(ctx context.Context, subscriberID string) (int64, error)
 	SetSubscriberPosition(ctx context.Context, subscriberID string, position int64) error
 	WriteMessage(ctx context.Context, message *MessageEnvelope) error
-  WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error
+	WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error
 }
 
 //MessageEnvelope the model for data read from the Message Store
@@ -36,10 +36,10 @@ type MessageEnvelope struct {
 }
 
 var (
-	ErrInvalidSubscriberID             = errors.New("Subscriber ID cannot be blank")
-	ErrInvalidStreamID                 = errors.New("Stream ID cannot be blank")
-	ErrInvalidSubscriberPosition       = errors.New("Subscriber position must be greater than or equal to -1")
-	ErrNilMessage                      = errors.New("Message cannot be nil")
-	ErrMessageNoID                     = errors.New("Message cannot be written without a new UUID")
-	ErrInvalidPosition                 = errors.New("position must be greater than equal to -1")
+	ErrInvalidSubscriberID       = errors.New("Subscriber ID cannot be blank")
+	ErrInvalidStreamID           = errors.New("Stream ID cannot be blank")
+	ErrInvalidSubscriberPosition = errors.New("Subscriber position must be greater than or equal to -1")
+	ErrNilMessage                = errors.New("Message cannot be nil")
+	ErrMessageNoID               = errors.New("Message cannot be written without a new UUID")
+	ErrInvalidPosition           = errors.New("position must be greater than equal to -1")
 )

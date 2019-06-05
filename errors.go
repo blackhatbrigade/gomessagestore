@@ -9,7 +9,7 @@ var (
 	ErrIncorrectNumberOfPositionsFound = errors.New("Exactly one position should be found per subscriber")
 	ErrInvalidHandler                  = errors.New("Handler cannot be nil")
 	ErrHandlerError                    = errors.New("Handler failed to handle message")
-  ErrMissingMessageType              = errors.New("All messages require a type")
+	ErrMissingMessageType              = errors.New("All messages require a type")
 	ErrMissingMessageCategory          = errors.New("All messages require a category")
 	ErrInvalidMessageCategory          = errors.New("Hyphens are not allowed in category names")
 	ErrMissingMessageCategoryID        = errors.New("All messages require a category ID")

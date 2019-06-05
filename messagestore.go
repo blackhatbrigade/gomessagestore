@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-  "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 

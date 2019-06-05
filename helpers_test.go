@@ -3,9 +3,9 @@ package gomessagestore_test
 import (
 	"io/ioutil"
 
+	. "github.com/blackhatbrigade/gomessagestore"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
-  . "github.com/blackhatbrigade/gomessagestore"
-  "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 // prevent weirdness with pointers
@@ -25,8 +25,8 @@ func getSampleCommand() *Command {
 		Type:       "test type",
 		Category:   "test cat",
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-    OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-    CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
 		Data:       dummyData{"a", "b"},
 	}
 }
@@ -35,11 +35,10 @@ func getSampleEvent() *Event {
 	return &Event{
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
-    CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
 		Category:   "test cat",
-    CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-    OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
 		Data:       dummyData{"a", "b"},
 	}
 }
-

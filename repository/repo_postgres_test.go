@@ -570,4 +570,3 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 		})
 	}
 }
-

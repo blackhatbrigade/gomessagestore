@@ -344,5 +344,3 @@ func (r postgresRepo) translateMessages(eventideMessages []*eventideMessageEnvel
 
 	return messages
 }
-
-
