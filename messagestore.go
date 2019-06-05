@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+  "github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,12 +17,12 @@ type MessageStore interface {
 }
 
 type msgStore struct {
-	repo Repository
+	repo repository.Repository
 }
 
 //GetMessageStoreInterface Grabs a MessageStore instance.
 func GetMessageStoreInterface(injectedDB *sql.DB) MessageStore {
-	pgRepo := NewPostgresRepository(injectedDB)
+	pgRepo := repository.NewPostgresRepository(injectedDB)
 
 	msgstr := &msgStore{
 		repo: pgRepo,
@@ -31,7 +32,7 @@ func GetMessageStoreInterface(injectedDB *sql.DB) MessageStore {
 }
 
 //GetMessageStoreInterface2 Grabs a MessageStore instance.
-func GetMessageStoreInterface2(injectedRepo Repository) MessageStore {
+func GetMessageStoreInterface2(injectedRepo repository.Repository) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
 	}

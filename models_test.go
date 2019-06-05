@@ -5,6 +5,7 @@ import (
 	"testing"
 
   . "github.com/blackhatbrigade/gomessagestore"
+  "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 type dummyData struct {
@@ -140,7 +141,7 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 
 	_, err := cmd.ToEnvelope()
 
-	if err != ErrMessageNoID {
+	if err != repository.ErrMessageNoID {
 		t.Error("Expected ErrMessageNoID error from ToEnvelope Call")
 	}
 }
@@ -150,7 +151,7 @@ func TestCommandToEnvelope(t *testing.T) {
   tests := []struct {
     name string
     inputCommand *Command
-    expectedEnvelope *MessageEnvelope
+    expectedEnvelope *repository.MessageEnvelope
     expectedError error
     failEnvMessage string
     failErrMessage string
@@ -158,7 +159,7 @@ func TestCommandToEnvelope(t *testing.T) {
     name: "Returns message envelope",
     inputCommand: getSampleCommand(),
     failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
-    expectedEnvelope: &MessageEnvelope{
+    expectedEnvelope: &repository.MessageEnvelope{
       MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
       Type:          "test type",
       Stream:        "test cat:command",
@@ -190,7 +191,7 @@ func TestCommandToEnvelope(t *testing.T) {
   }, {
     name: "Errors if no ID is present",
     inputCommand: getSampleCommandMissing("NewID"),
-    expectedError: ErrMessageNoID,
+    expectedError: repository.ErrMessageNoID,
     failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
   }}
 
@@ -215,7 +216,7 @@ func TestEventToEnvelope(t *testing.T) {
   tests := []struct {
     name string
     inputEvent *Event
-    expectedEnvelope *MessageEnvelope
+    expectedEnvelope *repository.MessageEnvelope
     expectedError error
     failEnvMessage string
     failErrMessage string
@@ -223,7 +224,7 @@ func TestEventToEnvelope(t *testing.T) {
     name: "Returns message envelope",
     inputEvent: getSampleEvent(),
     failEnvMessage: "Didn't render the MessageEnvelope correctly",
-    expectedEnvelope: &MessageEnvelope{
+    expectedEnvelope: &repository.MessageEnvelope{
       MessageID:     "544477d6-453f-4b48-8460-0a6e4d6f97d5",
       Type:          "test type",
       Stream:        "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
@@ -235,7 +236,7 @@ func TestEventToEnvelope(t *testing.T) {
   }, {
     name: "Errors if no NewID",
     inputEvent: getSampleEventMissing("NewID"),
-    expectedError: ErrMessageNoID,
+    expectedError: repository.ErrMessageNoID,
     failErrMessage: "Expected a NEW ID for Event",
   }, {
     name: "Errors if no CategoryID",

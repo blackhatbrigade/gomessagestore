@@ -5,11 +5,12 @@ import (
 
 	"github.com/sirupsen/logrus"
   . "github.com/blackhatbrigade/gomessagestore"
+  "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 // prevent weirdness with pointers
-func copyAndAppend(i []*MessageEnvelope, vals ...*MessageEnvelope) []*MessageEnvelope {
-	j := make([]*MessageEnvelope, len(i), len(i)+len(vals))
+func copyAndAppend(i []*repository.MessageEnvelope, vals ...*repository.MessageEnvelope) []*repository.MessageEnvelope {
+	j := make([]*repository.MessageEnvelope, len(i), len(i)+len(vals))
 	copy(j, i)
 	return append(j, vals...)
 }

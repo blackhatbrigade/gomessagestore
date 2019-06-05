@@ -1,4 +1,4 @@
-package gomessagestore
+package repository
 
 import (
 	"database/sql"
@@ -344,3 +344,5 @@ func (r postgresRepo) translateMessages(eventideMessages []*eventideMessageEnvel
 
 	return messages
 }
+
+

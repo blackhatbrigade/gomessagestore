@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
-	mock_gomessagestore "github.com/blackhatbrigade/gomessagestore/mocks"
+  "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
 )
@@ -14,12 +15,12 @@ func TestWriteMessage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mock_gomessagestore.NewMockRepository(ctrl)
+	mockRepo := mock_repository.NewMockRepository(ctrl)
 
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &MessageEnvelope{
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
