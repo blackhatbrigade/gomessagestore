@@ -1,8 +1,7 @@
 package projector_test
 
-import (
-)
+import ()
 
 //func TestProjectorAcceptsAReducer(t *testing.T) {
-//  
+//
 //}

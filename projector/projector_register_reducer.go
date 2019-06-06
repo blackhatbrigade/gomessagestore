@@ -1,8 +1,7 @@
 package projector
 
-import (
-)
+import ()
 
 func (proj *projector) RegisterReducer(reducer *MessageReducer, opts ...reducerOption) error {
-  return nil
+	return nil
 }
