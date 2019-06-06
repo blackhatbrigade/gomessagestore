@@ -37,3 +37,33 @@ func TestWriteMessage(t *testing.T) {
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	msgStore.Write(ctx, msg)
 }
+
+func TestWriteAtPosition(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleCommand()
+	ctx := context.Background()
+
+	msgEnv := &repository.MessageEnvelope{
+		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		Type:       "test type",
+		Stream:     "test cat:command",
+		StreamType: "test cat",
+		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+		Data:       []byte(`{"Field1":"a","Field2":"b"}`),
+	}
+	var expectedPosition int64
+
+	expectedPosition = 42
+
+	mockRepo.
+		EXPECT().
+		WriteMessageWithExpectedPosition(ctx, msgEnv, expectedPosition)
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore.Write(ctx, msg, AtPosition(42))
+}
