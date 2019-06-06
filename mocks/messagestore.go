@@ -35,7 +35,7 @@ func (m *MockMessageStore) EXPECT() *MockMessageStoreMockRecorder {
 }
 
 // Get mocks base method
-func (m *MockMessageStore) Get(arg0 context.Context, arg1 ...gomessagestore.GetOptions) ([]gomessagestore.Message, error) {
+func (m *MockMessageStore) Get(arg0 context.Context, arg1 ...gomessagestore.GetOption) ([]gomessagestore.Message, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
@@ -55,7 +55,7 @@ func (mr *MockMessageStoreMockRecorder) Get(arg0 interface{}, arg1 ...interface{
 }
 
 // Write mocks base method
-func (m *MockMessageStore) Write(arg0 context.Context, arg1 gomessagestore.Message, arg2 ...gomessagestore.WriteOptions) error {
+func (m *MockMessageStore) Write(arg0 context.Context, arg1 gomessagestore.Message, arg2 ...gomessagestore.WriteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
