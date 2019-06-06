@@ -34,6 +34,36 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// FindAllMessagesInCategory mocks base method
+func (m *MockRepository) FindAllMessagesInCategory(arg0 context.Context, arg1 string) ([]*repository.MessageEnvelope, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllMessagesInCategory", arg0, arg1)
+	ret0, _ := ret[0].([]*repository.MessageEnvelope)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllMessagesInCategory indicates an expected call of FindAllMessagesInCategory
+func (mr *MockRepositoryMockRecorder) FindAllMessagesInCategory(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllMessagesInCategory", reflect.TypeOf((*MockRepository)(nil).FindAllMessagesInCategory), arg0, arg1)
+}
+
+// FindAllMessagesInCategorySince mocks base method
+func (m *MockRepository) FindAllMessagesInCategorySince(arg0 context.Context, arg1 string, arg2 int64) ([]*repository.MessageEnvelope, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllMessagesInCategorySince", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]*repository.MessageEnvelope)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllMessagesInCategorySince indicates an expected call of FindAllMessagesInCategorySince
+func (mr *MockRepositoryMockRecorder) FindAllMessagesInCategorySince(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllMessagesInCategorySince", reflect.TypeOf((*MockRepository)(nil).FindAllMessagesInCategorySince), arg0, arg1, arg2)
+}
+
 // FindAllMessagesInStream mocks base method
 func (m *MockRepository) FindAllMessagesInStream(arg0 context.Context, arg1 string) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
@@ -49,19 +79,19 @@ func (mr *MockRepositoryMockRecorder) FindAllMessagesInStream(arg0, arg1 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllMessagesInStream", reflect.TypeOf((*MockRepository)(nil).FindAllMessagesInStream), arg0, arg1)
 }
 
-// FindAllMessagesSince mocks base method
-func (m *MockRepository) FindAllMessagesSince(arg0 context.Context, arg1 int64) ([]*repository.MessageEnvelope, error) {
+// FindAllMessagesInStreamSince mocks base method
+func (m *MockRepository) FindAllMessagesInStreamSince(arg0 context.Context, arg1 string, arg2 int64) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindAllMessagesSince", arg0, arg1)
+	ret := m.ctrl.Call(m, "FindAllMessagesInStreamSince", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindAllMessagesSince indicates an expected call of FindAllMessagesSince
-func (mr *MockRepositoryMockRecorder) FindAllMessagesSince(arg0, arg1 interface{}) *gomock.Call {
+// FindAllMessagesInStreamSince indicates an expected call of FindAllMessagesInStreamSince
+func (mr *MockRepositoryMockRecorder) FindAllMessagesInStreamSince(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllMessagesSince", reflect.TypeOf((*MockRepository)(nil).FindAllMessagesSince), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllMessagesInStreamSince", reflect.TypeOf((*MockRepository)(nil).FindAllMessagesInStreamSince), arg0, arg1, arg2)
 }
 
 // FindLastMessageInStream mocks base method
@@ -77,35 +107,6 @@ func (m *MockRepository) FindLastMessageInStream(arg0 context.Context, arg1 stri
 func (mr *MockRepositoryMockRecorder) FindLastMessageInStream(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLastMessageInStream", reflect.TypeOf((*MockRepository)(nil).FindLastMessageInStream), arg0, arg1)
-}
-
-// FindSubscriberPosition mocks base method
-func (m *MockRepository) FindSubscriberPosition(arg0 context.Context, arg1 string) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindSubscriberPosition", arg0, arg1)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindSubscriberPosition indicates an expected call of FindSubscriberPosition
-func (mr *MockRepositoryMockRecorder) FindSubscriberPosition(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindSubscriberPosition", reflect.TypeOf((*MockRepository)(nil).FindSubscriberPosition), arg0, arg1)
-}
-
-// SetSubscriberPosition mocks base method
-func (m *MockRepository) SetSubscriberPosition(arg0 context.Context, arg1 string, arg2 int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetSubscriberPosition", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetSubscriberPosition indicates an expected call of SetSubscriberPosition
-func (mr *MockRepositoryMockRecorder) SetSubscriberPosition(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSubscriberPosition", reflect.TypeOf((*MockRepository)(nil).SetSubscriberPosition), arg0, arg1, arg2)
 }
 
 // WriteMessage mocks base method
