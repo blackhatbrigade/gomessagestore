@@ -122,7 +122,7 @@ func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnv
 			messages = append(messages, command)
 		} else {
 			category, id := "", ""
-			cats := strings.SplitN(messageEnvelope.Stream, "-", 1)
+			cats := strings.SplitN(messageEnvelope.Stream, "-", 2)
 			if len(cats) > 0 {
 				category = cats[0]
 				if len(cats) == 2 {
@@ -174,6 +174,14 @@ func AtPosition(position int64) WriteOption {
 func CommandStream(stream string) GetOption {
 	return func(g *getter) {
 		stream := fmt.Sprintf("%s:command", stream)
+		g.stream = &stream
+	}
+}
+
+//Stream allows for writing messages using an expected position
+func EventStream(category, entityID string) GetOption {
+	return func(g *getter) {
+		stream := fmt.Sprintf("%s-%s", category, entityID)
 		g.stream = &stream
 	}
 }
