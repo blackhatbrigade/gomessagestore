@@ -39,7 +39,7 @@ func TestWriteMessage(t *testing.T) {
 	msgStore.Write(ctx, msg)
 }
 
-func TestWriteAtPosition(t *testing.T) {
+func TestWriteWithAtPosition(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -69,7 +69,7 @@ func TestWriteAtPosition(t *testing.T) {
 	msgStore.Write(ctx, msg, AtPosition(42))
 }
 
-func TestGet(t *testing.T) {
+func TestGetWithCommandStream(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -94,7 +94,7 @@ func TestGet(t *testing.T) {
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
-	msgs, err := msgStore.Get(ctx)
+	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamType))
 
 	if err != nil {
 		t.Error("An error has ocurred while getting messages from message store")
@@ -130,5 +130,22 @@ func TestGet(t *testing.T) {
 		default:
 			t.Error("Unknown type of Message")
 		}
+	}
+}
+
+func TestGetWithoutOptionsReturnsError(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	ctx := context.Background()
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+	_, err := msgStore.Get(ctx)
+
+	if err != ErrMissingGetOptions {
+		t.Errorf("Expected ErrMissingGetOptions and got %v", err)
 	}
 }

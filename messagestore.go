@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -27,7 +28,9 @@ type writer struct {
 	atPosition *int64
 }
 
-type getter struct{}
+type getter struct {
+	stream *string
+}
 
 //WriteOption provide optional arguments to the Write function
 type WriteOption func(w *writer)
@@ -61,6 +64,14 @@ func checkWriteOptions(opts ...WriteOption) *writer {
 		option(w)
 	}
 	return w
+}
+
+func checkGetOptions(opts ...GetOption) *getter {
+	g := &getter{}
+	for _, option := range opts {
+		option(g)
+	}
+	return g
 }
 
 //Write Writes a Message to the message store.
@@ -136,8 +147,14 @@ func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnv
 
 //Get Gets one or more Messages from the message store.
 func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, error) {
-	streamName := "test cat:command"
-	msgEnvelopes, err := ms.repo.FindAllMessagesInStream(ctx, streamName)
+
+	if len(opts) == 0 {
+		return nil, ErrMissingGetOptions
+	}
+
+	getOptions := checkGetOptions(opts...)
+	msgEnvelopes, err := ms.repo.FindAllMessagesInStream(ctx, *getOptions.stream)
+
 	if err != nil {
 		logrus.WithError(err).Error("Get: Error getting message")
 
@@ -150,6 +167,14 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 func AtPosition(position int64) WriteOption {
 	return func(w *writer) {
 		w.atPosition = &position
+	}
+}
+
+//Stream allows for writing messages using an expected position
+func CommandStream(stream string) GetOption {
+	return func(g *getter) {
+		stream := fmt.Sprintf("%s:command", stream)
+		g.stream = &stream
 	}
 }
 
