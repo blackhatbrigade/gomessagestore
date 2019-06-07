@@ -7,6 +7,8 @@ package mock_gomessagestore
 import (
 	context "context"
 	gomessagestore "github.com/blackhatbrigade/gomessagestore"
+	projector "github.com/blackhatbrigade/gomessagestore/projector"
+	repository "github.com/blackhatbrigade/gomessagestore/repository"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -34,15 +36,29 @@ func (m *MockMessageStore) EXPECT() *MockMessageStoreMockRecorder {
 	return m.recorder
 }
 
+// CreateProjector mocks base method
+func (m *MockMessageStore) CreateProjector() *projector.Projector {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateProjector")
+	ret0, _ := ret[0].(*projector.Projector)
+	return ret0
+}
+
+// CreateProjector indicates an expected call of CreateProjector
+func (mr *MockMessageStoreMockRecorder) CreateProjector() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProjector", reflect.TypeOf((*MockMessageStore)(nil).CreateProjector))
+}
+
 // Get mocks base method
-func (m *MockMessageStore) Get(arg0 context.Context, arg1 ...gomessagestore.GetOption) ([]gomessagestore.Message, error) {
+func (m *MockMessageStore) Get(arg0 context.Context, arg1 ...gomessagestore.GetOption) ([]repository.Message, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Get", varargs...)
-	ret0, _ := ret[0].([]gomessagestore.Message)
+	ret0, _ := ret[0].([]repository.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -55,7 +71,7 @@ func (mr *MockMessageStoreMockRecorder) Get(arg0 interface{}, arg1 ...interface{
 }
 
 // Write mocks base method
-func (m *MockMessageStore) Write(arg0 context.Context, arg1 gomessagestore.Message, arg2 ...gomessagestore.WriteOption) error {
+func (m *MockMessageStore) Write(arg0 context.Context, arg1 repository.Message, arg2 ...gomessagestore.WriteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {

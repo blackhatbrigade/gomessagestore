@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blackhatbrigade/gomessagestore/projector"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
@@ -15,9 +16,10 @@ import (
 
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
-	Write(ctx context.Context, message Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
+	Write(ctx context.Context, message repository.Message, opts ...WriteOption) error
+	Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error)
 	//WriteWithExpectedPosition(ctx context.Context, message *Message, version int64) error
+	CreateProjector() projector.Projector
 }
 
 type msgStore struct {
@@ -75,7 +77,7 @@ func checkGetOptions(opts ...GetOption) *getter {
 }
 
 //Write Writes a Message to the message store.
-func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOption) error {
+func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts ...WriteOption) error {
 	envelope, err := message.ToEnvelope()
 	if err != nil {
 		logrus.WithError(err).Error("Write: Validation Error")
@@ -97,8 +99,8 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 	return nil
 }
 
-func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Message {
-	messages := make([]Message, 0, len(msgEnvelopes))
+func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []repository.Message {
+	messages := make([]repository.Message, 0, len(msgEnvelopes))
 	for _, messageEnvelope := range msgEnvelopes {
 		if messageEnvelope == nil {
 			logrus.Error("Found a nil in the message envelope slice, can't transform to a message")
@@ -146,7 +148,7 @@ func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnv
 }
 
 //Get Gets one or more Messages from the message store.
-func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, error) {
+func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error) {
 
 	if len(opts) == 0 {
 		return nil, ErrMissingGetOptions
