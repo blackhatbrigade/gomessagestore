@@ -19,7 +19,7 @@ type MessageStore interface {
 	Write(ctx context.Context, message repository.Message, opts ...WriteOption) error
 	Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error)
 	//WriteWithExpectedPosition(ctx context.Context, message *Message, version int64) error
-	CreateProjector() *projector.Projector
+	CreateProjector() projector.Projector
 }
 
 type msgStore struct {

@@ -3,7 +3,7 @@ package projector_test
 import (
 	"testing"
 
-	"github.com/blackhatbrigade/gomessagestore/projector"
+	"github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
@@ -24,7 +24,9 @@ func TestProjectorAcceptsAReducer(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myprojector := projector.CreateProjector(mockRepo)
+	myMessageStore := gomessagestore.GetMessageStoreInterface2(mockRepo)
+
+	myprojector := myMessageStore.CreateProjector()
 
 	mockred := new(mockReducer)
 
