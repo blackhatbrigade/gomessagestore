@@ -20,15 +20,5 @@ type projector struct {
 	reducers []reducerConfig
 }
 
-//CreateProjector Creates a default projector struct that conforms to the interface.
-func CreateProjector(repos repository.Repository) (proj Projector) {
-	proj = &projector{
-		repo:     repos,
-		reducers: nil,
-	}
-
-	return
-}
-
 //Errors
 var ()
