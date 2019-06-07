@@ -99,8 +99,8 @@ func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts 
 	return nil
 }
 
-func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Message {
-	messages := make([]Message, 0, len(msgEnvelopes))
+func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []repository.Message {
+	messages := make([]repository.Message, 0, len(msgEnvelopes))
 	for _, messageEnvelope := range msgEnvelopes {
 		if messageEnvelope == nil {
 			logrus.Error("Found a nil in the message envelope slice, can't transform to a message")
