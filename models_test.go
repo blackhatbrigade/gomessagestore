@@ -9,8 +9,7 @@ import (
 )
 
 type dummyData struct {
-	Field1 string
-	Field2 string
+	Field1 string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
 }
 
 func getSampleEventMissing(key string) *Event {
@@ -40,9 +39,6 @@ func getSampleEventMalformed(key string) *Event {
 	event := getSampleEvent()
 
 	switch key {
-	case "DataNil":
-		var nilPointer *int
-		event.Data = nilPointer
 	case "CategoryHyphen":
 		event.Category = "something-bad"
 	}
@@ -75,11 +71,6 @@ func getSampleCommandMalformed(key string) *Command {
 	cmd := getSampleCommand()
 
 	switch key {
-	case "DataNil":
-		var nilPointer *int
-		cmd.Data = nilPointer
-	case "DataUnserialized":
-		cmd.Data = make(map[*string]int)
 	case "CategoryHyphen":
 		cmd.Category = "something-bad"
 	}
@@ -165,23 +156,13 @@ func TestCommandToEnvelope(t *testing.T) {
 			StreamType: "test cat",
 			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
 			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			Data:       []byte(`{"Field1":"a","Field2":"b"}`),
+			Data:       []byte(`{"Field1":"a"}`),
 		},
 	}, {
 		name:           "Errors if no Type",
 		inputCommand:   getSampleCommandMissing("Type"),
 		expectedError:  ErrMissingMessageType,
 		failErrMessage: "Expected ErrMissingMessageType from ToEnvelope Call",
-	}, {
-		name:           "Errors if Data Can't be marshalled to JSON",
-		inputCommand:   getSampleCommandMalformed("DataUnserialized"),
-		expectedError:  ErrUnserializableData,
-		failErrMessage: "Expected ErrUnserializableData from ToEnvelope Call",
-	}, {
-		name:           "Errors if Data is a Pointer to Nil",
-		inputCommand:   getSampleCommandMalformed("DataNil"),
-		expectedError:  ErrDataIsNilPointer,
-		failErrMessage: "Expected ErrDataIsNilPointer from ToEnvelope Call",
 	}, {
 		name:           "Errors if Data is empty",
 		inputCommand:   getSampleCommandMissing("Data"),
@@ -229,7 +210,7 @@ func TestEventToEnvelope(t *testing.T) {
 			StreamType: "test cat",
 			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
 			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			Data:       []byte(`{"Field1":"a","Field2":"b"}`),
+			Data:       []byte(`{"Field1":"a"}`),
 		},
 	}, {
 		name:           "Errors if no NewID",
@@ -261,11 +242,6 @@ func TestEventToEnvelope(t *testing.T) {
 		inputEvent:     getSampleEventMissing("Type"),
 		expectedError:  ErrMissingMessageType,
 		failErrMessage: "Type must not be empty",
-	}, {
-		name:           "Errors if Data is given an empty pointer",
-		inputEvent:     getSampleEventMalformed("DataNil"),
-		expectedError:  ErrDataIsNilPointer,
-		failErrMessage: "Can not provide an empty pointer",
 	}}
 
 	for _, test := range tests {

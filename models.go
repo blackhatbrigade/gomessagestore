@@ -3,7 +3,6 @@ package gomessagestore
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 
 	. "github.com/blackhatbrigade/gomessagestore/repository"
@@ -16,7 +15,7 @@ type Command struct {
 	Category   string
 	CausedByID string
 	OwnerID    string
-	Data       interface{}
+	Data       map[string]interface{}
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
@@ -39,10 +38,6 @@ func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
 
 	if cmd.Data == nil {
 		return nil, ErrMissingMessageData
-	}
-
-	if reflect.ValueOf(cmd.Data).Kind() == reflect.Ptr && reflect.ValueOf(cmd.Data).IsNil() {
-		return nil, ErrDataIsNilPointer
 	}
 
 	data, err := json.Marshal(cmd.Data)
@@ -70,7 +65,7 @@ type Event struct {
 	Category   string
 	CausedByID string
 	OwnerID    string
-	Data       interface{}
+	Data       map[string]interface{}
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
@@ -97,10 +92,6 @@ func (event *Event) ToEnvelope() (*MessageEnvelope, error) {
 
 	if event.Category == "" {
 		return nil, ErrMissingMessageCategory
-	}
-
-	if reflect.ValueOf(event.Data).Kind() == reflect.Ptr && reflect.ValueOf(event.Data).IsNil() {
-		return nil, ErrDataIsNilPointer
 	}
 
 	data, err := json.Marshal(event.Data)
