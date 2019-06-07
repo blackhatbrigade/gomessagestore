@@ -11,7 +11,7 @@ type ReducerOption func(proj *projector)
 //Projector A base level interface that defines the projection functionality of gomessagestore.
 type Projector interface {
 	RegisterReducer(reducer MessageReducer, opts ...ReducerOption) error
-	Run(ctx context.Context) error
+	Run(ctx context.Context) (interface{}, error)
 }
 
 //projector The base supported projector struct.

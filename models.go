@@ -9,11 +9,6 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
-//Message Defines an interface that can consume Commands or Events.
-type Message interface {
-	ToEnvelope() (*MessageEnvelope, error)
-}
-
 //Command the model for writing a command to the Message Store
 type Command struct {
 	NewID      string

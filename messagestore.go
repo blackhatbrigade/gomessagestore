@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/blackhatbrigade/gomessagestore/projector"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
@@ -12,9 +13,10 @@ import (
 
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
-	Write(ctx context.Context, message Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
+	Write(ctx context.Context, message repository.Message, opts ...WriteOption) error
+	Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error)
 	//WriteWithExpectedPosition(ctx context.Context, message *Message, version int64) error
+	CreateProjector() *projector.Projector
 }
 
 type msgStore struct {
@@ -62,7 +64,7 @@ func checkWriteOptions(opts ...WriteOption) *writer {
 }
 
 //Write Writes a Message to the message store.
-func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOption) error {
+func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts ...WriteOption) error {
 	envelope, err := message.ToEnvelope()
 	if err != nil {
 		logrus.WithError(err).Error("Write: Validation Error")
@@ -85,7 +87,7 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 }
 
 //Get Gets one or more Messages from the message store.
-func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, error) {
+func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error) {
 	return nil, nil
 }
 

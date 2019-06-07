@@ -3,18 +3,19 @@ package projector_test
 import (
 	"testing"
 
-	"github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/projector"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
 )
 
 type mockReducer struct {
 	PreviousState   interface{}
-	ReceivedMessage gomessagestore.Message
+	ReceivedMessage repository.Message
 }
 
-func (red *mockReducer) Reduce(message gomessagestore.Message, previousState interface{}) {
+func (red *mockReducer) Reduce(message repository.Message, previousState interface{}) interface{} {
+	return nil
 }
 
 func TestProjectorAcceptsAReducer(t *testing.T) {
