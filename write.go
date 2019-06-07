@@ -7,11 +7,11 @@ import (
 )
 
 //WriteOption provide optional arguments to the Write function
-type WriteOption func(w *writer)
+type WriteOption func(w *writeConfig)
 
 //AtPosition allows for writing messages using an expected position
 func AtPosition(position int64) WriteOption {
-	return func(w *writer) {
+	return func(w *writeConfig) {
 		w.atPosition = &position
 	}
 }
@@ -39,12 +39,12 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 	return nil
 }
 
-type writer struct {
+type writeConfig struct {
 	atPosition *int64
 }
 
-func checkWriteOptions(opts ...WriteOption) *writer {
-	w := &writer{}
+func checkWriteOptions(opts ...WriteOption) *writeConfig {
+	w := &writeConfig{}
 	for _, option := range opts {
 		option(w)
 	}

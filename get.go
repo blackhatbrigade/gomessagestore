@@ -8,11 +8,11 @@ import (
 )
 
 //GetOption provide optional arguments to the Get function
-type GetOption func(g *getter)
+type GetOption func(g *getConfig)
 
 //Stream allows for writing messages using an expected position
 func CommandStream(stream string) GetOption {
-	return func(g *getter) {
+	return func(g *getConfig) {
 		stream := fmt.Sprintf("%s:command", stream)
 		g.stream = &stream
 	}
@@ -20,7 +20,7 @@ func CommandStream(stream string) GetOption {
 
 //Stream allows for writing messages using an expected position
 func EventStream(category, entityID string) GetOption {
-	return func(g *getter) {
+	return func(g *getConfig) {
 		stream := fmt.Sprintf("%s-%s", category, entityID)
 		g.stream = &stream
 	}
@@ -43,12 +43,12 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 	return msgEnvelopesToMessages(msgEnvelopes), nil
 }
 
-type getter struct {
+type getConfig struct {
 	stream *string
 }
 
-func checkGetOptions(opts ...GetOption) *getter {
-	g := &getter{}
+func checkGetOptions(opts ...GetOption) *getConfig {
+	g := &getConfig{}
 	for _, option := range opts {
 		option(g)
 	}
