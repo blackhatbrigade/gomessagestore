@@ -3,7 +3,6 @@ package message_test
 import (
 	"io/ioutil"
 
-	"github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/sirupsen/logrus"
 )
@@ -14,20 +13,17 @@ func panicIf(err error) {
 	}
 }
 
-// prevent weirdness with pointers
-func CopyAndAppend(i []*message.MessageEnvelope, vals ...*message.MessageEnvelope) []*message.MessageEnvelope {
-	j := make([]*message.MessageEnvelope, len(i), len(i)+len(vals))
-	copy(j, i)
-	return append(j, vals...)
-}
-
 // disable logging during tests
 func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
+type dummyData struct {
+	Field1 string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
+}
+
 func getSampleCommand() *message.Command {
-	packed, err := gomessagestore.Pack(dummyData{"a"})
+	packed, err := message.Pack(dummyData{"a"})
 	panicIf(err)
 	return &message.Command{
 		Type:       "test type",
@@ -40,7 +36,7 @@ func getSampleCommand() *message.Command {
 }
 
 func getSampleEvent() *message.Event {
-	packed, err := gomessagestore.Pack(dummyData{"a"})
+	packed, err := message.Pack(dummyData{"a"})
 	panicIf(err)
 	return &message.Event{
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",

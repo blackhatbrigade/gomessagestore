@@ -5,11 +5,10 @@ import (
 	"testing"
 
 	"github.com/blackhatbrigade/gomessagestore/message"
-	"github.com/blackhatbrigade/gomessagestore/testutils"
 )
 
 func getSampleEventMissing(key string) *message.Event {
-	event := testutils.GetSampleEvent()
+	event := getSampleEvent()
 
 	switch key {
 	case "NewID":
@@ -32,7 +31,7 @@ func getSampleEventMissing(key string) *message.Event {
 }
 
 func getSampleEventMalformed(key string) *message.Event {
-	event := testutils.GetSampleEvent()
+	event := getSampleEvent()
 
 	switch key {
 	case "CategoryHyphen":
@@ -43,7 +42,7 @@ func getSampleEventMalformed(key string) *message.Event {
 }
 
 func getSampleCommandMissing(key string) *message.Command {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	switch key {
 	case "Type":
@@ -64,7 +63,7 @@ func getSampleCommandMissing(key string) *message.Command {
 }
 
 func getSampleCommandMalformed(key string) *message.Command {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	switch key {
 	case "CategoryHyphen":
@@ -75,7 +74,7 @@ func getSampleCommandMalformed(key string) *message.Command {
 }
 
 func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	msgEnv, _ := cmd.ToEnvelope()
 
@@ -85,7 +84,7 @@ func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
 }
 
 func TestCommandToEnvelopeErrorsIfNoType(t *testing.T) {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	cmd.Type = ""
 
@@ -97,7 +96,7 @@ func TestCommandToEnvelopeErrorsIfNoType(t *testing.T) {
 }
 
 func TestCommandToEnvelopeErrorsIfNoCategory(t *testing.T) {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	cmd.Category = ""
 
@@ -109,7 +108,7 @@ func TestCommandToEnvelopeErrorsIfNoCategory(t *testing.T) {
 }
 
 func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	cmd.Category = "something-bad"
 
@@ -121,7 +120,7 @@ func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
 }
 
 func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
-	cmd := testutils.GetSampleCommand()
+	cmd := getSampleCommand()
 
 	cmd.NewID = ""
 
@@ -143,7 +142,7 @@ func TestCommandToEnvelope(t *testing.T) {
 		failErrMessage   string
 	}{{
 		name:           "Returns message envelope",
-		inputCommand:   testutils.GetSampleCommand(),
+		inputCommand:   getSampleCommand(),
 		failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
 		expectedEnvelope: &message.MessageEnvelope{
 			MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -197,7 +196,7 @@ func TestEventToEnvelope(t *testing.T) {
 		failErrMessage   string
 	}{{
 		name:           "Returns message envelope",
-		inputEvent:     GetSampleEvent(),
+		inputEvent:     getSampleEvent(),
 		failEnvMessage: "Didn't render the MessageEnvelope correctly",
 		expectedEnvelope: &message.MessageEnvelope{
 			MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",

@@ -8,7 +8,6 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
-	"github.com/blackhatbrigade/gomessagestore/testutils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
 )
@@ -19,7 +18,7 @@ func TestWriteMessage(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := testutils.GetSampleCommand()
+	msg := getSampleCommand()
 	ctx := context.Background()
 
 	msgEnv := &message.MessageEnvelope{
@@ -46,7 +45,7 @@ func TestWriteWithAtPosition(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := testutils.GetSampleCommand()
+	msg := getSampleCommand()
 	ctx := context.Background()
 
 	msgEnv := &message.MessageEnvelope{
@@ -76,7 +75,7 @@ func TestGetWithCommandStream(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := testutils.GetSampleCommand()
+	msg := getSampleCommand()
 	ctx := context.Background()
 
 	msgEnv := &message.MessageEnvelope{
@@ -121,7 +120,7 @@ func TestGetWithCommandStream(t *testing.T) {
 				t.Error("OwnerID in message does not match")
 			}
 			data := new(dummyData)
-			err = Unpack(command.Data, data)
+			err = message.Unpack(command.Data, data)
 			if err != nil {
 				t.Error("Couldn't unpack data from message")
 			}
@@ -157,7 +156,7 @@ func TestGetWithEventStream(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := testutils.GetSampleEvent()
+	msg := getSampleEvent()
 	ctx := context.Background()
 
 	msgEnv := &message.MessageEnvelope{
@@ -205,7 +204,7 @@ func TestGetWithEventStream(t *testing.T) {
 				t.Error("OwnerID in message does not match")
 			}
 			data := new(dummyData)
-			err = Unpack(event.Data, data)
+			err = message.Unpack(event.Data, data)
 			if err != nil {
 				t.Error("Couldn't unpack data from message")
 			}
