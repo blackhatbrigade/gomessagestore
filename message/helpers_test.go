@@ -1,4 +1,4 @@
-package gomessagestore_test
+package message_test
 
 import (
 	"io/ioutil"
@@ -13,13 +13,13 @@ func panicIf(err error) {
 	}
 }
 
-type dummyData struct {
-	Field1 string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
-}
-
 // disable logging during tests
 func init() {
 	logrus.SetOutput(ioutil.Discard)
+}
+
+type dummyData struct {
+	Field1 string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
 }
 
 func getSampleCommand() *message.Command {

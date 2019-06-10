@@ -3,9 +3,11 @@ package repository
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func metadataJSON(message *MessageEnvelope) []byte {
+func metadataJSON(message *message.MessageEnvelope) []byte {
 	metadata := struct {
 		CorrelationID string `json:"correlation_id,omitempty" db:"correlation_id"`
 		CausedByID    string `json:"caused_by_id,omitempty" db:"caused_by_id"`
@@ -16,7 +18,7 @@ func metadataJSON(message *MessageEnvelope) []byte {
 	return bytes
 }
 
-var mockMessagesWithNoMetaData = []*MessageEnvelope{{
+var mockMessagesWithNoMetaData = []*message.MessageEnvelope{{
 	GlobalPosition: 5,
 	MessageID:      "dag-2346",
 	Type:           "some_other_type",
@@ -54,7 +56,7 @@ var mockMessagesWithNoMetaData = []*MessageEnvelope{{
 	Timestamp:      time.Unix(1545549339, 0),
 }}
 
-var mockMessageNoID = &MessageEnvelope{
+var mockMessageNoID = &message.MessageEnvelope{
 	GlobalPosition: 7,
 	Type:           "some_type",
 	Stream:         "some_type-12345",
@@ -67,7 +69,7 @@ var mockMessageNoID = &MessageEnvelope{
 	Timestamp:      time.Unix(1545549339, 0),
 }
 
-var mockMessageNoStream = &MessageEnvelope{
+var mockMessageNoStream = &message.MessageEnvelope{
 	GlobalPosition: 7,
 	MessageID:      "abc-456",
 	Type:           "some_type",

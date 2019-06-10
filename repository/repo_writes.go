@@ -5,26 +5,28 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+
+	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func (r postgresRepo) WriteMessage(ctx context.Context, message *MessageEnvelope) error {
-	return r.writeMessageEitherWay(ctx, message)
+func (r postgresRepo) WriteMessage(ctx context.Context, msg *message.MessageEnvelope) error {
+	return r.writeMessageEitherWay(ctx, msg)
 }
 
-func (r postgresRepo) WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error {
-	return r.writeMessageEitherWay(ctx, message, position)
+func (r postgresRepo) WriteMessageWithExpectedPosition(ctx context.Context, msg *message.MessageEnvelope, position int64) error {
+	return r.writeMessageEitherWay(ctx, msg, position)
 }
 
-func (r postgresRepo) writeMessageEitherWay(ctx context.Context, message *MessageEnvelope, position ...int64) error {
-	if message == nil {
+func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *message.MessageEnvelope, position ...int64) error {
+	if msg == nil {
 		return ErrNilMessage
 	}
 
-	if message.MessageID == "" {
-		return ErrMessageNoID
+	if msg.MessageID == "" {
+		return message.ErrMessageNoID
 	}
 
-	if message.Stream == "" {
+	if msg.Stream == "" {
 		return ErrInvalidStreamID
 	}
 
@@ -37,16 +39,16 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, message *Messag
 		}()
 
 		eventideMetadata := &eventideMessageMetadata{
-			CorrelationID: message.CorrelationID,
-			CausedByID:    message.CausedByID,
-			UserID:        message.UserID,
+			CorrelationID: msg.CorrelationID,
+			CausedByID:    msg.CausedByID,
+			UserID:        msg.UserID,
 		}
 		eventideMessage := &eventideMessageEnvelope{
-			ID:          message.MessageID,
-			MessageType: message.Type,
-			StreamName:  message.Stream,
-			Data:        message.Data,
-			Position:    message.Position,
+			ID:          msg.MessageID,
+			MessageType: msg.Type,
+			StreamName:  msg.Stream,
+			Data:        msg.Data,
+			Position:    msg.Position,
 		}
 
 		if metadata, err := json.Marshal(eventideMetadata); err == nil {

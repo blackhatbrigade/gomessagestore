@@ -1,4 +1,4 @@
-package gomessagestore
+package message
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 
 //Errors
 var (
+	ErrMessageNoID                     = errors.New("Message cannot be written without a new UUID")
 	ErrIncorrectNumberOfPositionsFound = errors.New("Exactly one position should be found per subscriber")
 	ErrInvalidHandler                  = errors.New("Handler cannot be nil")
 	ErrHandlerError                    = errors.New("Handler failed to handle message")

@@ -3,10 +3,9 @@ package gomessagestore
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strings"
 
+	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/blackhatbrigade/gomessagestore/projector"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
@@ -16,8 +15,8 @@ import (
 
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
-	Write(ctx context.Context, message repository.Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error)
+	Write(ctx context.Context, message message.Message, opts ...WriteOption) error
+	Get(ctx context.Context, opts ...GetOption) ([]message.Message, error)
 	//WriteWithExpectedPosition(ctx context.Context, message *Message, version int64) error
 	CreateProjector() projector.Projector
 }
@@ -77,7 +76,7 @@ func checkGetOptions(opts ...GetOption) *getter {
 }
 
 //Write Writes a Message to the message store.
-func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts ...WriteOption) error {
+func (ms *msgStore) Write(ctx context.Context, message message.Message, opts ...WriteOption) error {
 	envelope, err := message.ToEnvelope()
 	if err != nil {
 		logrus.WithError(err).Error("Write: Validation Error")
@@ -99,59 +98,11 @@ func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts 
 	return nil
 }
 
-func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []repository.Message {
-	messages := make([]repository.Message, 0, len(msgEnvelopes))
-	for _, messageEnvelope := range msgEnvelopes {
-		if messageEnvelope == nil {
-			logrus.Error("Found a nil in the message envelope slice, can't transform to a message")
-			continue
-		}
-		data := make(map[string]interface{})
-		err := json.Unmarshal(messageEnvelope.Data, &data)
-		if err != nil {
-			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope")
-			continue
-		}
-		if strings.HasSuffix(messageEnvelope.Stream, ":command") {
-			command := &Command{
-				NewID:      messageEnvelope.MessageID,
-				Type:       messageEnvelope.Type,
-				Category:   strings.TrimSuffix(messageEnvelope.Stream, ":command"),
-				CausedByID: messageEnvelope.CausedByID,
-				OwnerID:    messageEnvelope.OwnerID,
-				Data:       data,
-			}
-			messages = append(messages, command)
-		} else {
-			category, id := "", ""
-			cats := strings.SplitN(messageEnvelope.Stream, "-", 2)
-			if len(cats) > 0 {
-				category = cats[0]
-				if len(cats) == 2 {
-					id = cats[1]
-				}
-			}
-			event := &Event{
-				NewID:      messageEnvelope.MessageID,
-				Type:       messageEnvelope.Type,
-				Category:   category,
-				CategoryID: id,
-				CausedByID: messageEnvelope.CausedByID,
-				OwnerID:    messageEnvelope.OwnerID,
-				Data:       data,
-			}
-			messages = append(messages, event)
-		}
-	}
-
-	return messages
-}
-
 //Get Gets one or more Messages from the message store.
-func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error) {
+func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Message, error) {
 
 	if len(opts) == 0 {
-		return nil, ErrMissingGetOptions
+		return nil, message.ErrMissingGetOptions
 	}
 
 	getOptions := checkGetOptions(opts...)
@@ -162,7 +113,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]repository.Me
 
 		return nil, err
 	}
-	return ms.MsgEnvelopesToMessages(msgEnvelopes), nil
+	return message.MsgEnvelopesToMessages(msgEnvelopes), nil
 }
 
 //AtPosition allows for writing messages using an expected position
@@ -186,26 +137,4 @@ func EventStream(category, entityID string) GetOption {
 		stream := fmt.Sprintf("%s-%s", category, entityID)
 		g.stream = &stream
 	}
-}
-
-//Unpack unpacks JSON-esque objects used in the Command and Event objects into GO objects
-func Unpack(source map[string]interface{}, dest interface{}) error {
-	inbetween, err := json.Marshal(source)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(inbetween, dest)
-}
-
-//Pack packs a GO object into JSON-esque objects used in the Command and Event objects
-func Pack(source interface{}) (map[string]interface{}, error) {
-	dest := make(map[string]interface{})
-	inbetween, err := json.Marshal(source)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(inbetween, &dest)
-	return dest, err
 }

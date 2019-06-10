@@ -1,11 +1,9 @@
-package gomessagestore
+package message
 
 import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	. "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 //Command the model for writing a command to the Message Store

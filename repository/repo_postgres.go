@@ -7,6 +7,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
+
+	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
 //NewPostgresRepository creates a new in memory implementation for the messagestore reop
@@ -41,14 +43,14 @@ type eventideMessageMetadata struct {
 }
 
 type returnPair struct {
-	messages []*MessageEnvelope
+	messages []*message.MessageEnvelope
 	err      error
 }
 
-func (r postgresRepo) translateMessages(eventideMessages []*eventideMessageEnvelope) []*MessageEnvelope {
-	messages := make([]*MessageEnvelope, len(eventideMessages))
+func (r postgresRepo) translateMessages(eventideMessages []*eventideMessageEnvelope) []*message.MessageEnvelope {
+	messages := make([]*message.MessageEnvelope, len(eventideMessages))
 	for index, eventideMessage := range eventideMessages {
-		messages[index] = &MessageEnvelope{
+		messages[index] = &message.MessageEnvelope{
 			GlobalPosition: eventideMessage.GlobalPosition,
 			MessageID:      eventideMessage.ID,
 			Type:           eventideMessage.MessageType,
