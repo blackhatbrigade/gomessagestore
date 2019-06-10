@@ -33,7 +33,7 @@ func TestGetWithCommandStream(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		FindAllMessagesInStream(ctx, msgEnv.Stream).
+		GetAllMessagesInStream(ctx, msgEnv.Stream).
 		Return([]*message.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
@@ -114,7 +114,7 @@ func TestGetWithEventStream(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		FindAllMessagesInStream(ctx, msgEnv.Stream).
+		GetAllMessagesInStream(ctx, msgEnv.Stream).
 		Return([]*message.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)

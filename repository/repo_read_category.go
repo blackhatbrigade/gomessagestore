@@ -9,18 +9,18 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func (r postgresRepo) FindAllMessagesInCategory(ctx context.Context, category string) (m []*message.MessageEnvelope, err error) {
-	return r.FindAllMessagesInCategorySince(ctx, category, 0)
+func (r postgresRepo) GetAllMessagesInCategory(ctx context.Context, category string) (m []*message.MessageEnvelope, err error) {
+	return r.GetAllMessagesInCategorySince(ctx, category, 0)
 }
 
-func (r postgresRepo) FindAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) (m []*message.MessageEnvelope, err error) {
+func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) (m []*message.MessageEnvelope, err error) {
 	if category == "" {
-		logrus.WithError(ErrBlankCategory).Error("Failure in repo_postgres.go::FindAllMessagesInCategorySince")
+		logrus.WithError(ErrBlankCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 
 		return nil, ErrBlankCategory
 	}
 	if strings.Contains(category, "-") {
-		logrus.WithError(ErrInvalidCategory).Error("Failure in repo_postgres.go::FindAllMessagesInCategorySince")
+		logrus.WithError(ErrInvalidCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 		return nil, ErrInvalidCategory
 	}
 
@@ -41,7 +41,7 @@ func (r postgresRepo) FindAllMessagesInCategorySince(ctx context.Context, catego
 		)*/
 		query := "SELECT * FROM get_category_messages($1, $2)"
 		if err := r.dbx.SelectContext(ctx, &eventideMessages, query, category, globalPosition); err != nil {
-			logrus.WithError(err).Error("Failure in repo_postgres.go::FindAllMessagesInCategorySince")
+			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 			retChan <- returnPair{nil, err}
 			return
 		}

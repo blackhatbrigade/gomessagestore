@@ -31,7 +31,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Messa
 	}
 
 	getOptions := checkGetOptions(opts...)
-	msgEnvelopes, err := ms.repo.FindAllMessagesInStream(ctx, *getOptions.stream)
+	msgEnvelopes, err := ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream)
 
 	if err != nil {
 		logrus.WithError(err).Error("Get: Error getting message")

@@ -7,13 +7,13 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func (r postgresRepo) FindAllMessagesInStream(ctx context.Context, streamID string) ([]*message.MessageEnvelope, error) {
-	return r.FindAllMessagesInStreamSince(ctx, streamID, 0)
+func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamID string) ([]*message.MessageEnvelope, error) {
+	return r.GetAllMessagesInStreamSince(ctx, streamID, 0)
 }
 
-func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID string) (*message.MessageEnvelope, error) {
+func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID string) (*message.MessageEnvelope, error) {
 	if streamID == "" {
-		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::FindLastMessageInStream")
+		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 
 		return nil, ErrInvalidStreamID
 	}
@@ -32,7 +32,7 @@ func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID stri
 		)*/
 		query := "SELECT * FROM get_last_message($1)"
 		if err := r.dbx.SelectContext(ctx, &eventideMessages, query, streamID); err != nil {
-			logrus.WithError(err).Error("Failure in repo_postgres.go::FindLastMessageInStream")
+			logrus.WithError(err).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 			retChan <- returnPair{nil, err}
 			return
 		}
@@ -61,9 +61,9 @@ func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID stri
 	}
 }
 
-func (r postgresRepo) FindAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*message.MessageEnvelope, error) {
+func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*message.MessageEnvelope, error) {
 	if streamID == "" {
-		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::FindAllMessagesInStreamSince")
+		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 
 		return nil, ErrInvalidStreamID
 	}
@@ -85,7 +85,7 @@ func (r postgresRepo) FindAllMessagesInStreamSince(ctx context.Context, streamID
 		)*/
 		query := "SELECT * FROM get_stream_messages($1, $2)"
 		if err := r.dbx.SelectContext(ctx, &eventideMessages, query, streamID, globalPosition); err != nil {
-			logrus.WithError(err).Error("Failure in repo_postgres.go::FindAllMessagesInStreamSince")
+			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 			retChan <- returnPair{nil, err}
 			return
 		}

@@ -16,12 +16,12 @@ type Repository interface {
 	WriteMessage(ctx context.Context, message *message.MessageEnvelope) error
 	WriteMessageWithExpectedPosition(ctx context.Context, message *message.MessageEnvelope, position int64) error
 	// reads from stream
-	FindAllMessagesInStream(ctx context.Context, streamID string) ([]*message.MessageEnvelope, error)
-	FindAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*message.MessageEnvelope, error)
-	FindLastMessageInStream(ctx context.Context, streamID string) (*message.MessageEnvelope, error)
+	GetAllMessagesInStream(ctx context.Context, streamID string) ([]*message.MessageEnvelope, error)
+	GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*message.MessageEnvelope, error)
+	GetLastMessageInStream(ctx context.Context, streamID string) (*message.MessageEnvelope, error)
 	// reads from category
-	FindAllMessagesInCategory(ctx context.Context, category string) ([]*message.MessageEnvelope, error)
-	FindAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) ([]*message.MessageEnvelope, error)
+	GetAllMessagesInCategory(ctx context.Context, category string) ([]*message.MessageEnvelope, error)
+	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) ([]*message.MessageEnvelope, error)
 }
 
 //Errors

@@ -100,7 +100,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.FindAllMessagesInCategory(ctx, test.category)
+			messages, err := repo.GetAllMessagesInCategory(ctx, test.category)
 
 			assert.Equal(test.expectedErr, err)
 			assert.Equal(test.expectedMessages, messages)
@@ -216,7 +216,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.FindAllMessagesInCategorySince(ctx, test.streamType, test.position)
+			messages, err := repo.GetAllMessagesInCategorySince(ctx, test.streamType, test.position)
 
 			assert.Equal(test.expectedErr, err)
 			assert.Equal(test.expectedMessages, messages)

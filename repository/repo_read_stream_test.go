@@ -96,7 +96,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.FindAllMessagesInStream(ctx, test.streamName)
+			messages, err := repo.GetAllMessagesInStream(ctx, test.streamName)
 
 			assert.Equal(test.expectedMessages, messages)
 			assert.Equal(test.expectedErr, err)
@@ -208,7 +208,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.FindAllMessagesInStreamSince(ctx, test.streamName, test.position)
+			messages, err := repo.GetAllMessagesInStreamSince(ctx, test.streamName, test.position)
 
 			assert.Equal(test.expectedMessages, messages)
 			assert.Equal(test.expectedErr, err)
@@ -302,7 +302,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			message, err := repo.FindLastMessageInStream(ctx, test.streamName)
+			message, err := repo.GetLastMessageInStream(ctx, test.streamName)
 
 			assert.Equal(test.expectedMessage, message)
 			assert.Equal(test.expectedErr, err)
