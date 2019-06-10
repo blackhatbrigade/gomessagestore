@@ -7,6 +7,7 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
+	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 )
@@ -15,9 +16,9 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
+		existingMessages []*message.MessageEnvelope
 		messagesMetadata []string
-		expectedMessages []*MessageEnvelope
+		expectedMessages []*message.MessageEnvelope
 		expectedErr      error
 		category         string
 		callCancel       bool
@@ -36,11 +37,11 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		category:         "some_other_non_existant_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		category:         "some_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 	}, {
 		name:        "when asking for messages from a stream with a invalid category, an error is returned",
 		category:    "something-with-a-hyphen",
@@ -58,7 +59,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		existingMessages: mockMessages,
 		category:         "some_type",
 		callCancel:       true,
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 	}}
 
 	for _, test := range tests {
@@ -111,9 +112,9 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
+		existingMessages []*message.MessageEnvelope
 		messagesMetadata []string
-		expectedMessages []*MessageEnvelope
+		expectedMessages []*message.MessageEnvelope
 		expectedErr      error
 		streamType       string
 		callCancel       bool
@@ -140,7 +141,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
 		streamType:       "some_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 		position:         10,
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
@@ -152,11 +153,11 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamType:       "some_other_non_existant_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamType:       "some_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 	}, {
 		name:        "when asking for messages from a category, if blank, an error is returned",
 		expectedErr: ErrBlankCategory,
@@ -174,7 +175,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		existingMessages: mockMessages,
 		streamType:       "some_type",
 		callCancel:       true,
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*message.MessageEnvelope{},
 	}}
 
 	for _, test := range tests {

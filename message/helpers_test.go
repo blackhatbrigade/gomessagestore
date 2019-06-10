@@ -1,10 +1,10 @@
-package gomessagestore_test
+package message_test
 
 import (
 	"io/ioutil"
 
-	. "github.com/blackhatbrigade/gomessagestore"
-	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore"
+	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,8 +15,8 @@ func panicIf(err error) {
 }
 
 // prevent weirdness with pointers
-func copyAndAppend(i []*repository.MessageEnvelope, vals ...*repository.MessageEnvelope) []*repository.MessageEnvelope {
-	j := make([]*repository.MessageEnvelope, len(i), len(i)+len(vals))
+func CopyAndAppend(i []*message.MessageEnvelope, vals ...*message.MessageEnvelope) []*message.MessageEnvelope {
+	j := make([]*message.MessageEnvelope, len(i), len(i)+len(vals))
 	copy(j, i)
 	return append(j, vals...)
 }
@@ -26,10 +26,10 @@ func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
-func getSampleCommand() *Command {
-	packed, err := Pack(dummyData{"a"})
+func getSampleCommand() *message.Command {
+	packed, err := gomessagestore.Pack(dummyData{"a"})
 	panicIf(err)
-	return &Command{
+	return &message.Command{
 		Type:       "test type",
 		Category:   "test cat",
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -39,10 +39,10 @@ func getSampleCommand() *Command {
 	}
 }
 
-func getSampleEvent() *Event {
-	packed, err := Pack(dummyData{"a"})
+func getSampleEvent() *message.Event {
+	packed, err := gomessagestore.Pack(dummyData{"a"})
 	panicIf(err)
-	return &Event{
+	return &message.Event{
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",

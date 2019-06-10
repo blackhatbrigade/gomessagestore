@@ -5,13 +5,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+
+	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func (r postgresRepo) FindAllMessagesInCategory(ctx context.Context, category string) (m []*MessageEnvelope, err error) {
+func (r postgresRepo) FindAllMessagesInCategory(ctx context.Context, category string) (m []*message.MessageEnvelope, err error) {
 	return r.FindAllMessagesInCategorySince(ctx, category, 0)
 }
 
-func (r postgresRepo) FindAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) (m []*MessageEnvelope, err error) {
+func (r postgresRepo) FindAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) (m []*message.MessageEnvelope, err error) {
 	if category == "" {
 		logrus.WithError(ErrBlankCategory).Error("Failure in repo_postgres.go::FindAllMessagesInCategorySince")
 
@@ -45,7 +47,7 @@ func (r postgresRepo) FindAllMessagesInCategorySince(ctx context.Context, catego
 		}
 
 		if len(eventideMessages) == 0 {
-			retChan <- returnPair{[]*MessageEnvelope{}, nil}
+			retChan <- returnPair{[]*message.MessageEnvelope{}, nil}
 			return
 		}
 
@@ -58,6 +60,6 @@ func (r postgresRepo) FindAllMessagesInCategorySince(ctx context.Context, catego
 	case retval := <-retChan:
 		return retval.messages, retval.err
 	case <-ctx.Done():
-		return []*MessageEnvelope{}, nil
+		return []*message.MessageEnvelope{}, nil
 	}
 }

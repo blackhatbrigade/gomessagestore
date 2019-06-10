@@ -2,16 +2,18 @@ package repository
 
 import (
 	"time"
+
+	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
 // prevent weirdness with pointers
-func copyAndAppend(i []*MessageEnvelope, vals ...*MessageEnvelope) []*MessageEnvelope {
-	j := make([]*MessageEnvelope, len(i), len(i)+len(vals))
+func copyAndAppend(i []*message.MessageEnvelope, vals ...*message.MessageEnvelope) []*message.MessageEnvelope {
+	j := make([]*message.MessageEnvelope, len(i), len(i)+len(vals))
 	copy(j, i)
 	return append(j, vals...)
 }
 
-var mockMessages = []*MessageEnvelope{{
+var mockMessages = []*message.MessageEnvelope{{
 	GlobalPosition: 3,
 	MessageID:      "abc-123",
 	Type:           "some_type",

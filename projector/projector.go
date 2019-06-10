@@ -5,6 +5,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/projector Projector > mocks/projector.go"
+
 //ReducerOption Variadic parameter support for reducers.
 type ReducerOption func(proj *projector)
 

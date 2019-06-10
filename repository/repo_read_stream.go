@@ -3,13 +3,15 @@ package repository
 import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+
+	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func (r postgresRepo) FindAllMessagesInStream(ctx context.Context, streamID string) ([]*MessageEnvelope, error) {
+func (r postgresRepo) FindAllMessagesInStream(ctx context.Context, streamID string) ([]*message.MessageEnvelope, error) {
 	return r.FindAllMessagesInStreamSince(ctx, streamID, 0)
 }
 
-func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error) {
+func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID string) (*message.MessageEnvelope, error) {
 	if streamID == "" {
 		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::FindLastMessageInStream")
 
@@ -36,7 +38,7 @@ func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID stri
 		}
 
 		if len(eventideMessages) == 0 {
-			retChan <- returnPair{[]*MessageEnvelope{nil}, nil}
+			retChan <- returnPair{[]*message.MessageEnvelope{nil}, nil}
 			return
 		}
 
@@ -59,7 +61,7 @@ func (r postgresRepo) FindLastMessageInStream(ctx context.Context, streamID stri
 	}
 }
 
-func (r postgresRepo) FindAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*MessageEnvelope, error) {
+func (r postgresRepo) FindAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*message.MessageEnvelope, error) {
 	if streamID == "" {
 		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::FindAllMessagesInStreamSince")
 
@@ -89,7 +91,7 @@ func (r postgresRepo) FindAllMessagesInStreamSince(ctx context.Context, streamID
 		}
 
 		if len(eventideMessages) == 0 {
-			retChan <- returnPair{[]*MessageEnvelope{}, nil}
+			retChan <- returnPair{[]*message.MessageEnvelope{}, nil}
 			return
 		}
 
@@ -102,6 +104,6 @@ func (r postgresRepo) FindAllMessagesInStreamSince(ctx context.Context, streamID
 	case retval := <-retChan:
 		return retval.messages, retval.err
 	case <-ctx.Done():
-		return []*MessageEnvelope{}, nil
+		return []*message.MessageEnvelope{}, nil
 	}
 }

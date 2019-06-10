@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
-	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
+	"github.com/blackhatbrigade/gomessagestore/testutils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
 )
@@ -18,10 +19,10 @@ func TestWriteMessage(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := getSampleCommand()
+	msg := testutils.GetSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &repository.MessageEnvelope{
+	msgEnv := &message.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
@@ -45,10 +46,10 @@ func TestWriteWithAtPosition(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := getSampleCommand()
+	msg := testutils.GetSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &repository.MessageEnvelope{
+	msgEnv := &message.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
@@ -75,10 +76,10 @@ func TestGetWithCommandStream(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := getSampleCommand()
+	msg := testutils.GetSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &repository.MessageEnvelope{
+	msgEnv := &message.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
@@ -91,7 +92,7 @@ func TestGetWithCommandStream(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		FindAllMessagesInStream(ctx, msgEnv.Stream).
-		Return([]*repository.MessageEnvelope{msgEnv}, nil)
+		Return([]*message.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamType))
@@ -103,7 +104,7 @@ func TestGetWithCommandStream(t *testing.T) {
 		t.Error("Incorrect number of messages returned")
 	} else {
 		switch command := msgs[0].(type) {
-		case *Command:
+		case *message.Command:
 			if command.NewID != msg.NewID {
 				t.Error("NewID in message does not match")
 			}
@@ -145,7 +146,7 @@ func TestGetWithoutOptionsReturnsError(t *testing.T) {
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	_, err := msgStore.Get(ctx)
 
-	if err != ErrMissingGetOptions {
+	if err != message.ErrMissingGetOptions {
 		t.Errorf("Expected ErrMissingGetOptions and got %v", err)
 	}
 }
@@ -156,10 +157,10 @@ func TestGetWithEventStream(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msg := getSampleEvent()
+	msg := testutils.GetSampleEvent()
 	ctx := context.Background()
 
-	msgEnv := &repository.MessageEnvelope{
+	msgEnv := &message.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
@@ -172,7 +173,7 @@ func TestGetWithEventStream(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		FindAllMessagesInStream(ctx, msgEnv.Stream).
-		Return([]*repository.MessageEnvelope{msgEnv}, nil)
+		Return([]*message.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	msgs, err := msgStore.Get(ctx, EventStream(msg.Category, msg.CategoryID))
@@ -184,7 +185,7 @@ func TestGetWithEventStream(t *testing.T) {
 		t.Error("Incorrect number of messages returned")
 	} else {
 		switch event := msgs[0].(type) {
-		case *Event:
+		case *message.Event:
 			if event.NewID != msg.NewID {
 				t.Error("NewID in message does not match")
 			}

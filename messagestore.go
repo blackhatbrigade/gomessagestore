@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/blackhatbrigade/gomessagestore/projector"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
@@ -16,8 +17,8 @@ import (
 
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
-	Write(ctx context.Context, message repository.Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error)
+	Write(ctx context.Context, message message.Message, opts ...WriteOption) error
+	Get(ctx context.Context, opts ...GetOption) ([]message.Message, error)
 	//WriteWithExpectedPosition(ctx context.Context, message *Message, version int64) error
 	CreateProjector() projector.Projector
 }
@@ -77,7 +78,7 @@ func checkGetOptions(opts ...GetOption) *getter {
 }
 
 //Write Writes a Message to the message store.
-func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts ...WriteOption) error {
+func (ms *msgStore) Write(ctx context.Context, message message.Message, opts ...WriteOption) error {
 	envelope, err := message.ToEnvelope()
 	if err != nil {
 		logrus.WithError(err).Error("Write: Validation Error")
@@ -99,8 +100,8 @@ func (ms *msgStore) Write(ctx context.Context, message repository.Message, opts 
 	return nil
 }
 
-func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []repository.Message {
-	messages := make([]repository.Message, 0, len(msgEnvelopes))
+func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*message.MessageEnvelope) []message.Message {
+	messages := make([]message.Message, 0, len(msgEnvelopes))
 	for _, messageEnvelope := range msgEnvelopes {
 		if messageEnvelope == nil {
 			logrus.Error("Found a nil in the message envelope slice, can't transform to a message")
@@ -113,7 +114,7 @@ func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnv
 			continue
 		}
 		if strings.HasSuffix(messageEnvelope.Stream, ":command") {
-			command := &Command{
+			command := &message.Command{
 				NewID:      messageEnvelope.MessageID,
 				Type:       messageEnvelope.Type,
 				Category:   strings.TrimSuffix(messageEnvelope.Stream, ":command"),
@@ -131,7 +132,7 @@ func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnv
 					id = cats[1]
 				}
 			}
-			event := &Event{
+			event := &message.Event{
 				NewID:      messageEnvelope.MessageID,
 				Type:       messageEnvelope.Type,
 				Category:   category,
@@ -148,10 +149,10 @@ func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnv
 }
 
 //Get Gets one or more Messages from the message store.
-func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]repository.Message, error) {
+func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Message, error) {
 
 	if len(opts) == 0 {
-		return nil, ErrMissingGetOptions
+		return nil, message.ErrMissingGetOptions
 	}
 
 	getOptions := checkGetOptions(opts...)
