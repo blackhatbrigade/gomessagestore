@@ -167,3 +167,56 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 		assertMessageMatchesEvent(t, msgs[0], msg)
 	}
 }
+
+func TestGetWithCommandStreamAndSince(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleCommand()
+	ctx := context.Background()
+	var globalPosition int64
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+
+	msgEnv := getSampleCommandAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInStreamSince(ctx, msgEnv.Stream, globalPosition).
+		Return([]*message.MessageEnvelope{msgEnv}, nil)
+
+	msgs, err := msgStore.Get(
+		ctx,
+		Since(globalPosition),
+		CommandStream(msg.Category),
+	)
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesCommand(t, msgs[0], msg)
+	}
+}
+
+func TestGetMessagesRequiresEitherStreamOrCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	var globalPosition int64
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	ctx := context.Background()
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+	_, err := msgStore.Get(ctx, Since(globalPosition))
+
+	if err != ErrGetMessagesRequiresEitherStreamOrCategory {
+		t.Errorf("Expected ErrGetMessagesRequiresEitherStreamOrCategory, but got %s", err)
+	}
+}

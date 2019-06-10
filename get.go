@@ -38,6 +38,8 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Messa
 
 	if getOptions.stream != nil && getOptions.category != nil {
 		return nil, ErrGetMessagesCannotUseBothStreamAndCategory
+	} else if getOptions.stream == nil && getOptions.category == nil {
+		return nil, ErrGetMessagesRequiresEitherStreamOrCategory
 	}
 
 	if getOptions.since != nil {

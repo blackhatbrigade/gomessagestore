@@ -22,6 +22,8 @@ type Repository interface {
 	// reads from category
 	GetAllMessagesInCategory(ctx context.Context, category string) ([]*message.MessageEnvelope, error)
 	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) ([]*message.MessageEnvelope, error)
+
+	// TODO: number of messages returned should be a) capped, and b) optional
 }
 
 //Errors
