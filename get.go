@@ -8,15 +8,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type getter struct {
-	stream *string
+type getOpts struct {
+	stream   *string
+	category *string
+	since    *int64
 }
 
 //GetOption provide optional arguments to the Get function
-type GetOption func(g *getter)
+type GetOption func(g *getOpts)
 
-func checkGetOptions(opts ...GetOption) *getter {
-	g := &getter{}
+func checkGetOptions(opts ...GetOption) *getOpts {
+	g := &getOpts{}
 	for _, option := range opts {
 		option(g)
 	}
@@ -31,7 +33,29 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Messa
 	}
 
 	getOptions := checkGetOptions(opts...)
-	msgEnvelopes, err := ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream)
+	var msgEnvelopes []*message.MessageEnvelope
+	var err error
+
+	if getOptions.stream != nil && getOptions.category != nil {
+		return nil, ErrGetMessagesCannotUseBothStreamAndCategory
+	}
+
+	if getOptions.since != nil {
+		if getOptions.stream != nil {
+			msgEnvelopes, err = ms.repo.GetAllMessagesInStreamSince(ctx, *getOptions.stream, *getOptions.since)
+		} else {
+			msgEnvelopes, err = ms.repo.GetAllMessagesInCategorySince(ctx, *getOptions.category, *getOptions.since)
+		}
+	} else {
+
+		if getOptions.stream != nil {
+			msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream)
+		}
+
+		if getOptions.category != nil {
+			msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category)
+		}
+	}
 
 	if err != nil {
 		logrus.WithError(err).Error("Get: Error getting message")
@@ -41,18 +65,32 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Messa
 	return message.MsgEnvelopesToMessages(msgEnvelopes), nil
 }
 
-//Stream allows for writing messages using an expected position
-func CommandStream(stream string) GetOption {
-	return func(g *getter) {
-		stream := fmt.Sprintf("%s:command", stream)
+//CommandStream allows for writing messages using an expected position
+func CommandStream(category string) GetOption {
+	return func(g *getOpts) {
+		stream := fmt.Sprintf("%s:command", category)
 		g.stream = &stream
 	}
 }
 
-//Stream allows for writing messages using an expected position
+//EventStream allows for getting events in a specific stream
 func EventStream(category, entityID string) GetOption {
-	return func(g *getter) {
+	return func(g *getOpts) {
 		stream := fmt.Sprintf("%s-%s", category, entityID)
 		g.stream = &stream
+	}
+}
+
+//Category allows for getting messages by category
+func Category(category string) GetOption {
+	return func(g *getOpts) {
+		g.category = &category
+	}
+}
+
+//Since allows for getting only more recent messages
+func Since(since int64) GetOption {
+	return func(g *getOpts) {
+		g.since = &since
 	}
 }

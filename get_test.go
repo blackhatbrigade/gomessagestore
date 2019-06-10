@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -21,15 +20,7 @@ func TestGetWithCommandStream(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &message.MessageEnvelope{
-		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		Stream:     "test cat:command",
-		StreamType: "test cat",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       []byte(`{"Field1":"a"}`),
-	}
+	msgEnv := getSampleCommandAsEnvelope()
 
 	mockRepo.
 		EXPECT().
@@ -45,34 +36,7 @@ func TestGetWithCommandStream(t *testing.T) {
 	if len(msgs) != 1 {
 		t.Error("Incorrect number of messages returned")
 	} else {
-		switch command := msgs[0].(type) {
-		case *message.Command:
-			if command.NewID != msg.NewID {
-				t.Error("NewID in message does not match")
-			}
-			if command.Type != msg.Type {
-				t.Error("Type in message does not match")
-			}
-			if command.Category != msg.Category {
-				t.Error("Category in message does not match")
-			}
-			if command.CausedByID != msg.CausedByID {
-				t.Error("CausedByID in message does not match")
-			}
-			if command.OwnerID != msg.OwnerID {
-				t.Error("OwnerID in message does not match")
-			}
-			data := new(dummyData)
-			err = message.Unpack(command.Data, data)
-			if err != nil {
-				t.Error("Couldn't unpack data from message")
-			}
-			if !reflect.DeepEqual(&dummyData{"a"}, data) {
-				t.Error("Messages are not correct")
-			}
-		default:
-			t.Error("Unknown type of Message")
-		}
+		assertMessageMatchesCommand(t, msgs[0], msg)
 	}
 }
 
@@ -102,15 +66,7 @@ func TestGetWithEventStream(t *testing.T) {
 	msg := getSampleEvent()
 	ctx := context.Background()
 
-	msgEnv := &message.MessageEnvelope{
-		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-		StreamType: "test cat",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       []byte(`{"Field1":"a"}`),
-	}
+	msgEnv := getSampleEventAsEnvelope()
 
 	mockRepo.
 		EXPECT().
@@ -126,36 +82,88 @@ func TestGetWithEventStream(t *testing.T) {
 	if len(msgs) != 1 {
 		t.Error("Incorrect number of messages returned")
 	} else {
-		switch event := msgs[0].(type) {
-		case *message.Event:
-			if event.NewID != msg.NewID {
-				t.Error("NewID in message does not match")
-			}
-			if event.Type != msg.Type {
-				t.Error("Type in message does not match")
-			}
-			if event.CategoryID != msg.CategoryID {
-				t.Error("CategoryID in message does not match")
-			}
-			if event.Category != msg.Category {
-				t.Error("Category in message does not match")
-			}
-			if event.CausedByID != msg.CausedByID {
-				t.Error("CausedByID in message does not match")
-			}
-			if event.OwnerID != msg.OwnerID {
-				t.Error("OwnerID in message does not match")
-			}
-			data := new(dummyData)
-			err = message.Unpack(event.Data, data)
-			if err != nil {
-				t.Error("Couldn't unpack data from message")
-			}
-			if !reflect.DeepEqual(&dummyData{"a"}, data) {
-				t.Error("Messages are not correct")
-			}
-		default:
-			t.Error("Unknown type of Message")
-		}
+		assertMessageMatchesEvent(t, msgs[0], msg)
+	}
+}
+
+func TestGetWithCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleEvent()
+	ctx := context.Background()
+
+	msgEnv := getSampleEventAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInCategory(ctx, msgEnv.StreamType).
+		Return([]*message.MessageEnvelope{msgEnv}, nil)
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgs, err := msgStore.Get(ctx, Category(msg.Category))
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesEvent(t, msgs[0], msg)
+	}
+}
+
+func TestGetMessagesCannotUseBothStreamAndCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleCommand()
+	ctx := context.Background()
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+	_, err := msgStore.Get(ctx, Category(msg.Category), CommandStream(msg.Category))
+
+	if err != ErrGetMessagesCannotUseBothStreamAndCategory {
+		t.Error("Expected ErrGetMessagesCannotUseBothStreamAndCategory")
+	}
+}
+
+func TestGetWithEventStreamAndSince(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleEvent()
+	ctx := context.Background()
+	var globalPosition int64
+
+	msgStore := GetMessageStoreInterface2(mockRepo)
+
+	msgEnv := getSampleEventAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInStreamSince(ctx, msgEnv.Stream, globalPosition).
+		Return([]*message.MessageEnvelope{msgEnv}, nil)
+
+	msgs, err := msgStore.Get(
+		ctx,
+		Since(globalPosition),
+		EventStream(msg.Category, msg.CategoryID),
+	)
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesEvent(t, msgs[0], msg)
 	}
 }
