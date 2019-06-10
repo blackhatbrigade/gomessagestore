@@ -3,9 +3,7 @@ package gomessagestore
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/blackhatbrigade/gomessagestore/projector"
@@ -100,54 +98,6 @@ func (ms *msgStore) Write(ctx context.Context, message message.Message, opts ...
 	return nil
 }
 
-func (ms *msgStore) MsgEnvelopesToMessages(msgEnvelopes []*message.MessageEnvelope) []message.Message {
-	messages := make([]message.Message, 0, len(msgEnvelopes))
-	for _, messageEnvelope := range msgEnvelopes {
-		if messageEnvelope == nil {
-			logrus.Error("Found a nil in the message envelope slice, can't transform to a message")
-			continue
-		}
-		data := make(map[string]interface{})
-		err := json.Unmarshal(messageEnvelope.Data, &data)
-		if err != nil {
-			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope")
-			continue
-		}
-		if strings.HasSuffix(messageEnvelope.Stream, ":command") {
-			command := &message.Command{
-				NewID:      messageEnvelope.MessageID,
-				Type:       messageEnvelope.Type,
-				Category:   strings.TrimSuffix(messageEnvelope.Stream, ":command"),
-				CausedByID: messageEnvelope.CausedByID,
-				OwnerID:    messageEnvelope.OwnerID,
-				Data:       data,
-			}
-			messages = append(messages, command)
-		} else {
-			category, id := "", ""
-			cats := strings.SplitN(messageEnvelope.Stream, "-", 2)
-			if len(cats) > 0 {
-				category = cats[0]
-				if len(cats) == 2 {
-					id = cats[1]
-				}
-			}
-			event := &message.Event{
-				NewID:      messageEnvelope.MessageID,
-				Type:       messageEnvelope.Type,
-				Category:   category,
-				CategoryID: id,
-				CausedByID: messageEnvelope.CausedByID,
-				OwnerID:    messageEnvelope.OwnerID,
-				Data:       data,
-			}
-			messages = append(messages, event)
-		}
-	}
-
-	return messages
-}
-
 //Get Gets one or more Messages from the message store.
 func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Message, error) {
 
@@ -163,7 +113,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Messa
 
 		return nil, err
 	}
-	return ms.MsgEnvelopesToMessages(msgEnvelopes), nil
+	return message.MsgEnvelopesToMessages(msgEnvelopes), nil
 }
 
 //AtPosition allows for writing messages using an expected position
@@ -188,4 +138,3 @@ func EventStream(category, entityID string) GetOption {
 		g.stream = &stream
 	}
 }
-

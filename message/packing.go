@@ -29,7 +29,7 @@ func Pack(source interface{}) (map[string]interface{}, error) {
 	return dest, err
 }
 
-func msgEnvelopesToMessages(msgEnvelopes []*MessageEnvelope) []Message {
+func MsgEnvelopesToMessages(msgEnvelopes []*MessageEnvelope) []Message {
 	messages := make([]Message, 0, len(msgEnvelopes))
 	for _, messageEnvelope := range msgEnvelopes {
 		if messageEnvelope == nil {
