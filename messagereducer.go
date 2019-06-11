@@ -1,9 +1,5 @@
 package gomessagestore
 
-import (
-	"time"
-)
-
 //MessageReducer Defines the expected behaviours of a reducer that ultimately is used by the projectors.
 type MessageReducer interface {
 	Reduce(msg Message, previousState interface{}) interface{}
@@ -11,6 +7,6 @@ type MessageReducer interface {
 
 //MessageReducerConfig Contains all of the information needed to use a given reducer.
 type MessageReducerConfig struct {
-	Reducer  MessageReducer
-	PollTime time.Duration
+	Reducer MessageReducer
+	Type    string
 }
