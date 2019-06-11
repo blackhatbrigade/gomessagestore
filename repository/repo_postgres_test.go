@@ -1,24 +1,22 @@
-package repository
+package repository_test
 
 import (
 	"encoding/json"
 	"time"
-
-	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func metadataJSON(message *message.MessageEnvelope) []byte {
+func metadataJSON(message *MessageEnvelope) []byte {
 	metadata := struct {
 		CorrelationID string `json:"correlation_id,omitempty" db:"correlation_id"`
 		CausedByID    string `json:"caused_by_id,omitempty" db:"caused_by_id"`
 		UserID        string `json:"user_id,omitempty" db:"user_id"`
-	}{message.CorrelationID, message.CausedByID, message.UserID}
+	}{CorrelationID, CausedByID, UserID}
 	bytes, _ := json.Marshal(metadata)
 
 	return bytes
 }
 
-var mockMessagesWithNoMetaData = []*message.MessageEnvelope{{
+var mockMessagesWithNoMetaData = []*MessageEnvelope{{
 	GlobalPosition: 5,
 	MessageID:      "dag-2346",
 	Type:           "some_other_type",
@@ -56,7 +54,7 @@ var mockMessagesWithNoMetaData = []*message.MessageEnvelope{{
 	Timestamp:      time.Unix(1545549339, 0),
 }}
 
-var mockMessageNoID = &message.MessageEnvelope{
+var mockMessageNoID = &MessageEnvelope{
 	GlobalPosition: 7,
 	Type:           "some_type",
 	Stream:         "some_type-12345",
@@ -69,7 +67,7 @@ var mockMessageNoID = &message.MessageEnvelope{
 	Timestamp:      time.Unix(1545549339, 0),
 }
 
-var mockMessageNoStream = &message.MessageEnvelope{
+var mockMessageNoStream = &MessageEnvelope{
 	GlobalPosition: 7,
 	MessageID:      "abc-456",
 	Type:           "some_type",

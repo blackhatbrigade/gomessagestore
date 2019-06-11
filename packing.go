@@ -1,9 +1,10 @@
-package message
+package gomessagestore
 
 import (
 	"encoding/json"
 	"strings"
 
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,7 +30,7 @@ func Pack(source interface{}) (map[string]interface{}, error) {
 	return dest, err
 }
 
-func MsgEnvelopesToMessages(msgEnvelopes []*MessageEnvelope) []Message {
+func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Message {
 	messages := make([]Message, 0, len(msgEnvelopes))
 	for _, messageEnvelope := range msgEnvelopes {
 		if messageEnvelope == nil {

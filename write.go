@@ -3,7 +3,7 @@ package gomessagestore
 import (
 	"context"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
+	//	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,8 +23,8 @@ func checkWriteOptions(opts ...WriteOption) *writer {
 }
 
 //Write Writes a Message to the message store.
-func (ms *msgStore) Write(ctx context.Context, message message.Message, opts ...WriteOption) error {
-	envelope, err := message.ToEnvelope()
+func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOption) error {
+	envelope, err := Message.ToEnvelope(message)
 	if err != nil {
 		logrus.WithError(err).Error("Write: Validation Error")
 

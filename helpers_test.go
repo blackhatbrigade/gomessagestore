@@ -5,7 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
+	. "github.com/blackhatbrigade/gomessagestore"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,10 +25,10 @@ func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
-func getSampleCommand() *message.Command {
-	packed, err := message.Pack(dummyData{"a"})
+func getSampleCommand() *Command {
+	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
-	return &message.Command{
+	return &Command{
 		Type:       "test type",
 		Category:   "test cat",
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -37,10 +38,10 @@ func getSampleCommand() *message.Command {
 	}
 }
 
-func getSampleEvent() *message.Event {
-	packed, err := message.Pack(dummyData{"a"})
+func getSampleEvent() *Event {
+	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
-	return &message.Event{
+	return &Event{
 		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
@@ -51,8 +52,8 @@ func getSampleEvent() *message.Event {
 	}
 }
 
-func getSampleEventAsEnvelope() *message.MessageEnvelope {
-	msgEnv := &message.MessageEnvelope{
+func getSampleEventAsEnvelope() *repository.MessageEnvelope {
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
@@ -65,8 +66,8 @@ func getSampleEventAsEnvelope() *message.MessageEnvelope {
 	return msgEnv
 }
 
-func getSampleCommandAsEnvelope() *message.MessageEnvelope {
-	msgEnv := &message.MessageEnvelope{
+func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
@@ -79,9 +80,9 @@ func getSampleCommandAsEnvelope() *message.MessageEnvelope {
 	return msgEnv
 }
 
-func assertMessageMatchesCommand(t *testing.T, msgEnv message.Message, msg *message.Command) {
+func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 	switch command := msgEnv.(type) {
-	case *message.Command:
+	case *Command:
 		if command.NewID != msg.NewID {
 			t.Error("NewID in message does not match")
 		}
@@ -98,7 +99,7 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv message.Message, msg *mess
 			t.Error("OwnerID in message does not match")
 		}
 		data := new(dummyData)
-		err := message.Unpack(command.Data, data)
+		err := Unpack(command.Data, data)
 		if err != nil {
 			t.Error("Couldn't unpack data from message")
 		}
@@ -110,9 +111,9 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv message.Message, msg *mess
 	}
 }
 
-func assertMessageMatchesEvent(t *testing.T, msgEnv message.Message, msg *message.Event) {
+func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 	switch event := msgEnv.(type) {
-	case *message.Event:
+	case *Event:
 		if event.NewID != msg.NewID {
 			t.Error("NewID in message does not match")
 		}
@@ -132,7 +133,7 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv message.Message, msg *messag
 			t.Error("OwnerID in message does not match")
 		}
 		data := new(dummyData)
-		err := message.Unpack(event.Data, data)
+		err := Unpack(event.Data, data)
 		if err != nil {
 			t.Error("Couldn't unpack data from message")
 		}

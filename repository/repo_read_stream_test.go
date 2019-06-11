@@ -1,4 +1,4 @@
-package repository
+package repository_test
 
 import (
 	"errors"
@@ -7,7 +7,6 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
-	"github.com/blackhatbrigade/gomessagestore/message"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 )
@@ -16,9 +15,9 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*message.MessageEnvelope
+		existingMessages []*MessageEnvelope
 		messagesMetadata []string
-		expectedMessages []*message.MessageEnvelope
+		expectedMessages []*MessageEnvelope
 		expectedErr      error
 		streamName       string
 		callCancel       bool
@@ -37,11 +36,11 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamName:       "some_other_non_existant_type-124555",
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamName:       "some_type-12345",
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:        "when asking for messages from a stream with a blank ID, an error is returned",
 		expectedErr: ErrInvalidStreamID,
@@ -55,7 +54,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		callCancel:       true,
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 	}}
 
 	for _, test := range tests {
@@ -108,9 +107,9 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*message.MessageEnvelope
+		existingMessages []*MessageEnvelope
 		messagesMetadata []string
-		expectedMessages []*message.MessageEnvelope
+		expectedMessages []*MessageEnvelope
 		expectedErr      error
 		streamName       string
 		callCancel       bool
@@ -137,7 +136,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 		position:         10,
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
@@ -149,11 +148,11 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamName:       "some_other_non_existant_type-124555",
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamName:       "some_type-12345",
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:        "when asking for messages from a stream with a blank ID, an error is returned",
 		expectedErr: ErrInvalidStreamID,
@@ -167,7 +166,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		callCancel:       true,
-		expectedMessages: []*message.MessageEnvelope{},
+		expectedMessages: []*MessageEnvelope{},
 	}}
 
 	for _, test := range tests {
@@ -220,9 +219,9 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*message.MessageEnvelope
+		existingMessages []*MessageEnvelope
 		messagesMetadata []string
-		expectedMessage  *message.MessageEnvelope
+		expectedMessage  *MessageEnvelope
 		expectedErr      error
 		streamName       string
 		callCancel       bool
@@ -273,7 +272,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 
 			addedMessage := -1
 			if test.dbError == nil {
-				var lastRow *message.MessageEnvelope
+				var lastRow *MessageEnvelope
 				lastMetadata := ""
 				for _, row := range test.existingMessages {
 					if row.Stream == test.streamName {

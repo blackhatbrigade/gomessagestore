@@ -1,4 +1,4 @@
-package projector
+package gomessagestore
 
 import (
 	"golang.org/x/net/context"

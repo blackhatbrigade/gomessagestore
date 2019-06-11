@@ -1,9 +1,9 @@
-package projector_test
+package gomessagestore_test
 
 import (
 	"testing"
 
-	"github.com/blackhatbrigade/gomessagestore/projector"
+	. "github.com/blackhatbrigade/gomessagestore"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
 )
@@ -14,5 +14,5 @@ func TestCanRetrieveProjector(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	projector.CreateProjector(mockRepo)
+	CreateProjector(mockRepo)
 }

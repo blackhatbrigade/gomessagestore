@@ -1,4 +1,4 @@
-package repository
+package repository_test
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
-	"github.com/blackhatbrigade/gomessagestore/message"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 )
@@ -14,7 +14,7 @@ import (
 func TestPostgresRepoWriteMessage(t *testing.T) {
 	tests := []struct {
 		name        string
-		msg         *message.MessageEnvelope
+		msg         *MessageEnvelope
 		dbError     error
 		expectedErr error
 		callCancel  bool
@@ -29,7 +29,7 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 	}, {
 		name:        "when the message has no ID, an error is returned",
 		msg:         mockMessageNoID,
-		expectedErr: message.ErrMessageNoID,
+		expectedErr: ErrMessageNoID,
 	}, {
 		name:        "when the message has no stream name, an error is returned",
 		msg:         mockMessageNoStream,
@@ -81,7 +81,7 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 	tests := []struct {
 		name        string
-		msg         *message.MessageEnvelope
+		msg         *MessageEnvelope
 		dbError     error
 		expectedErr error
 		position    int64
@@ -99,7 +99,7 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 	}, {
 		name:        "when the message has no ID, an error is returned",
 		msg:         mockMessageNoID,
-		expectedErr: message.ErrMessageNoID,
+		expectedErr: ErrMessageNoID,
 		position:    1,
 	}, {
 		name:        "when the message has no stream name, an error is returned",

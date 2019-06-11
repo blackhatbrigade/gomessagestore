@@ -1,8 +1,9 @@
-package message
+package gomessagestore
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"strings"
 )
 
@@ -17,7 +18,7 @@ type Command struct {
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
-func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
+func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if cmd.Type == "" {
 		return nil, ErrMissingMessageType
 	}
@@ -43,7 +44,7 @@ func (cmd *Command) ToEnvelope() (*MessageEnvelope, error) {
 		return nil, ErrUnserializableData
 	}
 
-	msgEnv := &MessageEnvelope{
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  cmd.NewID,
 		Type:       cmd.Type,
 		Stream:     fmt.Sprintf("%s:command", cmd.Category),
@@ -67,7 +68,7 @@ type Event struct {
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
-func (event *Event) ToEnvelope() (*MessageEnvelope, error) {
+func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if event.Type == "" {
 		return nil, ErrMissingMessageType
 	}
@@ -98,7 +99,7 @@ func (event *Event) ToEnvelope() (*MessageEnvelope, error) {
 		return nil, ErrUnserializableData
 	}
 
-	msgEnv := &MessageEnvelope{
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  event.NewID,
 		Type:       event.Type,
 		Stream:     fmt.Sprintf("%s-%s", event.Category, event.CategoryID),

@@ -1,13 +1,14 @@
-package message_test
+package gomessagestore_test
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
+	. "github.com/blackhatbrigade/gomessagestore"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
-func getSampleEventMissing(key string) *message.Event {
+func getSampleEventMissing(key string) *Event {
 	event := getSampleEvent()
 
 	switch key {
@@ -30,7 +31,7 @@ func getSampleEventMissing(key string) *message.Event {
 	return event
 }
 
-func getSampleEventMalformed(key string) *message.Event {
+func getSampleEventMalformed(key string) *Event {
 	event := getSampleEvent()
 
 	switch key {
@@ -41,7 +42,7 @@ func getSampleEventMalformed(key string) *message.Event {
 	return event
 }
 
-func getSampleCommandMissing(key string) *message.Command {
+func getSampleCommandMissing(key string) *Command {
 	cmd := getSampleCommand()
 
 	switch key {
@@ -62,7 +63,7 @@ func getSampleCommandMissing(key string) *message.Command {
 	return cmd
 }
 
-func getSampleCommandMalformed(key string) *message.Command {
+func getSampleCommandMalformed(key string) *Command {
 	cmd := getSampleCommand()
 
 	switch key {
@@ -90,7 +91,7 @@ func TestCommandToEnvelopeErrorsIfNoType(t *testing.T) {
 
 	_, err := cmd.ToEnvelope()
 
-	if err != message.ErrMissingMessageType {
+	if err != ErrMissingMessageType {
 		t.Error("Expected ErrMissingMessageType from ToEnvelope Call")
 	}
 }
@@ -102,7 +103,7 @@ func TestCommandToEnvelopeErrorsIfNoCategory(t *testing.T) {
 
 	_, err := cmd.ToEnvelope()
 
-	if err != message.ErrMissingMessageCategory {
+	if err != ErrMissingMessageCategory {
 		t.Error("Expected ErrMissingMessageCategory from ToEnvelope Call")
 	}
 }
@@ -114,7 +115,7 @@ func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
 
 	_, err := cmd.ToEnvelope()
 
-	if err != message.ErrInvalidMessageCategory {
+	if err != ErrInvalidMessageCategory {
 		t.Error("Expected ErrInvalidMessageCategory from ToEnvelope Call")
 	}
 }
@@ -126,7 +127,7 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 
 	_, err := cmd.ToEnvelope()
 
-	if err != message.ErrMessageNoID {
+	if err != ErrMessageNoID {
 		t.Error("Expected ErrMessageNoID error from ToEnvelope Call")
 	}
 }
@@ -135,8 +136,8 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 func TestCommandToEnvelope(t *testing.T) {
 	tests := []struct {
 		name             string
-		inputCommand     *message.Command
-		expectedEnvelope *message.MessageEnvelope
+		inputCommand     *Command
+		expectedEnvelope *repository.MessageEnvelope
 		expectedError    error
 		failEnvMessage   string
 		failErrMessage   string
@@ -144,7 +145,7 @@ func TestCommandToEnvelope(t *testing.T) {
 		name:           "Returns message envelope",
 		inputCommand:   getSampleCommand(),
 		failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
-		expectedEnvelope: &message.MessageEnvelope{
+		expectedEnvelope: &repository.MessageEnvelope{
 			MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 			Type:       "test type",
 			Stream:     "test cat:command",
@@ -156,17 +157,17 @@ func TestCommandToEnvelope(t *testing.T) {
 	}, {
 		name:           "Errors if no Type",
 		inputCommand:   getSampleCommandMissing("Type"),
-		expectedError:  message.ErrMissingMessageType,
+		expectedError:  ErrMissingMessageType,
 		failErrMessage: "Expected ErrMissingMessageType from ToEnvelope Call",
 	}, {
 		name:           "Errors if Data is empty",
 		inputCommand:   getSampleCommandMissing("Data"),
-		expectedError:  message.ErrMissingMessageData,
+		expectedError:  ErrMissingMessageData,
 		failErrMessage: "Expected ErrMissingMessageData from ToEnvelope",
 	}, {
 		name:           "Errors if no ID is present",
 		inputCommand:   getSampleCommandMissing("NewID"),
-		expectedError:  message.ErrMessageNoID,
+		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
 	}}
 
@@ -189,8 +190,8 @@ func TestCommandToEnvelope(t *testing.T) {
 func TestEventToEnvelope(t *testing.T) {
 	tests := []struct {
 		name             string
-		inputEvent       *message.Event
-		expectedEnvelope *message.MessageEnvelope
+		inputEvent       *Event
+		expectedEnvelope *repository.MessageEnvelope
 		expectedError    error
 		failEnvMessage   string
 		failErrMessage   string
@@ -198,7 +199,7 @@ func TestEventToEnvelope(t *testing.T) {
 		name:           "Returns message envelope",
 		inputEvent:     getSampleEvent(),
 		failEnvMessage: "Didn't render the MessageEnvelope correctly",
-		expectedEnvelope: &message.MessageEnvelope{
+		expectedEnvelope: &repository.MessageEnvelope{
 			MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 			Type:       "test type",
 			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
@@ -210,32 +211,32 @@ func TestEventToEnvelope(t *testing.T) {
 	}, {
 		name:           "Errors if no NewID",
 		inputEvent:     getSampleEventMissing("NewID"),
-		expectedError:  message.ErrMessageNoID,
+		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected a NEW ID for Event",
 	}, {
 		name:           "Errors if no CategoryID",
 		inputEvent:     getSampleEventMissing("CategoryID"),
-		expectedError:  message.ErrMissingMessageCategoryID,
+		expectedError:  ErrMissingMessageCategoryID,
 		failErrMessage: "Expected a NEW ID for Event",
 	}, {
 		name:           "Errors if a hyphen is present in the Category name",
 		inputEvent:     getSampleEventMalformed("CategoryHyphen"),
-		expectedError:  message.ErrInvalidMessageCategory,
+		expectedError:  ErrInvalidMessageCategory,
 		failErrMessage: "Hyphen not allowed in Category name",
 	}, {
 		name:           "Errors if the category is left blank",
 		inputEvent:     getSampleEventMissing("Category"),
-		expectedError:  message.ErrMissingMessageCategory,
+		expectedError:  ErrMissingMessageCategory,
 		failErrMessage: "Category Name must not be blank",
 	}, {
 		name:           "Errors if data is nil",
 		inputEvent:     getSampleEventMissing("Data"),
-		expectedError:  message.ErrMissingMessageData,
+		expectedError:  ErrMissingMessageData,
 		failErrMessage: "Data must not be nil",
 	}, {
 		name:           "Errors if Type is left blank",
 		inputEvent:     getSampleEventMissing("Type"),
-		expectedError:  message.ErrMissingMessageType,
+		expectedError:  ErrMissingMessageType,
 		failErrMessage: "Type must not be empty",
 	}}
 

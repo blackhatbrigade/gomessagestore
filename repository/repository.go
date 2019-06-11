@@ -4,8 +4,6 @@ import (
 	"errors"
 
 	"golang.org/x/net/context"
-
-	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/repository Repository > mocks/repository.go"
@@ -13,15 +11,15 @@ import (
 //Repository the storage implementation for messagestore
 type Repository interface {
 	// writes
-	WriteMessage(ctx context.Context, message *message.MessageEnvelope) error
-	WriteMessageWithExpectedPosition(ctx context.Context, message *message.MessageEnvelope, position int64) error
+	WriteMessage(ctx context.Context, message *MessageEnvelope) error
+	WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error
 	// reads from stream
-	GetAllMessagesInStream(ctx context.Context, streamID string) ([]*message.MessageEnvelope, error)
-	GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*message.MessageEnvelope, error)
-	GetLastMessageInStream(ctx context.Context, streamID string) (*message.MessageEnvelope, error)
+	GetAllMessagesInStream(ctx context.Context, streamID string) ([]*MessageEnvelope, error)
+	GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*MessageEnvelope, error)
+	GetLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error)
 	// reads from category
-	GetAllMessagesInCategory(ctx context.Context, category string) ([]*message.MessageEnvelope, error)
-	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) ([]*message.MessageEnvelope, error)
+	GetAllMessagesInCategory(ctx context.Context, category string) ([]*MessageEnvelope, error)
+	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) ([]*MessageEnvelope, error)
 
 	// TODO: number of messages returned should be a) capped, and b) optional
 }

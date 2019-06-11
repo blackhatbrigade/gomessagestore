@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
-	"github.com/blackhatbrigade/gomessagestore/projector"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
@@ -13,9 +11,9 @@ import (
 
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
-	Write(ctx context.Context, message message.Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]message.Message, error)
-	CreateProjector() projector.Projector
+	Write(ctx context.Context, message Message, opts ...WriteOption) error
+	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
+	CreateProjector() Projector
 }
 
 type msgStore struct {

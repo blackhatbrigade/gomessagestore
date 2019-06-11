@@ -1,4 +1,4 @@
-package projector
+package gomessagestore
 
 import (
 	"time"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,14 +26,14 @@ func checkGetOptions(opts ...GetOption) *getOpts {
 }
 
 //Get Gets one or more Messages from the message store.
-func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Message, error) {
+func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, error) {
 
 	if len(opts) == 0 {
-		return nil, message.ErrMissingGetOptions
+		return nil, ErrMissingGetOptions
 	}
 
 	getOptions := checkGetOptions(opts...)
-	var msgEnvelopes []*message.MessageEnvelope
+	var msgEnvelopes []*repository.MessageEnvelope
 	var err error
 
 	if getOptions.stream != nil && getOptions.category != nil {
@@ -64,7 +64,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]message.Messa
 
 		return nil, err
 	}
-	return message.MsgEnvelopesToMessages(msgEnvelopes), nil
+	return MsgEnvelopesToMessages(msgEnvelopes), nil
 }
 
 //CommandStream allows for writing messages using an expected position

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
-	"github.com/blackhatbrigade/gomessagestore/message"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
@@ -25,7 +25,7 @@ func TestGetWithCommandStream(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		GetAllMessagesInStream(ctx, msgEnv.Stream).
-		Return([]*message.MessageEnvelope{msgEnv}, nil)
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamType))
@@ -52,7 +52,7 @@ func TestGetWithoutOptionsReturnsError(t *testing.T) {
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	_, err := msgStore.Get(ctx)
 
-	if err != message.ErrMissingGetOptions {
+	if err != ErrMissingGetOptions {
 		t.Errorf("Expected ErrMissingGetOptions and got %v", err)
 	}
 }
@@ -71,7 +71,7 @@ func TestGetWithEventStream(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		GetAllMessagesInStream(ctx, msgEnv.Stream).
-		Return([]*message.MessageEnvelope{msgEnv}, nil)
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	msgs, err := msgStore.Get(ctx, EventStream(msg.Category, msg.CategoryID))
@@ -100,7 +100,7 @@ func TestGetWithCategory(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		GetAllMessagesInCategory(ctx, msgEnv.StreamType).
-		Return([]*message.MessageEnvelope{msgEnv}, nil)
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := GetMessageStoreInterface2(mockRepo)
 	msgs, err := msgStore.Get(ctx, Category(msg.Category))
@@ -149,7 +149,7 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		GetAllMessagesInStreamSince(ctx, msgEnv.Stream, globalPosition).
-		Return([]*message.MessageEnvelope{msgEnv}, nil)
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
 		ctx,
@@ -185,7 +185,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 	mockRepo.
 		EXPECT().
 		GetAllMessagesInStreamSince(ctx, msgEnv.Stream, globalPosition).
-		Return([]*message.MessageEnvelope{msgEnv}, nil)
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
 		ctx,
