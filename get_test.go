@@ -27,7 +27,7 @@ func TestGetWithCommandStream(t *testing.T) {
 		GetAllMessagesInStream(ctx, msgEnv.Stream).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamType))
 
 	if err != nil {
@@ -49,7 +49,7 @@ func TestGetWithoutOptionsReturnsError(t *testing.T) {
 
 	ctx := context.Background()
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	_, err := msgStore.Get(ctx)
 
 	if err != ErrMissingGetOptions {
@@ -73,7 +73,7 @@ func TestGetWithEventStream(t *testing.T) {
 		GetAllMessagesInStream(ctx, msgEnv.Stream).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgs, err := msgStore.Get(ctx, EventStream(msg.Category, msg.CategoryID))
 
 	if err != nil {
@@ -102,7 +102,7 @@ func TestGetWithCategory(t *testing.T) {
 		GetAllMessagesInCategory(ctx, msgEnv.StreamType).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgs, err := msgStore.Get(ctx, Category(msg.Category))
 
 	if err != nil {
@@ -124,7 +124,7 @@ func TestGetMessagesCannotUseBothStreamAndCategory(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	_, err := msgStore.Get(ctx, Category(msg.Category), CommandStream(msg.Category))
 
 	if err != ErrGetMessagesCannotUseBothStreamAndCategory {
@@ -142,7 +142,7 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 	ctx := context.Background()
 	var globalPosition int64
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 
 	msgEnv := getSampleEventAsEnvelope()
 
@@ -178,7 +178,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 	ctx := context.Background()
 	var globalPosition int64
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 
 	msgEnv := getSampleCommandAsEnvelope()
 
@@ -213,7 +213,7 @@ func TestGetMessagesRequiresEitherStreamOrCategory(t *testing.T) {
 
 	ctx := context.Background()
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	_, err := msgStore.Get(ctx, Since(globalPosition))
 
 	if err != ErrGetMessagesRequiresEitherStreamOrCategory {

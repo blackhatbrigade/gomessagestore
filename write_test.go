@@ -34,7 +34,7 @@ func TestWriteMessage(t *testing.T) {
 		EXPECT().
 		WriteMessage(ctx, msgEnv)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgStore.Write(ctx, msg)
 }
 
@@ -64,6 +64,6 @@ func TestWriteWithAtPosition(t *testing.T) {
 		EXPECT().
 		WriteMessageWithExpectedPosition(ctx, msgEnv, expectedPosition)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgStore.Write(ctx, msg, AtPosition(42))
 }

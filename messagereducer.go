@@ -4,6 +4,3 @@ package gomessagestore
 type MessageReducer interface {
 	Reduce(msg Message, previousState interface{}) interface{}
 }
-
-//Errors
-var ()

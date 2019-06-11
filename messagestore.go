@@ -20,8 +20,8 @@ type msgStore struct {
 	repo repository.Repository
 }
 
-//GetMessageStoreInterface Grabs a MessageStore instance.
-func GetMessageStoreInterface(injectedDB *sql.DB) MessageStore {
+//NewMessageStore Grabs a MessageStore instance.
+func NewMessageStore(injectedDB *sql.DB) MessageStore {
 	pgRepo := repository.NewPostgresRepository(injectedDB)
 
 	msgstr := &msgStore{
@@ -31,11 +31,16 @@ func GetMessageStoreInterface(injectedDB *sql.DB) MessageStore {
 	return msgstr
 }
 
-//GetMessageStoreInterface2 Grabs a MessageStore instance.
-func GetMessageStoreInterface2(injectedRepo repository.Repository) MessageStore {
+//NewMessageStoreFromRepository Grabs a MessageStore instance.
+func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
 	}
 
 	return msgstr
+}
+
+//CreateProjector creates a projector for use with MessageReducers to get projections
+func (ms *msgStore) CreateProjector() Projector {
+	return createProjector(ms.repo)
 }

@@ -3,6 +3,8 @@ package repository_test
 import (
 	"encoding/json"
 	"time"
+
+	. "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 func metadataJSON(message *MessageEnvelope) []byte {
@@ -10,7 +12,7 @@ func metadataJSON(message *MessageEnvelope) []byte {
 		CorrelationID string `json:"correlation_id,omitempty" db:"correlation_id"`
 		CausedByID    string `json:"caused_by_id,omitempty" db:"caused_by_id"`
 		UserID        string `json:"user_id,omitempty" db:"user_id"`
-	}{CorrelationID, CausedByID, UserID}
+	}{message.CorrelationID, message.CausedByID, message.UserID}
 	bytes, _ := json.Marshal(metadata)
 
 	return bytes

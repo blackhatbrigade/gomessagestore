@@ -23,7 +23,7 @@ func TestProjectorAcceptsAReducer(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := gomessagestore.GetMessageStoreInterface2(mockRepo)
+	myMessageStore := gomessagestore.NewMessageStoreFromRepository(mockRepo)
 
 	myprojector := myMessageStore.CreateProjector()
 

@@ -20,12 +20,9 @@ type projector struct {
 	reducers []reducerConfig
 }
 
-func CreateProjector(repoRef repository.Repository) Projector {
+func createProjector(repoRef repository.Repository) Projector {
 	proj := &projector{
 		repo: repoRef,
 	}
 	return proj
 }
-
-//Errors
-var ()

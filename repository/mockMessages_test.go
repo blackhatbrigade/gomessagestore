@@ -2,6 +2,8 @@ package repository_test
 
 import (
 	"time"
+
+	. "github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 // prevent weirdness with pointers
