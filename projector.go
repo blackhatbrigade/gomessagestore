@@ -17,7 +17,7 @@ type Projector interface {
 //projector The base supported projector struct.
 type projector struct {
 	repo     repository.Repository
-	reducers []reducerConfig
+	reducers []MessageReducerConfig
 }
 
 func createProjector(repoRef repository.Repository) Projector {
@@ -25,4 +25,13 @@ func createProjector(repoRef repository.Repository) Projector {
 		repo: repoRef,
 	}
 	return proj
+}
+
+func (proj *projector) RegisterReducer(reducer MessageReducer, opts ...ReducerOption) error {
+
+	return nil
+}
+
+func (proj *projector) Run(ctx context.Context) (interface{}, error) {
+	return nil, nil
 }
