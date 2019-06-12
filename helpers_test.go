@@ -52,6 +52,29 @@ func getSampleEvent() *Event {
 	}
 }
 
+func getSampleEvents() []*Event {
+	packed, err := Pack(dummyData{"a"})
+	panicIf(err)
+	return []*Event{
+		&Event{
+			NewID:      "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			Type:       "Event Type 2",
+			CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			Category:   "test cat",
+			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+			Data:       packed,
+		}, &Event{
+			NewID:      "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			Type:       "Event Type 1",
+			CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			Category:   "test cat",
+			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+			Data:       packed,
+		}}
+}
+
 func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -64,6 +87,27 @@ func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 	}
 
 	return msgEnv
+}
+
+func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
+	return []*repository.MessageEnvelope{
+		&repository.MessageEnvelope{
+			MessageID:  "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			Type:       "Event Type 2",
+			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamType: "test cat",
+			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+			Data:       []byte(`{"Field1":"a"}`),
+		}, &repository.MessageEnvelope{
+			MessageID:  "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			Type:       "Event Type 1",
+			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamType: "test cat",
+			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
+			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
+			Data:       []byte(`{"Field1":"a"}`),
+		}}
 }
 
 func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
@@ -143,4 +187,45 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 	default:
 		t.Error("Unknown type of Message")
 	}
+}
+
+type mockDataStructure struct {
+	MockReducer1Called bool
+	MockReducer2Called bool
+}
+
+type mockReducer1 struct {
+	PreviousState   interface{}
+	ReceivedMessage Message
+}
+
+func (red *mockReducer1) Reduce(msg Message, previousState interface{}) interface{} {
+	switch state := previousState.(type) {
+	case mockDataStructure:
+		state.MockReducer1Called = true
+		return state
+	}
+	return nil
+}
+
+func (red *mockReducer1) Type() string {
+	return "Event Type 1"
+}
+
+type mockReducer2 struct {
+	PreviousState   interface{}
+	ReceivedMessage Message
+}
+
+func (red *mockReducer2) Reduce(msg Message, previousState interface{}) interface{} {
+	switch state := previousState.(type) {
+	case mockDataStructure:
+		state.MockReducer2Called = true
+		return state
+	}
+	return nil
+}
+
+func (red *mockReducer2) Type() string {
+	return "Event Type 2"
 }

@@ -4,6 +4,9 @@ import "errors"
 
 //Errors
 var (
+	ErrProjectorNeedsAtLeastOneReducer           = errors.New("Projector needs at least one reducer upon creation")
+	ErrDefaultStateNotSet                        = errors.New("Default state not set while trying to create a new projector")
+	ErrDefaultStateCannotBePointer               = errors.New("Default state cannot be a pointer when creating a projector")
 	ErrGetMessagesCannotUseBothStreamAndCategory = errors.New("Get messages function cannot use both Stream and Category")
 	ErrMessageNoID                               = errors.New("Message cannot be written without a new UUID")
 	ErrGetMessagesRequiresEitherStreamOrCategory = errors.New("Get messages function must have either Stream or Category")
