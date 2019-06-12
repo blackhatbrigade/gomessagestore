@@ -3,35 +3,39 @@ package gomessagestore
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/blackhatbrigade/gomessagestore/repository"
 	"strings"
+	"time"
+
+	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 //Command the model for writing a command to the Message Store
 type Command struct {
-	NewID      string
-	Type       string
-	Category   string
-	CausedByID string
-	OwnerID    string
-	Data       map[string]interface{}
+	ID             string //ID
+	StreamCategory string //StreamCategory
+	MessageType    string
+	Position       int64
+	GlobalPosition int64
+	Data           map[string]interface{}
+	Metadata       map[string]interface{}
+	Time           time.Time
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
-	if cmd.Type == "" {
+	if cmd.MessageType == "" {
 		return nil, ErrMissingMessageType
 	}
 
-	if cmd.Category == "" {
+	if cmd.StreamCategory == "" {
 		return nil, ErrMissingMessageCategory
 	}
 
-	if strings.Contains(cmd.Category, "-") {
+	if strings.Contains(cmd.StreamCategory, "-") {
 		return nil, ErrInvalidMessageCategory
 	}
 
-	if cmd.NewID == "" {
+	if cmd.ID == "" {
 		return nil, ErrMessageNoID
 	}
 
@@ -45,35 +49,35 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  cmd.NewID,
-		Type:       cmd.Type,
-		Stream:     fmt.Sprintf("%s:command", cmd.Category),
-		StreamType: cmd.Category,
-		OwnerID:    cmd.OwnerID,
-		CausedByID: cmd.CausedByID,
-		Data:       data,
+		ID:             cmd.ID,
+		MessageType:    cmd.MessageType,
+		StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
+		StreamCategory: cmd.StreamCategory,
+		Data:           data,
 	}
 	return msgEnv, nil
 }
 
 //Event the model for writing an event to the Message Store
 type Event struct {
-	NewID      string
-	Type       string
-	CategoryID string
-	Category   string
-	CausedByID string
-	OwnerID    string
-	Data       map[string]interface{}
+	ID             string //ID
+	EntityID       string //EntityID
+	StreamCategory string //StreamCategory
+	MessageType    string
+	Position       int64
+	GlobalPosition int64
+	Data           map[string]interface{}
+	Metadata       map[string]interface{}
+	Time           time.Time
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
-	if event.Type == "" {
+	if event.MessageType == "" {
 		return nil, ErrMissingMessageType
 	}
 
-	if strings.Contains(event.Category, "-") {
+	if strings.Contains(event.StreamCategory, "-") {
 		return nil, ErrInvalidMessageCategory
 	}
 
@@ -81,15 +85,15 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if event.NewID == "" {
+	if event.ID == "" {
 		return nil, ErrMessageNoID
 	}
 
-	if event.CategoryID == "" {
+	if event.EntityID == "" {
 		return nil, ErrMissingMessageCategoryID
 	}
 
-	if event.Category == "" {
+	if event.StreamCategory == "" {
 		return nil, ErrMissingMessageCategory
 	}
 
@@ -100,13 +104,11 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  event.NewID,
-		Type:       event.Type,
-		Stream:     fmt.Sprintf("%s-%s", event.Category, event.CategoryID),
-		StreamType: event.Category,
-		OwnerID:    event.OwnerID,
-		CausedByID: event.CausedByID,
-		Data:       data,
+		ID:             event.ID,
+		MessageType:    event.MessageType,
+		StreamName:     fmt.Sprintf("%s-%s", event.StreamCategory, event.EntityID),
+		StreamCategory: event.StreamCategory,
+		Data:           data,
 	}
 
 	return msgEnv, nil

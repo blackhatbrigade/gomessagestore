@@ -24,11 +24,11 @@ func TestGetWithCommandStream(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, msgEnv.Stream).
+		GetAllMessagesInStream(ctx, msgEnv.StreamName).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
-	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamType))
+	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamCategory))
 
 	if err != nil {
 		t.Error("An error has ocurred while getting messages from message store")
@@ -70,11 +70,11 @@ func TestGetWithEventStream(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, msgEnv.Stream).
+		GetAllMessagesInStream(ctx, msgEnv.StreamName).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
-	msgs, err := msgStore.Get(ctx, EventStream(msg.Category, msg.CategoryID))
+	msgs, err := msgStore.Get(ctx, EventStream(msg.StreamCategory, msg.EntityID))
 
 	if err != nil {
 		t.Error("An error has ocurred while getting messages from message store")
@@ -99,11 +99,11 @@ func TestGetWithCategory(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInCategory(ctx, msgEnv.StreamType).
+		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
-	msgs, err := msgStore.Get(ctx, Category(msg.Category))
+	msgs, err := msgStore.Get(ctx, Category(msg.StreamCategory))
 
 	if err != nil {
 		t.Error("An error has ocurred while getting messages from message store")
@@ -125,7 +125,7 @@ func TestGetMessagesCannotUseBothStreamAndCategory(t *testing.T) {
 	ctx := context.Background()
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
-	_, err := msgStore.Get(ctx, Category(msg.Category), CommandStream(msg.Category))
+	_, err := msgStore.Get(ctx, Category(msg.StreamCategory), CommandStream(msg.StreamCategory))
 
 	if err != ErrGetMessagesCannotUseBothStreamAndCategory {
 		t.Error("Expected ErrGetMessagesCannotUseBothStreamAndCategory")
@@ -148,13 +148,13 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStreamSince(ctx, msgEnv.Stream, globalPosition).
+		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
 		ctx,
 		Since(globalPosition),
-		EventStream(msg.Category, msg.CategoryID),
+		EventStream(msg.StreamCategory, msg.EntityID),
 	)
 
 	if err != nil {
@@ -184,13 +184,13 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStreamSince(ctx, msgEnv.Stream, globalPosition).
+		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
 		ctx,
 		Since(globalPosition),
-		CommandStream(msg.Category),
+		CommandStream(msg.StreamCategory),
 	)
 
 	if err != nil {

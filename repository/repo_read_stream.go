@@ -24,25 +24,23 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID strin
 			retChan <- returnPair{nil, nil}
 		}()
 
-		var eventideMessages []*eventideMessageEnvelope
+		var msgs []*MessageEnvelope
 		/*get_last_message(
 		  _stream_name varchar,
 		)*/
 		query := "SELECT * FROM get_last_message($1)"
-		if err := r.dbx.SelectContext(ctx, &eventideMessages, query, streamID); err != nil {
+		if err := r.dbx.SelectContext(ctx, &msgs, query, streamID); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 			retChan <- returnPair{nil, err}
 			return
 		}
 
-		if len(eventideMessages) == 0 {
+		if len(msgs) == 0 {
 			retChan <- returnPair{[]*MessageEnvelope{nil}, nil}
 			return
 		}
 
-		messages := r.translateMessages(eventideMessages)
-
-		retChan <- returnPair{messages, nil}
+		retChan <- returnPair{msgs, nil}
 	}()
 
 	// wait for our return channel or the context to cancel
@@ -74,7 +72,7 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID 
 			retChan <- returnPair{nil, nil}
 		}()
 
-		var eventideMessages []*eventideMessageEnvelope
+		var msgs []*MessageEnvelope
 		/*get_stream_messages(
 		  _stream_name varchar,
 		  _position bigint DEFAULT 0,
@@ -82,19 +80,18 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID 
 		  _condition varchar DEFAULT NULL
 		)*/
 		query := "SELECT * FROM get_stream_messages($1, $2)"
-		if err := r.dbx.SelectContext(ctx, &eventideMessages, query, streamID, globalPosition); err != nil {
+		if err := r.dbx.SelectContext(ctx, &msgs, query, streamID, globalPosition); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 			retChan <- returnPair{nil, err}
 			return
 		}
 
-		if len(eventideMessages) == 0 {
+		if len(msgs) == 0 {
 			retChan <- returnPair{[]*MessageEnvelope{}, nil}
 			return
 		}
 
-		messages := r.translateMessages(eventideMessages)
-		retChan <- returnPair{messages, nil}
+		retChan <- returnPair{msgs, nil}
 	}()
 
 	// wait for our return channel or the context to cancel

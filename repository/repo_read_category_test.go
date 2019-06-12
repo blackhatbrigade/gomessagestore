@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,7 +16,6 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		name             string
 		dbError          error
 		existingMessages []*MessageEnvelope
-		messagesMetadata []string
 		expectedMessages []*MessageEnvelope
 		expectedErr      error
 		category         string
@@ -32,7 +30,6 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		existingMessages: mockMessages,
 		category:         "some_other_type",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
-		messagesMetadata: []string{"this isn't JSON", "{\"alternate\":\"json\"}"},
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
@@ -78,16 +75,10 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				for _, row := range test.existingMessages {
-					if row.StreamType == test.category {
+					if row.StreamCategory == test.category {
 						addedMessage++
-						var metadata string
-						if len(test.messagesMetadata) > addedMessage {
-							metadata = test.messagesMetadata[addedMessage]
-						} else {
-							metadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						rows.AddRow(
-							row.MessageID, row.Stream, row.StreamType, row.Type, row.Position, row.GlobalPosition, row.Data, metadata, row.Timestamp,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Position, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -113,7 +104,6 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		name             string
 		dbError          error
 		existingMessages []*MessageEnvelope
-		messagesMetadata []string
 		expectedMessages []*MessageEnvelope
 		expectedErr      error
 		streamType       string
@@ -148,7 +138,6 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		existingMessages: mockMessages,
 		streamType:       "some_other_type",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
-		messagesMetadata: []string{"this isn't JSON", "{\"alternate\":\"json\"}"},
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
@@ -194,16 +183,10 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				for _, row := range test.existingMessages {
-					if row.StreamType == test.streamType && row.GlobalPosition >= test.position {
+					if row.StreamCategory == test.streamType && row.GlobalPosition >= test.position {
 						addedMessage++
-						var metadata string
-						if len(test.messagesMetadata) > addedMessage {
-							metadata = test.messagesMetadata[addedMessage]
-						} else {
-							metadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						rows.AddRow(
-							row.MessageID, row.Stream, row.StreamType, row.Type, row.Position, row.GlobalPosition, row.Data, metadata, row.Timestamp,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Position, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}

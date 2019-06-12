@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"encoding/json"
-
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
@@ -20,11 +18,11 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 		return ErrNilMessage
 	}
 
-	if msg.MessageID == "" {
+	if msg.ID == "" {
 		return ErrMessageNoID
 	}
 
-	if msg.Stream == "" {
+	if msg.StreamName == "" {
 		return ErrInvalidStreamID
 	}
 
@@ -35,27 +33,6 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 		defer func() {
 			retChan <- nil
 		}()
-
-		eventideMetadata := &eventideMessageMetadata{
-			CorrelationID: msg.CorrelationID,
-			CausedByID:    msg.CausedByID,
-			UserID:        msg.UserID,
-		}
-		eventideMessage := &eventideMessageEnvelope{
-			ID:          msg.MessageID,
-			MessageType: msg.Type,
-			StreamName:  msg.Stream,
-			Data:        msg.Data,
-			Position:    msg.Position,
-		}
-
-		if metadata, err := json.Marshal(eventideMetadata); err == nil {
-			eventideMessage.Metadata = metadata
-		} else {
-			logrus.WithError(err).Error("Failure to marshal metadata in repo_postgres.go::WriteMessage")
-			retChan <- err
-			return
-		}
 
 		/*"write_message(
 			_id varchar,
@@ -73,7 +50,7 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 
 			// with _expected_version passed in
 			query := "SELECT write_message($1, $2, $3, $4, $5, $6)"
-			if _, err := r.dbx.ExecContext(ctx, query, eventideMessage.ID, eventideMessage.StreamName, eventideMessage.MessageType, eventideMessage.Data, eventideMessage.Metadata, position[0]); err != nil {
+			if _, err := r.dbx.ExecContext(ctx, query, msg.ID, msg.StreamName, msg.MessageType, msg.Data, msg.Metadata, position[0]); err != nil {
 				logrus.WithError(err).Error("Failure in repo_postgres.go::WriteMessageWithExpectedPosition")
 				retChan <- err
 				return
@@ -82,14 +59,14 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 			// without _expected_version passed in
 			query := "SELECT write_message($1, $2, $3, $4, $5)"
 			logrus.WithFields(logrus.Fields{
-				"query":                      query,
-				"eventideMessageID":          eventideMessage.ID,
-				"eventideMessageStreamName":  eventideMessage.StreamName,
-				"eventideMessageMessageType": eventideMessage.MessageType,
-				"eventideMessageData":        eventideMessage.Data,
-				"eventideMessageMetadata":    eventideMessage.Metadata,
+				"query":              query,
+				"ID":                 msg.ID,
+				"StreamName":         msg.StreamName,
+				"MessageMessageType": msg.MessageType,
+				"Data":               msg.Data,
+				"MessageMetadata":    msg.Metadata,
 			}).Debug("about to write message")
-			if _, err := r.dbx.ExecContext(ctx, query, eventideMessage.ID, eventideMessage.StreamName, eventideMessage.MessageType, eventideMessage.Data, eventideMessage.Metadata); err != nil {
+			if _, err := r.dbx.ExecContext(ctx, query, msg.ID, msg.StreamName, msg.MessageType, msg.Data, msg.Metadata); err != nil {
 				logrus.WithError(err).Error("Failure in repo_postgres.go::WriteMessage")
 				retChan <- err
 				return

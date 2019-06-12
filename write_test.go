@@ -21,13 +21,11 @@ func TestWriteMessage(t *testing.T) {
 	ctx := context.Background()
 
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		Stream:     "test cat:command",
-		StreamType: "test cat",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       []byte(`{"Field1":"a"}`),
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		MessageType:    "test type",
+		StreamName:     "test cat:command",
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
 	}
 
 	mockRepo.
@@ -48,13 +46,11 @@ func TestWriteWithAtPosition(t *testing.T) {
 	ctx := context.Background()
 
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		Stream:     "test cat:command",
-		StreamType: "test cat",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       []byte(`{"Field1":"a"}`),
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		MessageType:    "test type",
+		StreamName:     "test cat:command",
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
 	}
 	var expectedPosition int64
 

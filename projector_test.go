@@ -101,10 +101,10 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, mockEventEnvs[0].Stream).
+		GetAllMessagesInStream(ctx, mockEventEnvs[0].StreamName).
 		Return(mockEventEnvs, nil)
 
-	projection, err := myprojector.Run(ctx, expectedEvents[0].Category, expectedEvents[0].CategoryID)
+	projection, err := myprojector.Run(ctx, expectedEvents[0].StreamCategory, expectedEvents[0].EntityID)
 
 	fmt.Printf("projection: %s\n", projection)
 

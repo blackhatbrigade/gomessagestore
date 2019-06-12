@@ -43,19 +43,17 @@ func msgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Messag
 			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope")
 			continue
 		}
-		if strings.HasSuffix(messageEnvelope.Stream, ":command") {
+		if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
 			command := &Command{
-				NewID:      messageEnvelope.MessageID,
-				Type:       messageEnvelope.Type,
-				Category:   strings.TrimSuffix(messageEnvelope.Stream, ":command"),
-				CausedByID: messageEnvelope.CausedByID,
-				OwnerID:    messageEnvelope.OwnerID,
-				Data:       data,
+				ID:             messageEnvelope.ID,
+				MessageType:    messageEnvelope.MessageType,
+				StreamCategory: strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
+				Data:           data,
 			}
 			messages = append(messages, command)
 		} else {
 			category, id := "", ""
-			cats := strings.SplitN(messageEnvelope.Stream, "-", 2)
+			cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
 			if len(cats) > 0 {
 				category = cats[0]
 				if len(cats) == 2 {
@@ -63,13 +61,11 @@ func msgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Messag
 				}
 			}
 			event := &Event{
-				NewID:      messageEnvelope.MessageID,
-				Type:       messageEnvelope.Type,
-				Category:   category,
-				CategoryID: id,
-				CausedByID: messageEnvelope.CausedByID,
-				OwnerID:    messageEnvelope.OwnerID,
-				Data:       data,
+				ID:             messageEnvelope.ID,
+				MessageType:    messageEnvelope.MessageType,
+				StreamCategory: category,
+				EntityID:       id,
+				Data:           data,
 			}
 			messages = append(messages, event)
 		}

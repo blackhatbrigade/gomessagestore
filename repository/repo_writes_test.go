@@ -54,11 +54,13 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 			if test.msg != nil {
 				expectedExec := mockDb.
 					ExpectExec("SELECT write_message\\(\\$1, \\$2, \\$3, \\$4, \\$5\\)").
-					WithArgs(test.msg.MessageID,
-						test.msg.Stream,
-						test.msg.Type,
+					WithArgs(
+						test.msg.ID,
+						test.msg.StreamName,
+						test.msg.MessageType,
 						test.msg.Data,
-						metadataJSON(test.msg)).
+						test.msg.Metadata,
+					).
 					WillDelayFor(time.Millisecond * 10)
 
 				if test.dbError == nil {
@@ -141,12 +143,13 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 			if test.msg != nil {
 				expectedExec := mockDb.
 					ExpectExec("SELECT write_message\\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6\\)").
-					WithArgs(test.msg.MessageID,
-						test.msg.Stream,
-						test.msg.Type,
+					WithArgs(test.msg.ID,
+						test.msg.StreamName,
+						test.msg.MessageType,
 						test.msg.Data,
-						metadataJSON(test.msg),
-						test.position).
+						test.msg.Metadata,
+						test.position,
+					).
 					WillDelayFor(time.Millisecond * 10)
 
 				if test.dbError == nil {

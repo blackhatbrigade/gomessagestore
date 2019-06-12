@@ -29,12 +29,10 @@ func getSampleCommand() *Command {
 	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
 	return &Command{
-		Type:       "test type",
-		Category:   "test cat",
-		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       packed,
+		MessageType:    "test type",
+		StreamCategory: "test cat",
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		Data:           packed,
 	}
 }
 
@@ -42,13 +40,11 @@ func getSampleEvent() *Event {
 	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
 	return &Event{
-		NewID:      "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
-		Category:   "test cat",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		Data:       packed,
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		MessageType:    "test type",
+		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		StreamCategory: "test cat",
+		Data:           packed,
 	}
 }
 
@@ -57,33 +53,27 @@ func getSampleEvents() []*Event {
 	panicIf(err)
 	return []*Event{
 		&Event{
-			NewID:      "544477d6-453f-4b48-8460-1a6e4d6f97d5",
-			Type:       "Event Type 2",
-			CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			Category:   "test cat",
-			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-			Data:       packed,
+			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			MessageType:    "Event MessageType 2",
+			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Data:           packed,
 		}, &Event{
-			NewID:      "544477d6-453f-4b48-8460-3a6e4d6f97d5",
-			Type:       "Event Type 1",
-			CategoryID: "544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			Category:   "test cat",
-			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-			Data:       packed,
+			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			MessageType:    "Event MessageType 1",
+			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Data:           packed,
 		}}
 }
 
 func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-		StreamType: "test cat",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       []byte(`{"Field1":"a"}`),
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		MessageType:    "test type",
+		StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
 	}
 
 	return msgEnv
@@ -92,33 +82,27 @@ func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 	return []*repository.MessageEnvelope{
 		&repository.MessageEnvelope{
-			MessageID:  "544477d6-453f-4b48-8460-1a6e4d6f97d5",
-			Type:       "Event Type 2",
-			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			StreamType: "test cat",
-			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			Data:       []byte(`{"Field1":"a"}`),
+			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			MessageType:    "Event MessageType 2",
+			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Data:           []byte(`{"Field1":"a"}`),
 		}, &repository.MessageEnvelope{
-			MessageID:  "544477d6-453f-4b48-8460-3a6e4d6f97d5",
-			Type:       "Event Type 1",
-			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			StreamType: "test cat",
-			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			Data:       []byte(`{"Field1":"a"}`),
+			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			MessageType:    "Event MessageType 1",
+			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Data:           []byte(`{"Field1":"a"}`),
 		}}
 }
 
 func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		Type:       "test type",
-		Stream:     "test cat:command",
-		StreamType: "test cat",
-		OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-		CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-		Data:       []byte(`{"Field1":"a"}`),
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		MessageType:    "test type",
+		StreamName:     "test cat:command",
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
 	}
 
 	return msgEnv
@@ -127,20 +111,14 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 	switch command := msgEnv.(type) {
 	case *Command:
-		if command.NewID != msg.NewID {
-			t.Error("NewID in message does not match")
+		if command.ID != msg.ID {
+			t.Error("ID in message does not match")
 		}
-		if command.Type != msg.Type {
-			t.Error("Type in message does not match")
+		if command.MessageType != msg.MessageType {
+			t.Error("MessageType in message does not match")
 		}
-		if command.Category != msg.Category {
-			t.Error("Category in message does not match")
-		}
-		if command.CausedByID != msg.CausedByID {
-			t.Error("CausedByID in message does not match")
-		}
-		if command.OwnerID != msg.OwnerID {
-			t.Error("OwnerID in message does not match")
+		if command.StreamCategory != msg.StreamCategory {
+			t.Error("StreamCategory in message does not match")
 		}
 		data := new(dummyData)
 		err := Unpack(command.Data, data)
@@ -158,23 +136,17 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 	switch event := msgEnv.(type) {
 	case *Event:
-		if event.NewID != msg.NewID {
-			t.Error("NewID in message does not match")
+		if event.ID != msg.ID {
+			t.Error("ID in message does not match")
 		}
-		if event.Type != msg.Type {
-			t.Error("Type in message does not match")
+		if event.MessageType != msg.MessageType {
+			t.Error("MessageType in message does not match")
 		}
-		if event.CategoryID != msg.CategoryID {
-			t.Error("CategoryID in message does not match")
+		if event.EntityID != msg.EntityID {
+			t.Error("EntityID in message does not match")
 		}
-		if event.Category != msg.Category {
-			t.Error("Category in message does not match")
-		}
-		if event.CausedByID != msg.CausedByID {
-			t.Error("CausedByID in message does not match")
-		}
-		if event.OwnerID != msg.OwnerID {
-			t.Error("OwnerID in message does not match")
+		if event.StreamCategory != msg.StreamCategory {
+			t.Error("StreamCategory in message does not match")
 		}
 		data := new(dummyData)
 		err := Unpack(event.Data, data)
@@ -209,7 +181,7 @@ func (red *mockReducer1) Reduce(msg Message, previousState interface{}) interfac
 }
 
 func (red *mockReducer1) Type() string {
-	return "Event Type 1"
+	return "Event MessageType 1"
 }
 
 type mockReducer2 struct {
@@ -227,5 +199,5 @@ func (red *mockReducer2) Reduce(msg Message, previousState interface{}) interfac
 }
 
 func (red *mockReducer2) Type() string {
-	return "Event Type 2"
+	return "Event MessageType 2"
 }

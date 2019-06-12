@@ -12,18 +12,14 @@ func getSampleEventMissing(key string) *Event {
 	event := getSampleEvent()
 
 	switch key {
-	case "NewID":
-		event.NewID = ""
-	case "Type":
-		event.Type = ""
-	case "CategoryID":
-		event.CategoryID = ""
-	case "Category":
-		event.Category = ""
-	case "CausedByID":
-		event.CausedByID = ""
-	case "OwnerID":
-		event.OwnerID = ""
+	case "ID":
+		event.ID = ""
+	case "MessageType":
+		event.MessageType = ""
+	case "EntityID":
+		event.EntityID = ""
+	case "StreamCategory":
+		event.StreamCategory = ""
 	case "Data":
 		event.Data = nil
 	}
@@ -36,7 +32,7 @@ func getSampleEventMalformed(key string) *Event {
 
 	switch key {
 	case "CategoryHyphen":
-		event.Category = "something-bad"
+		event.StreamCategory = "something-bad"
 	}
 
 	return event
@@ -46,16 +42,12 @@ func getSampleCommandMissing(key string) *Command {
 	cmd := getSampleCommand()
 
 	switch key {
-	case "Type":
-		cmd.Type = ""
-	case "Category":
-		cmd.Category = ""
-	case "NewID":
-		cmd.NewID = ""
-	case "CausedByID":
-		cmd.CausedByID = ""
-	case "OwnerID":
-		cmd.OwnerID = ""
+	case "MessageType":
+		cmd.MessageType = ""
+	case "StreamCategory":
+		cmd.StreamCategory = ""
+	case "ID":
+		cmd.ID = ""
 	case "Data":
 		cmd.Data = nil
 	}
@@ -68,7 +60,7 @@ func getSampleCommandMalformed(key string) *Command {
 
 	switch key {
 	case "CategoryHyphen":
-		cmd.Category = "something-bad"
+		cmd.StreamCategory = "something-bad"
 	}
 
 	return cmd
@@ -87,7 +79,7 @@ func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
 func TestCommandToEnvelopeErrorsIfNoType(t *testing.T) {
 	cmd := getSampleCommand()
 
-	cmd.Type = ""
+	cmd.MessageType = ""
 
 	_, err := cmd.ToEnvelope()
 
@@ -99,7 +91,7 @@ func TestCommandToEnvelopeErrorsIfNoType(t *testing.T) {
 func TestCommandToEnvelopeErrorsIfNoCategory(t *testing.T) {
 	cmd := getSampleCommand()
 
-	cmd.Category = ""
+	cmd.StreamCategory = ""
 
 	_, err := cmd.ToEnvelope()
 
@@ -111,7 +103,7 @@ func TestCommandToEnvelopeErrorsIfNoCategory(t *testing.T) {
 func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
 	cmd := getSampleCommand()
 
-	cmd.Category = "something-bad"
+	cmd.StreamCategory = "something-bad"
 
 	_, err := cmd.ToEnvelope()
 
@@ -123,7 +115,7 @@ func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
 func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 	cmd := getSampleCommand()
 
-	cmd.NewID = ""
+	cmd.ID = ""
 
 	_, err := cmd.ToEnvelope()
 
@@ -146,17 +138,15 @@ func TestCommandToEnvelope(t *testing.T) {
 		inputCommand:   getSampleCommand(),
 		failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
 		expectedEnvelope: &repository.MessageEnvelope{
-			MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-			Type:       "test type",
-			Stream:     "test cat:command",
-			StreamType: "test cat",
-			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			Data:       []byte(`{"Field1":"a"}`),
+			ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+			MessageType:    "test type",
+			StreamName:     "test cat:command",
+			StreamCategory: "test cat",
+			Data:           []byte(`{"Field1":"a"}`),
 		},
 	}, {
-		name:           "Errors if no Type",
-		inputCommand:   getSampleCommandMissing("Type"),
+		name:           "Errors if no MessageType",
+		inputCommand:   getSampleCommandMissing("MessageType"),
 		expectedError:  ErrMissingMessageType,
 		failErrMessage: "Expected ErrMissingMessageType from ToEnvelope Call",
 	}, {
@@ -166,7 +156,7 @@ func TestCommandToEnvelope(t *testing.T) {
 		failErrMessage: "Expected ErrMissingMessageData from ToEnvelope",
 	}, {
 		name:           "Errors if no ID is present",
-		inputCommand:   getSampleCommandMissing("NewID"),
+		inputCommand:   getSampleCommandMissing("ID"),
 		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
 	}}
@@ -200,44 +190,42 @@ func TestEventToEnvelope(t *testing.T) {
 		inputEvent:     getSampleEvent(),
 		failEnvMessage: "Didn't render the MessageEnvelope correctly",
 		expectedEnvelope: &repository.MessageEnvelope{
-			MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-			Type:       "test type",
-			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			StreamType: "test cat",
-			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
-			CausedByID: "544477d6-453f-4b48-8460-0a6e4d6f97d7",
-			Data:       []byte(`{"Field1":"a"}`),
+			ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+			MessageType:    "test type",
+			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Data:           []byte(`{"Field1":"a"}`),
 		},
 	}, {
-		name:           "Errors if no NewID",
-		inputEvent:     getSampleEventMissing("NewID"),
+		name:           "Errors if no ID",
+		inputEvent:     getSampleEventMissing("ID"),
 		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected a NEW ID for Event",
 	}, {
-		name:           "Errors if no CategoryID",
-		inputEvent:     getSampleEventMissing("CategoryID"),
+		name:           "Errors if no EntityID",
+		inputEvent:     getSampleEventMissing("EntityID"),
 		expectedError:  ErrMissingMessageCategoryID,
 		failErrMessage: "Expected a NEW ID for Event",
 	}, {
-		name:           "Errors if a hyphen is present in the Category name",
+		name:           "Errors if a hyphen is present in the StreamCategory name",
 		inputEvent:     getSampleEventMalformed("CategoryHyphen"),
 		expectedError:  ErrInvalidMessageCategory,
-		failErrMessage: "Hyphen not allowed in Category name",
+		failErrMessage: "Hyphen not allowed in StreamCategory name",
 	}, {
 		name:           "Errors if the category is left blank",
-		inputEvent:     getSampleEventMissing("Category"),
+		inputEvent:     getSampleEventMissing("StreamCategory"),
 		expectedError:  ErrMissingMessageCategory,
-		failErrMessage: "Category Name must not be blank",
+		failErrMessage: "StreamCategory Name must not be blank",
 	}, {
 		name:           "Errors if data is nil",
 		inputEvent:     getSampleEventMissing("Data"),
 		expectedError:  ErrMissingMessageData,
 		failErrMessage: "Data must not be nil",
 	}, {
-		name:           "Errors if Type is left blank",
-		inputEvent:     getSampleEventMissing("Type"),
+		name:           "Errors if MessageType is left blank",
+		inputEvent:     getSampleEventMissing("MessageType"),
 		expectedError:  ErrMissingMessageType,
-		failErrMessage: "Type must not be empty",
+		failErrMessage: "MessageType must not be empty",
 	}}
 
 	for _, test := range tests {
