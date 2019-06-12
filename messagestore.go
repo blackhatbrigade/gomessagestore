@@ -13,7 +13,7 @@ import (
 type MessageStore interface {
 	Write(ctx context.Context, message Message, opts ...WriteOption) error
 	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
-	CreateProjector() Projector
+	CreateProjector(opts ...ProjectorOption) (Projector, error)
 }
 
 type msgStore struct {
@@ -38,9 +38,4 @@ func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageSt
 	}
 
 	return msgstr
-}
-
-//CreateProjector creates a projector for use with MessageReducers to get projections
-func (ms *msgStore) CreateProjector() Projector {
-	return createProjector(ms.repo)
 }
