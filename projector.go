@@ -1,78 +1,37 @@
 package gomessagestore
 
 import (
-	"fmt"
-
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"golang.org/x/net/context"
 )
 
-//CreateProjector creates a projector for use with MessageReducers to get projections
-func (ms *msgStore) CreateProjector(opts ...ProjectorOption) (Projector, error) {
-	projector := &projector{
-		ms: ms,
-	}
-
-	for _, option := range opts {
-		option(projector)
-	}
-
-	return projector, nil
-}
-
 //ReducerOption Variadic parameter support for reducers.
-type ProjectorOption func(proj *projector)
+type ReducerOption func(proj *projector)
 
 //Projector A base level interface that defines the projection functionality of gomessagestore.
 type Projector interface {
-	Run(ctx context.Context, category string, entityID string) (interface{}, error)
+	RegisterReducer(reducer MessageReducer, opts ...ReducerOption) error
+	Run(ctx context.Context) (interface{}, error)
 }
 
 //projector The base supported projector struct.
 type projector struct {
-	ms           MessageStore
-	reducers     []MessageReducer
-	defaultState interface{}
+	repo     repository.Repository
+	reducers []MessageReducerConfig
 }
 
-func (proj *projector) Run(ctx context.Context, category string, entityID string) (interface{}, error) {
-	msgs, err := proj.ms.Get(ctx,
-		EventStream(category, entityID),
-	)
-	if err != nil {
-		return nil, err
+func createProjector(repoRef repository.Repository) Projector {
+	proj := &projector{
+		repo: repoRef,
 	}
-
-	state := proj.defaultState
-	fmt.Printf("found default state: %s\n", state)
-	for _, message := range msgs {
-		for _, reducer := range proj.reducers {
-			switch msg := message.(type) {
-			case *Event:
-				if reducer.Type() == msg.Type {
-					state = reducer.Reduce(message, state)
-				}
-			case *Command:
-				if reducer.Type() == msg.Type {
-					state = reducer.Reduce(message, state)
-				}
-			}
-		}
-	}
-
-	fmt.Printf("returning %s, nil\n", state)
-	return state, nil
+	return proj
 }
 
-//WithReducer registers a ruducer with the new projector
-func WithReducer(reducer MessageReducer) ProjectorOption {
-	return func(proj *projector) {
-		proj.reducers = append(proj.reducers, reducer)
-	}
+func (proj *projector) RegisterReducer(reducer MessageReducer, opts ...ReducerOption) error {
+
+	return nil
 }
 
-//DefaultState registers a default state for use with a projector
-func DefaultState(defaultState interface{}) ProjectorOption {
-	return func(proj *projector) {
-		proj.defaultState = defaultState
-	}
+func (proj *projector) Run(ctx context.Context) (interface{}, error) {
+	return nil, nil
 }
