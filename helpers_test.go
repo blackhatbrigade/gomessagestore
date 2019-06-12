@@ -101,7 +101,7 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			Data:       []byte(`{"Field1":"a"}`),
 		}, &repository.MessageEnvelope{
 			MessageID:  "544477d6-453f-4b48-8460-3a6e4d6f97d5",
-			Type:       "Event Type 2",
+			Type:       "Event Type 1",
 			Stream:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
 			StreamType: "test cat",
 			OwnerID:    "544477d6-453f-4b48-8460-0a6e4d6f97e5",
@@ -187,4 +187,45 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 	default:
 		t.Error("Unknown type of Message")
 	}
+}
+
+type mockDataStructure struct {
+	MockReducer1Called bool
+	MockReducer2Called bool
+}
+
+type mockReducer1 struct {
+	PreviousState   interface{}
+	ReceivedMessage Message
+}
+
+func (red *mockReducer1) Reduce(msg Message, previousState interface{}) interface{} {
+	switch state := previousState.(type) {
+	case mockDataStructure:
+		state.MockReducer1Called = true
+		return state
+	}
+	return nil
+}
+
+func (red *mockReducer1) Type() string {
+	return "Event Type 1"
+}
+
+type mockReducer2 struct {
+	PreviousState   interface{}
+	ReceivedMessage Message
+}
+
+func (red *mockReducer2) Reduce(msg Message, previousState interface{}) interface{} {
+	switch state := previousState.(type) {
+	case mockDataStructure:
+		state.MockReducer2Called = true
+		return state
+	}
+	return nil
+}
+
+func (red *mockReducer2) Type() string {
+	return "Event Type 2"
 }

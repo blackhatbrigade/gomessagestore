@@ -1,7 +1,7 @@
 package gomessagestore
 
 import (
-	"fmt"
+	"reflect"
 
 	"golang.org/x/net/context"
 )
@@ -14,6 +14,19 @@ func (ms *msgStore) CreateProjector(opts ...ProjectorOption) (Projector, error) 
 
 	for _, option := range opts {
 		option(projector)
+	}
+
+	//make sure defaultState is not a pointer
+	if reflect.ValueOf(projector.defaultState).Kind() == reflect.Ptr {
+		return nil, ErrDefaultStateCannotBePointer
+	}
+
+	if len(projector.reducers) < 1 {
+		return nil, ErrProjectorNeedsAtLeastOneReducer
+	}
+
+	if projector.defaultState == nil {
+		return nil, ErrDefaultStateNotSet
 	}
 
 	return projector, nil
@@ -38,12 +51,12 @@ func (proj *projector) Run(ctx context.Context, category string, entityID string
 	msgs, err := proj.ms.Get(ctx,
 		EventStream(category, entityID),
 	)
+
 	if err != nil {
 		return nil, err
 	}
 
 	state := proj.defaultState
-	fmt.Printf("found default state: %s\n", state)
 	for _, message := range msgs {
 		for _, reducer := range proj.reducers {
 			switch msg := message.(type) {
@@ -59,7 +72,6 @@ func (proj *projector) Run(ctx context.Context, category string, entityID string
 		}
 	}
 
-	fmt.Printf("returning %s, nil\n", state)
 	return state, nil
 }
 
