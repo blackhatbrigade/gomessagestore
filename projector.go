@@ -1,11 +1,9 @@
-package projector
+package gomessagestore
 
 import (
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"golang.org/x/net/context"
 )
-
-//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/projector Projector > mocks/projector.go"
 
 //ReducerOption Variadic parameter support for reducers.
 type ReducerOption func(proj *projector)
@@ -19,15 +17,21 @@ type Projector interface {
 //projector The base supported projector struct.
 type projector struct {
 	repo     repository.Repository
-	reducers []reducerConfig
+	reducers []MessageReducerConfig
 }
 
-func CreateProjector(repoRef repository.Repository) Projector {
+func createProjector(repoRef repository.Repository) Projector {
 	proj := &projector{
 		repo: repoRef,
 	}
 	return proj
 }
 
-//Errors
-var ()
+func (proj *projector) RegisterReducer(reducer MessageReducer, opts ...ReducerOption) error {
+
+	return nil
+}
+
+func (proj *projector) Run(ctx context.Context) (interface{}, error) {
+	return nil, nil
+}

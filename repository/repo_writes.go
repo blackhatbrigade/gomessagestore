@@ -5,25 +5,23 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-
-	"github.com/blackhatbrigade/gomessagestore/message"
 )
 
-func (r postgresRepo) WriteMessage(ctx context.Context, msg *message.MessageEnvelope) error {
+func (r postgresRepo) WriteMessage(ctx context.Context, msg *MessageEnvelope) error {
 	return r.writeMessageEitherWay(ctx, msg)
 }
 
-func (r postgresRepo) WriteMessageWithExpectedPosition(ctx context.Context, msg *message.MessageEnvelope, position int64) error {
+func (r postgresRepo) WriteMessageWithExpectedPosition(ctx context.Context, msg *MessageEnvelope, position int64) error {
 	return r.writeMessageEitherWay(ctx, msg, position)
 }
 
-func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *message.MessageEnvelope, position ...int64) error {
+func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnvelope, position ...int64) error {
 	if msg == nil {
 		return ErrNilMessage
 	}
 
 	if msg.MessageID == "" {
-		return message.ErrMessageNoID
+		return ErrMessageNoID
 	}
 
 	if msg.Stream == "" {

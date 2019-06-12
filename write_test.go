@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
-	"github.com/blackhatbrigade/gomessagestore/message"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
@@ -20,7 +20,7 @@ func TestWriteMessage(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &message.MessageEnvelope{
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
@@ -34,7 +34,7 @@ func TestWriteMessage(t *testing.T) {
 		EXPECT().
 		WriteMessage(ctx, msgEnv)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgStore.Write(ctx, msg)
 }
 
@@ -47,7 +47,7 @@ func TestWriteWithAtPosition(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &message.MessageEnvelope{
+	msgEnv := &repository.MessageEnvelope{
 		MessageID:  "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Type:       "test type",
 		Stream:     "test cat:command",
@@ -64,6 +64,6 @@ func TestWriteWithAtPosition(t *testing.T) {
 		EXPECT().
 		WriteMessageWithExpectedPosition(ctx, msgEnv, expectedPosition)
 
-	msgStore := GetMessageStoreInterface2(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgStore.Write(ctx, msg, AtPosition(42))
 }

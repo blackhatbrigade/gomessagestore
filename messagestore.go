@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
-	"github.com/blackhatbrigade/gomessagestore/projector"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
@@ -13,17 +11,17 @@ import (
 
 //MessageStore Establishes the interface for Eventide.
 type MessageStore interface {
-	Write(ctx context.Context, message message.Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]message.Message, error)
-	CreateProjector() projector.Projector
+	Write(ctx context.Context, message Message, opts ...WriteOption) error
+	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
+	CreateProjector() Projector
 }
 
 type msgStore struct {
 	repo repository.Repository
 }
 
-//GetMessageStoreInterface Grabs a MessageStore instance.
-func GetMessageStoreInterface(injectedDB *sql.DB) MessageStore {
+//NewMessageStore Grabs a MessageStore instance.
+func NewMessageStore(injectedDB *sql.DB) MessageStore {
 	pgRepo := repository.NewPostgresRepository(injectedDB)
 
 	msgstr := &msgStore{
@@ -33,11 +31,16 @@ func GetMessageStoreInterface(injectedDB *sql.DB) MessageStore {
 	return msgstr
 }
 
-//GetMessageStoreInterface2 Grabs a MessageStore instance.
-func GetMessageStoreInterface2(injectedRepo repository.Repository) MessageStore {
+//NewMessageStoreFromRepository Grabs a MessageStore instance.
+func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
 	}
 
 	return msgstr
+}
+
+//CreateProjector creates a projector for use with MessageReducers to get projections
+func (ms *msgStore) CreateProjector() Projector {
+	return createProjector(ms.repo)
 }

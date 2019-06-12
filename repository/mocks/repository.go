@@ -6,7 +6,7 @@ package mock_repository
 
 import (
 	context "context"
-	message "github.com/blackhatbrigade/gomessagestore/message"
+	repository "github.com/blackhatbrigade/gomessagestore/repository"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -35,10 +35,10 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // GetAllMessagesInCategory mocks base method
-func (m *MockRepository) GetAllMessagesInCategory(arg0 context.Context, arg1 string) ([]*message.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInCategory(arg0 context.Context, arg1 string) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMessagesInCategory", arg0, arg1)
-	ret0, _ := ret[0].([]*message.MessageEnvelope)
+	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +50,10 @@ func (mr *MockRepositoryMockRecorder) GetAllMessagesInCategory(arg0, arg1 interf
 }
 
 // GetAllMessagesInCategorySince mocks base method
-func (m *MockRepository) GetAllMessagesInCategorySince(arg0 context.Context, arg1 string, arg2 int64) ([]*message.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInCategorySince(arg0 context.Context, arg1 string, arg2 int64) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMessagesInCategorySince", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]*message.MessageEnvelope)
+	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockRepositoryMockRecorder) GetAllMessagesInCategorySince(arg0, arg1, 
 }
 
 // GetAllMessagesInStream mocks base method
-func (m *MockRepository) GetAllMessagesInStream(arg0 context.Context, arg1 string) ([]*message.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInStream(arg0 context.Context, arg1 string) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMessagesInStream", arg0, arg1)
-	ret0, _ := ret[0].([]*message.MessageEnvelope)
+	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +80,10 @@ func (mr *MockRepositoryMockRecorder) GetAllMessagesInStream(arg0, arg1 interfac
 }
 
 // GetAllMessagesInStreamSince mocks base method
-func (m *MockRepository) GetAllMessagesInStreamSince(arg0 context.Context, arg1 string, arg2 int64) ([]*message.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInStreamSince(arg0 context.Context, arg1 string, arg2 int64) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMessagesInStreamSince", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]*message.MessageEnvelope)
+	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -95,10 +95,10 @@ func (mr *MockRepositoryMockRecorder) GetAllMessagesInStreamSince(arg0, arg1, ar
 }
 
 // GetLastMessageInStream mocks base method
-func (m *MockRepository) GetLastMessageInStream(arg0 context.Context, arg1 string) (*message.MessageEnvelope, error) {
+func (m *MockRepository) GetLastMessageInStream(arg0 context.Context, arg1 string) (*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLastMessageInStream", arg0, arg1)
-	ret0, _ := ret[0].(*message.MessageEnvelope)
+	ret0, _ := ret[0].(*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -110,7 +110,7 @@ func (mr *MockRepositoryMockRecorder) GetLastMessageInStream(arg0, arg1 interfac
 }
 
 // WriteMessage mocks base method
-func (m *MockRepository) WriteMessage(arg0 context.Context, arg1 *message.MessageEnvelope) error {
+func (m *MockRepository) WriteMessage(arg0 context.Context, arg1 *repository.MessageEnvelope) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteMessage", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -124,7 +124,7 @@ func (mr *MockRepositoryMockRecorder) WriteMessage(arg0, arg1 interface{}) *gomo
 }
 
 // WriteMessageWithExpectedPosition mocks base method
-func (m *MockRepository) WriteMessageWithExpectedPosition(arg0 context.Context, arg1 *message.MessageEnvelope, arg2 int64) error {
+func (m *MockRepository) WriteMessageWithExpectedPosition(arg0 context.Context, arg1 *repository.MessageEnvelope, arg2 int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteMessageWithExpectedPosition", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

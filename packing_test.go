@@ -1,4 +1,4 @@
-package message_test
+package gomessagestore_test
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/blackhatbrigade/gomessagestore/message"
+	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,9 +20,9 @@ func unpackHelper(source map[string]interface{}, dest *interface{}) (err error) 
 	destValue := *dest
 	switch data := destValue.(type) {
 	case *dummyData:
-		err = message.Unpack(source, &data)
+		err = Unpack(source, &data)
 	case *slightlyComplicated:
-		err = message.Unpack(source, &data)
+		err = Unpack(source, &data)
 	default:
 		err = errors.New(fmt.Sprintf("These aren't the data you're looking for: %s", reflect.TypeOf(destValue)))
 	}
@@ -69,7 +69,7 @@ func TestPackUnpack(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			output, err := message.Pack(test.input)
+			output, err := Pack(test.input)
 
 			if test.expectedPackErr == nil {
 				assert.Nil(err, "Err should be nil")
@@ -85,7 +85,7 @@ func TestPackUnpack(t *testing.T) {
 			if test.unpackCallBack != nil {
 				err = test.unpackCallBack(output, &test.input)
 			} else {
-				err = message.Unpack(output, &test.input) // reuse test.input so we have the right type
+				err = Unpack(output, &test.input) // reuse test.input so we have the right type
 			}
 
 			if test.expectedUnpackErr == nil {
