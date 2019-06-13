@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -101,12 +100,10 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, mockEventEnvs[0].Stream).
+		GetAllMessagesInStream(ctx, mockEventEnvs[0].StreamName).
 		Return(mockEventEnvs, nil)
 
-	projection, err := myprojector.Run(ctx, expectedEvents[0].Category, expectedEvents[0].CategoryID)
-
-	fmt.Printf("projection: %s\n", projection)
+	projection, err := myprojector.Run(ctx, expectedEvents[0].StreamCategory, expectedEvents[0].EntityID)
 
 	if err != nil {
 		t.Errorf("An error has occurred with running a projector, err: %s", err)

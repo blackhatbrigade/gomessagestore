@@ -9,9 +9,10 @@ import (
 )
 
 type getOpts struct {
-	stream   *string
-	category *string
-	since    *int64
+	stream     *string
+	category   *string
+	since      *int64
+	converters []MessageConverter
 }
 
 //GetOption provide optional arguments to the Get function
@@ -65,7 +66,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 		return nil, err
 	}
 
-	return msgEnvelopesToMessages(msgEnvelopes), nil
+	return MsgEnvelopesToMessages(msgEnvelopes, getOptions.converters...), nil
 }
 
 //CommandStream allows for writing messages using an expected position
@@ -95,5 +96,12 @@ func Category(category string) GetOption {
 func Since(since int64) GetOption {
 	return func(g *getOpts) {
 		g.since = &since
+	}
+}
+
+//Converter allows for automatic converting of non-Command/Event type messages
+func Converter(converter MessageConverter) GetOption {
+	return func(g *getOpts) {
+		g.converters = append(g.converters, converter)
 	}
 }

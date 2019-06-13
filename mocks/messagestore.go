@@ -35,17 +35,22 @@ func (m *MockMessageStore) EXPECT() *MockMessageStoreMockRecorder {
 }
 
 // CreateProjector mocks base method
-func (m *MockMessageStore) CreateProjector() gomessagestore.Projector {
+func (m *MockMessageStore) CreateProjector(arg0 ...gomessagestore.ProjectorOption) (gomessagestore.Projector, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateProjector")
+	varargs := []interface{}{}
+	for _, a := range arg0 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateProjector", varargs...)
 	ret0, _ := ret[0].(gomessagestore.Projector)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateProjector indicates an expected call of CreateProjector
-func (mr *MockMessageStoreMockRecorder) CreateProjector() *gomock.Call {
+func (mr *MockMessageStoreMockRecorder) CreateProjector(arg0 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProjector", reflect.TypeOf((*MockMessageStore)(nil).CreateProjector))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProjector", reflect.TypeOf((*MockMessageStore)(nil).CreateProjector), arg0...)
 }
 
 // Get mocks base method

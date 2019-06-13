@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,47 +16,45 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		name             string
 		dbError          error
 		existingMessages []*MessageEnvelope
-		messagesMetadata []string
 		expectedMessages []*MessageEnvelope
 		expectedErr      error
-		category         string
+		streamCategory   string
 		callCancel       bool
 	}{{
 		name:             "when there are existing messages it should return them",
 		existingMessages: mockMessages,
-		category:         "some_type",
+		streamCategory:   "other_type",
 		expectedMessages: copyAndAppend(mockMessages[:2], mockMessages[4:]...),
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
 		existingMessages: mockMessages,
-		category:         "some_other_type",
+		streamCategory:   "some_other_type",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
-		messagesMetadata: []string{"this isn't JSON", "{\"alternate\":\"json\"}"},
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
-		category:         "some_other_non_existant_type",
+		streamCategory:   "some_other_non_existant_type",
 		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:             "when there are no existing messages it should return no messages",
-		category:         "some_type",
+		streamCategory:   "other_type",
 		expectedMessages: []*MessageEnvelope{},
 	}, {
-		name:        "when asking for messages from a stream with a invalid category, an error is returned",
-		category:    "something-with-a-hyphen",
-		expectedErr: ErrInvalidCategory,
+		name:           "when asking for messages from a stream with a invalid category, an error is returned",
+		streamCategory: "something-with-a-hyphen",
+		expectedErr:    ErrInvalidCategory,
 	}, {
 		name:        "when asking for messages from a stream with a blank category, an error is returned",
 		expectedErr: ErrBlankCategory,
 	}, {
-		name:        "when there is an issue getting the messages an error should be returned",
-		category:    "some_type",
-		dbError:     errors.New("bad things with db happened"),
-		expectedErr: errors.New("bad things with db happened"),
+		name:           "when there is an issue getting the messages an error should be returned",
+		streamCategory: "other_type",
+		dbError:        errors.New("bad things with db happened"),
+		expectedErr:    errors.New("bad things with db happened"),
 	}, {
 		name:             "when it is asked to cancel, it does",
 		existingMessages: mockMessages,
-		category:         "some_type",
+		streamCategory:   "other_type",
 		callCancel:       true,
 		expectedMessages: []*MessageEnvelope{},
 	}}
@@ -71,23 +68,17 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 
 			expectedQuery := mockDb.
 				ExpectQuery("SELECT \\* FROM get_category_messages\\(\\$1, \\$2\\)").
-				WithArgs(test.category, 0).
+				WithArgs(test.streamCategory, 0).
 				WillDelayFor(time.Millisecond * 10)
 
 			addedMessage := -1
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				for _, row := range test.existingMessages {
-					if row.StreamType == test.category {
+					if row.StreamCategory == test.streamCategory {
 						addedMessage++
-						var metadata string
-						if len(test.messagesMetadata) > addedMessage {
-							metadata = test.messagesMetadata[addedMessage]
-						} else {
-							metadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						rows.AddRow(
-							row.MessageID, row.Stream, row.StreamType, row.Type, row.Position, row.GlobalPosition, row.Data, metadata, row.Timestamp,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -100,7 +91,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.GetAllMessagesInCategory(ctx, test.category)
+			messages, err := repo.GetAllMessagesInCategory(ctx, test.streamCategory)
 
 			assert.Equal(test.expectedErr, err)
 			assert.Equal(test.expectedMessages, messages)
@@ -113,7 +104,6 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		name             string
 		dbError          error
 		existingMessages []*MessageEnvelope
-		messagesMetadata []string
 		expectedMessages []*MessageEnvelope
 		expectedErr      error
 		streamType       string
@@ -122,25 +112,25 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 	}{{
 		name:             "when there are existing messages past position -1 it should return them",
 		existingMessages: mockMessages,
-		streamType:       "some_type",
+		streamType:       "other_type",
 		expectedMessages: copyAndAppend(mockMessages[:2], mockMessages[4:]...),
 		position:         -1,
 	}, {
 		name:             "when there are existing messages past position 0 it should return them",
 		existingMessages: mockMessages,
-		streamType:       "some_type",
+		streamType:       "other_type",
 		expectedMessages: copyAndAppend(mockMessages[:2], mockMessages[4:]...),
 		position:         0,
 	}, {
 		name:             "when there are existing messages past position 5 it should return them",
 		existingMessages: mockMessages,
-		streamType:       "some_type",
+		streamType:       "other_type",
 		expectedMessages: mockMessages[4:],
 		position:         5,
 	}, {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
-		streamType:       "some_type",
+		streamType:       "other_type",
 		expectedMessages: []*MessageEnvelope{},
 		position:         10,
 	}, {
@@ -148,7 +138,6 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		existingMessages: mockMessages,
 		streamType:       "some_other_type",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
-		messagesMetadata: []string{"this isn't JSON", "{\"alternate\":\"json\"}"},
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
@@ -156,7 +145,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:             "when there are no existing messages it should return no messages",
-		streamType:       "some_type",
+		streamType:       "other_type",
 		expectedMessages: []*MessageEnvelope{},
 	}, {
 		name:        "when asking for messages from a category, if blank, an error is returned",
@@ -167,13 +156,13 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		streamType:  "something-bad",
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
-		streamType:  "some_type",
+		streamType:  "other_type",
 		dbError:     errors.New("bad things with db happened"),
 		expectedErr: errors.New("bad things with db happened"),
 	}, {
 		name:             "when it is asked to cancel, it does",
 		existingMessages: mockMessages,
-		streamType:       "some_type",
+		streamType:       "other_type",
 		callCancel:       true,
 		expectedMessages: []*MessageEnvelope{},
 	}}
@@ -194,16 +183,10 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				for _, row := range test.existingMessages {
-					if row.StreamType == test.streamType && row.GlobalPosition >= test.position {
+					if row.StreamCategory == test.streamType && row.GlobalPosition >= test.position {
 						addedMessage++
-						var metadata string
-						if len(test.messagesMetadata) > addedMessage {
-							metadata = test.messagesMetadata[addedMessage]
-						} else {
-							metadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						rows.AddRow(
-							row.MessageID, row.Stream, row.StreamType, row.Type, row.Position, row.GlobalPosition, row.Data, metadata, row.Timestamp,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}

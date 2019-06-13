@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,7 +16,6 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		name             string
 		dbError          error
 		existingMessages []*MessageEnvelope
-		messagesMetadata []string
 		expectedMessages []*MessageEnvelope
 		expectedErr      error
 		streamName       string
@@ -32,7 +30,6 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		existingMessages: mockMessages,
 		streamName:       "some_other_type-23456",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
-		messagesMetadata: []string{"this isn't JSON", "{\"alternate\":\"json\"}"},
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
@@ -74,16 +71,10 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				for _, row := range test.existingMessages {
-					if row.Stream == test.streamName {
+					if row.StreamName == test.streamName {
 						addedMessage++
-						var metadata string
-						if len(test.messagesMetadata) > addedMessage {
-							metadata = test.messagesMetadata[addedMessage]
-						} else {
-							metadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						rows.AddRow(
-							row.MessageID, row.Stream, row.StreamType, row.Type, row.Position, row.GlobalPosition, row.Data, metadata, row.Timestamp,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -186,16 +177,10 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				for _, row := range test.existingMessages {
-					if row.Stream == test.streamName && row.GlobalPosition >= test.position {
+					if row.StreamName == test.streamName && row.GlobalPosition >= test.position {
 						addedMessage++
-						var metadata string
-						if len(test.messagesMetadata) > addedMessage {
-							metadata = test.messagesMetadata[addedMessage]
-						} else {
-							metadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						rows.AddRow(
-							row.MessageID, row.Stream, row.StreamType, row.Type, row.Position, row.GlobalPosition, row.Data, metadata, row.Timestamp,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -274,15 +259,9 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 			addedMessage := -1
 			if test.dbError == nil {
 				var lastRow *MessageEnvelope
-				lastMetadata := ""
 				for _, row := range test.existingMessages {
-					if row.Stream == test.streamName {
+					if row.StreamName == test.streamName {
 						addedMessage++
-						if len(test.messagesMetadata) > addedMessage {
-							lastMetadata = test.messagesMetadata[addedMessage]
-						} else {
-							lastMetadata = fmt.Sprintf("{\"correlation_id\":\"%s\", \"caused_by_id\":\"%s\", \"user_id\":\"%s\"}", row.CorrelationID, row.CausedByID, row.UserID)
-						}
 						lastRow = row
 					}
 				}
@@ -290,7 +269,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				if lastRow != nil {
 					rows.AddRow(
-						lastRow.MessageID, lastRow.Stream, lastRow.StreamType, lastRow.Type, lastRow.Position, lastRow.GlobalPosition, lastRow.Data, lastMetadata, lastRow.Timestamp,
+						lastRow.ID, lastRow.StreamName, lastRow.StreamCategory, lastRow.MessageType, lastRow.Version, lastRow.GlobalPosition, lastRow.Data, lastRow.Metadata, lastRow.Time,
 					)
 				}
 

@@ -61,11 +61,11 @@ func (proj *projector) Run(ctx context.Context, category string, entityID string
 		for _, reducer := range proj.reducers {
 			switch msg := message.(type) {
 			case *Event:
-				if reducer.Type() == msg.Type {
+				if reducer.Type() == msg.MessageType {
 					state = reducer.Reduce(message, state)
 				}
 			case *Command:
-				if reducer.Type() == msg.Type {
+				if reducer.Type() == msg.MessageType {
 					state = reducer.Reduce(message, state)
 				}
 			}

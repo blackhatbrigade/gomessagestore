@@ -30,27 +30,27 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 			retChan <- returnPair{nil, nil}
 		}()
 
-		var eventideMessages []*eventideMessageEnvelope
+		var msgs []*MessageEnvelope
 		/*get_category_messages(
 		  _stream_name varchar,
 		  _position bigint DEFAULT 0,
 		  _batch_size bigint DEFAULT 1000,
 		  _condition varchar DEFAULT NULL
 		)*/
+
 		query := "SELECT * FROM get_category_messages($1, $2)"
-		if err := r.dbx.SelectContext(ctx, &eventideMessages, query, category, globalPosition); err != nil {
+		if err := r.dbx.SelectContext(ctx, &msgs, query, category, globalPosition); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 			retChan <- returnPair{nil, err}
 			return
 		}
 
-		if len(eventideMessages) == 0 {
+		if len(msgs) == 0 {
 			retChan <- returnPair{[]*MessageEnvelope{}, nil}
 			return
 		}
 
-		messages := r.translateMessages(eventideMessages)
-		retChan <- returnPair{messages, nil}
+		retChan <- returnPair{msgs, nil}
 	}()
 
 	// wait for our return channel or the context to cancel

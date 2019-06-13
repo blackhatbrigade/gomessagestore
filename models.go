@@ -3,35 +3,39 @@ package gomessagestore
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/blackhatbrigade/gomessagestore/repository"
 	"strings"
+	"time"
+
+	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
 //Command the model for writing a command to the Message Store
 type Command struct {
-	NewID      string
-	Type       string
-	Category   string
-	CausedByID string
-	OwnerID    string
-	Data       map[string]interface{}
+	ID             string
+	StreamCategory string
+	MessageType    string
+	Version        int64
+	GlobalPosition int64
+	Data           map[string]interface{}
+	Metadata       map[string]interface{}
+	Time           time.Time
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
-	if cmd.Type == "" {
+	if cmd.MessageType == "" {
 		return nil, ErrMissingMessageType
 	}
 
-	if cmd.Category == "" {
+	if cmd.StreamCategory == "" {
 		return nil, ErrMissingMessageCategory
 	}
 
-	if strings.Contains(cmd.Category, "-") {
+	if strings.Contains(cmd.StreamCategory, "-") {
 		return nil, ErrInvalidMessageCategory
 	}
 
-	if cmd.NewID == "" {
+	if cmd.ID == "" {
 		return nil, ErrMessageNoID
 	}
 
@@ -40,40 +44,45 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	data, err := json.Marshal(cmd.Data)
-	if err != nil {
+	metadata, errm := json.Marshal(cmd.Metadata)
+	if err != nil || errm != nil {
 		return nil, ErrUnserializableData
 	}
 
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  cmd.NewID,
-		Type:       cmd.Type,
-		Stream:     fmt.Sprintf("%s:command", cmd.Category),
-		StreamType: cmd.Category,
-		OwnerID:    cmd.OwnerID,
-		CausedByID: cmd.CausedByID,
-		Data:       data,
+		ID:             cmd.ID,
+		MessageType:    cmd.MessageType,
+		StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
+		StreamCategory: cmd.StreamCategory,
+		Data:           data,
+		Metadata:       metadata,
+		Time:           cmd.Time,
+		Version:        cmd.Version,
+		GlobalPosition: cmd.GlobalPosition,
 	}
 	return msgEnv, nil
 }
 
 //Event the model for writing an event to the Message Store
 type Event struct {
-	NewID      string
-	Type       string
-	CategoryID string
-	Category   string
-	CausedByID string
-	OwnerID    string
-	Data       map[string]interface{}
+	ID             string
+	EntityID       string
+	StreamCategory string
+	MessageType    string
+	Version        int64
+	GlobalPosition int64
+	Data           map[string]interface{}
+	Metadata       map[string]interface{}
+	Time           time.Time
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
-	if event.Type == "" {
+	if event.MessageType == "" {
 		return nil, ErrMissingMessageType
 	}
 
-	if strings.Contains(event.Category, "-") {
+	if strings.Contains(event.StreamCategory, "-") {
 		return nil, ErrInvalidMessageCategory
 	}
 
@@ -81,32 +90,34 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if event.NewID == "" {
+	if event.ID == "" {
 		return nil, ErrMessageNoID
 	}
 
-	if event.CategoryID == "" {
+	if event.EntityID == "" {
 		return nil, ErrMissingMessageCategoryID
 	}
 
-	if event.Category == "" {
+	if event.StreamCategory == "" {
 		return nil, ErrMissingMessageCategory
 	}
 
 	data, err := json.Marshal(event.Data)
-
-	if err != nil {
+	metadata, errm := json.Marshal(event.Metadata)
+	if err != nil || errm != nil {
 		return nil, ErrUnserializableData
 	}
 
 	msgEnv := &repository.MessageEnvelope{
-		MessageID:  event.NewID,
-		Type:       event.Type,
-		Stream:     fmt.Sprintf("%s-%s", event.Category, event.CategoryID),
-		StreamType: event.Category,
-		OwnerID:    event.OwnerID,
-		CausedByID: event.CausedByID,
-		Data:       data,
+		ID:             event.ID,
+		MessageType:    event.MessageType,
+		StreamName:     fmt.Sprintf("%s-%s", event.StreamCategory, event.EntityID),
+		StreamCategory: event.StreamCategory,
+		Data:           data,
+		Metadata:       metadata,
+		Time:           event.Time,
+		Version:        event.Version,
+		GlobalPosition: event.GlobalPosition,
 	}
 
 	return msgEnv, nil
