@@ -360,9 +360,9 @@ func eventsToMessageSlice(events []*Event) []Message {
 
 // this is all just the same as Event
 type otherMessage struct {
-	ID             string //ID
-	EntityID       string //EntityID
-	StreamCategory string //StreamCategory
+	ID             string
+	EntityID       string
+	StreamCategory string
 	MessageType    string
 	Version        int64
 	GlobalPosition int64

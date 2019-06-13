@@ -11,8 +11,8 @@ import (
 
 //Command the model for writing a command to the Message Store
 type Command struct {
-	ID             string //ID
-	StreamCategory string //StreamCategory
+	ID             string
+	StreamCategory string
 	MessageType    string
 	Version        int64
 	GlobalPosition int64
@@ -65,9 +65,9 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 //Event the model for writing an event to the Message Store
 type Event struct {
-	ID             string //ID
-	EntityID       string //EntityID
-	StreamCategory string //StreamCategory
+	ID             string
+	EntityID       string
+	StreamCategory string
 	MessageType    string
 	Version        int64
 	GlobalPosition int64
