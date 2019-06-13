@@ -31,6 +31,7 @@ func init() {
 
 func getSampleCommand() *Command {
 	packed, err := Pack(dummyData{"a"})
+	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &Command{
 		MessageType:    "test type",
@@ -40,12 +41,13 @@ func getSampleCommand() *Command {
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Data:           packed,
 		Time:           time.Unix(1, 0),
-		Metadata:       packed,
+		Metadata:       packedMeta,
 	}
 }
 
 func getSampleEvent() *Event {
 	packed, err := Pack(dummyData{"a"})
+	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &Event{
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -55,13 +57,14 @@ func getSampleEvent() *Event {
 		GlobalPosition: 9,
 		StreamCategory: "test cat",
 		Data:           packed,
-		Metadata:       packed,
+		Metadata:       packedMeta,
 		Time:           time.Unix(1, 0),
 	}
 }
 
 func getSampleOtherMessage() *otherMessage {
 	packed, err := Pack(dummyData{"a"})
+	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &otherMessage{
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -71,13 +74,16 @@ func getSampleOtherMessage() *otherMessage {
 		GlobalPosition: 9,
 		StreamCategory: "test cat",
 		Data:           packed,
-		Metadata:       packed,
+		Metadata:       packedMeta,
 		Time:           time.Unix(1, 0),
 	}
 }
 
 func getSampleCommands() []*Command {
-	packed, err := Pack(dummyData{"a"})
+	packed1, err := Pack(dummyData{"a"})
+	packed2, err := Pack(dummyData{"c"})
+	packedMeta1, err := Pack(dummyData{"b"})
+	packedMeta2, err := Pack(dummyData{"d"})
 	panicIf(err)
 	return []*Command{
 		&Command{
@@ -86,23 +92,26 @@ func getSampleCommands() []*Command {
 			StreamCategory: "test cat",
 			Version:        1,
 			GlobalPosition: 1,
-			Data:           packed,
-			Metadata:       packed,
-			Time:           time.Unix(1, 0),
+			Data:           packed1,
+			Metadata:       packedMeta1,
+			Time:           time.Unix(1, 1),
 		}, &Command{
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Command MessageType 1",
 			StreamCategory: "test cat",
 			Version:        2,
 			GlobalPosition: 2,
-			Data:           packed,
-			Metadata:       packed,
-			Time:           time.Unix(1, 0),
+			Data:           packed2,
+			Metadata:       packedMeta2,
+			Time:           time.Unix(1, 2),
 		}}
 }
 
 func getSampleEvents() []*Event {
-	packed, err := Pack(dummyData{"a"})
+	packed1, err := Pack(dummyData{"a"})
+	packed2, err := Pack(dummyData{"c"})
+	packedMeta1, err := Pack(dummyData{"b"})
+	packedMeta2, err := Pack(dummyData{"d"})
 	panicIf(err)
 	return []*Event{
 		&Event{
@@ -112,9 +121,9 @@ func getSampleEvents() []*Event {
 			StreamCategory: "test cat",
 			Version:        4,
 			GlobalPosition: 4,
-			Data:           packed,
-			Metadata:       packed,
-			Time:           time.Unix(1, 0),
+			Data:           packed1,
+			Metadata:       packedMeta1,
+			Time:           time.Unix(1, 3),
 		}, &Event{
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Event MessageType 1",
@@ -122,9 +131,9 @@ func getSampleEvents() []*Event {
 			Version:        3,
 			GlobalPosition: 3,
 			StreamCategory: "test cat",
-			Data:           packed,
-			Metadata:       packed,
-			Time:           time.Unix(1, 0),
+			Data:           packed2,
+			Metadata:       packedMeta2,
+			Time:           time.Unix(1, 4),
 		}}
 }
 
@@ -137,7 +146,7 @@ func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 		StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
 		StreamCategory: "test cat",
 		Data:           []byte(`{"Field1":"a"}`),
-		Metadata:       []byte(`{"Field1":"a"}`),
+		Metadata:       []byte(`{"Field1":"b"}`),
 		Time:           time.Unix(1, 0),
 	}
 
@@ -154,8 +163,8 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			Version:        4,
 			GlobalPosition: 4,
 			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"a"}`),
-			Time:           time.Unix(1, 0),
+			Metadata:       []byte(`{"Field1":"b"}`),
+			Time:           time.Unix(1, 3),
 		}, &repository.MessageEnvelope{
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Event MessageType 1",
@@ -163,9 +172,9 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			Version:        3,
 			GlobalPosition: 3,
 			StreamCategory: "test cat",
-			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"a"}`),
-			Time:           time.Unix(1, 0),
+			Data:           []byte(`{"Field1":"c"}`),
+			Metadata:       []byte(`{"Field1":"d"}`),
+			Time:           time.Unix(1, 4),
 		}}
 }
 
@@ -178,7 +187,7 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 		StreamName:     "test cat:command",
 		StreamCategory: "test cat",
 		Data:           []byte(`{"Field1":"a"}`),
-		Metadata:       []byte(`{"Field1":"a"}`),
+		Metadata:       []byte(`{"Field1":"b"}`),
 		Time:           time.Unix(1, 0),
 	}
 
@@ -195,8 +204,8 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			Version:        1,
 			GlobalPosition: 1,
 			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"a"}`),
-			Time:           time.Unix(1, 0),
+			Metadata:       []byte(`{"Field1":"b"}`),
+			Time:           time.Unix(1, 1),
 		}, &repository.MessageEnvelope{
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Command MessageType 1",
@@ -204,9 +213,9 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			Version:        2,
 			GlobalPosition: 2,
 			StreamCategory: "test cat",
-			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"a"}`),
-			Time:           time.Unix(1, 0),
+			Data:           []byte(`{"Field1":"c"}`),
+			Metadata:       []byte(`{"Field1":"d"}`),
+			Time:           time.Unix(1, 2),
 		}}
 }
 
