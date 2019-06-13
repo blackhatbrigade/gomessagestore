@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
-	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
@@ -20,13 +19,7 @@ func TestWriteMessage(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &repository.MessageEnvelope{
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		MessageType:    "test type",
-		StreamName:     "test cat:command",
-		StreamCategory: "test cat",
-		Data:           []byte(`{"Field1":"a"}`),
-	}
+	msgEnv := getSampleCommandAsEnvelope()
 
 	mockRepo.
 		EXPECT().
@@ -45,13 +38,7 @@ func TestWriteWithAtPosition(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := &repository.MessageEnvelope{
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-		MessageType:    "test type",
-		StreamName:     "test cat:command",
-		StreamCategory: "test cat",
-		Data:           []byte(`{"Field1":"a"}`),
-	}
+	msgEnv := getSampleCommandAsEnvelope()
 	var expectedPosition int64
 
 	expectedPosition = 42

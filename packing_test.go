@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -100,6 +101,32 @@ func TestPackUnpack(t *testing.T) {
 			}
 
 			assert.Equal(test.expectedOutput, test.input, "Should be the same object at the end")
+		})
+	}
+}
+
+func TestMsgEnvelopesToMessages(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          []*repository.MessageEnvelope
+		expectedOutput []Message
+	}{{
+		name:           "converts message envelopes to events",
+		input:          getSampleEventsAsEnvelopes(),
+		expectedOutput: eventsToMessageSlice(getSampleEvents()),
+	}, {
+		name:           "converts message envelopes to commands",
+		input:          getSampleCommandsAsEnvelopes(),
+		expectedOutput: commandsToMessageSlice(getSampleCommands()),
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			output := MsgEnvelopesToMessages(test.input)
+
+			assert.Equal(test.expectedOutput, output)
 		})
 	}
 }

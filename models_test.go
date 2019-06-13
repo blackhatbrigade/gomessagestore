@@ -134,16 +134,10 @@ func TestCommandToEnvelope(t *testing.T) {
 		failEnvMessage   string
 		failErrMessage   string
 	}{{
-		name:           "Returns message envelope",
-		inputCommand:   getSampleCommand(),
-		failEnvMessage: "Did not get a valid MessageEnvelope back from ToEnvelope",
-		expectedEnvelope: &repository.MessageEnvelope{
-			ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-			MessageType:    "test type",
-			StreamName:     "test cat:command",
-			StreamCategory: "test cat",
-			Data:           []byte(`{"Field1":"a"}`),
-		},
+		name:             "Returns message envelope",
+		inputCommand:     getSampleCommand(),
+		failEnvMessage:   "Did not get a valid MessageEnvelope back from ToEnvelope",
+		expectedEnvelope: getSampleCommandAsEnvelope(),
 	}, {
 		name:           "Errors if no MessageType",
 		inputCommand:   getSampleCommandMissing("MessageType"),
@@ -186,16 +180,10 @@ func TestEventToEnvelope(t *testing.T) {
 		failEnvMessage   string
 		failErrMessage   string
 	}{{
-		name:           "Returns message envelope",
-		inputEvent:     getSampleEvent(),
-		failEnvMessage: "Didn't render the MessageEnvelope correctly",
-		expectedEnvelope: &repository.MessageEnvelope{
-			ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
-			MessageType:    "test type",
-			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			StreamCategory: "test cat",
-			Data:           []byte(`{"Field1":"a"}`),
-		},
+		name:             "Returns message envelope",
+		inputEvent:       getSampleEvent(),
+		failEnvMessage:   "Didn't render the MessageEnvelope correctly",
+		expectedEnvelope: getSampleEventAsEnvelope(),
 	}, {
 		name:           "Errors if no ID",
 		inputEvent:     getSampleEventMissing("ID"),

@@ -44,7 +44,8 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	data, err := json.Marshal(cmd.Data)
-	if err != nil {
+	metadata, errm := json.Marshal(cmd.Metadata)
+	if err != nil || errm != nil {
 		return nil, ErrUnserializableData
 	}
 
@@ -54,6 +55,10 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
 		StreamCategory: cmd.StreamCategory,
 		Data:           data,
+		Metadata:       metadata,
+		Time:           cmd.Time,
+		Position:       cmd.Position,
+		GlobalPosition: cmd.GlobalPosition,
 	}
 	return msgEnv, nil
 }
@@ -98,8 +103,8 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	data, err := json.Marshal(event.Data)
-
-	if err != nil {
+	metadata, errm := json.Marshal(event.Metadata)
+	if err != nil || errm != nil {
 		return nil, ErrUnserializableData
 	}
 
@@ -109,6 +114,10 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		StreamName:     fmt.Sprintf("%s-%s", event.StreamCategory, event.EntityID),
 		StreamCategory: event.StreamCategory,
 		Data:           data,
+		Metadata:       metadata,
+		Time:           event.Time,
+		Position:       event.Position,
+		GlobalPosition: event.GlobalPosition,
 	}
 
 	return msgEnv, nil

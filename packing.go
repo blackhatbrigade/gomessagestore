@@ -30,7 +30,7 @@ func Pack(source interface{}) (map[string]interface{}, error) {
 	return dest, err
 }
 
-func msgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Message {
+func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Message {
 	messages := make([]Message, 0, len(msgEnvelopes))
 	for _, messageEnvelope := range msgEnvelopes {
 		if messageEnvelope == nil {
@@ -38,17 +38,23 @@ func msgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Messag
 			continue
 		}
 		data := make(map[string]interface{})
-		err := json.Unmarshal(messageEnvelope.Data, &data)
-		if err != nil {
+		metadata := make(map[string]interface{})
+		if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
 			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope")
-			continue
+		}
+		if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope")
 		}
 		if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
 			command := &Command{
 				ID:             messageEnvelope.ID,
 				MessageType:    messageEnvelope.MessageType,
 				StreamCategory: strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
+				Position:       messageEnvelope.Position,
+				GlobalPosition: messageEnvelope.GlobalPosition,
 				Data:           data,
+				Metadata:       metadata,
+				Time:           messageEnvelope.Time,
 			}
 			messages = append(messages, command)
 		} else {
@@ -62,10 +68,14 @@ func msgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope) []Messag
 			}
 			event := &Event{
 				ID:             messageEnvelope.ID,
+				Position:       messageEnvelope.Position,
+				GlobalPosition: messageEnvelope.GlobalPosition,
 				MessageType:    messageEnvelope.MessageType,
 				StreamCategory: category,
 				EntityID:       id,
 				Data:           data,
+				Metadata:       metadata,
+				Time:           messageEnvelope.Time,
 			}
 			messages = append(messages, event)
 		}

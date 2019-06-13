@@ -65,7 +65,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 		return nil, err
 	}
 
-	return msgEnvelopesToMessages(msgEnvelopes), nil
+	return MsgEnvelopesToMessages(msgEnvelopes), nil
 }
 
 //CommandStream allows for writing messages using an expected position
