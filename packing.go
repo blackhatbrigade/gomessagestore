@@ -82,7 +82,7 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 
 		return command, nil
 	} else {
-		return nil, errors.New("not a command, also, this isn't an error")
+		return nil, errors.New("Failed converting Envelope to Command, moving on to next converter")
 	}
 }
 
