@@ -14,7 +14,7 @@ type Command struct {
 	ID             string //ID
 	StreamCategory string //StreamCategory
 	MessageType    string
-	Position       int64
+	Version        int64
 	GlobalPosition int64
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
@@ -57,7 +57,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		Data:           data,
 		Metadata:       metadata,
 		Time:           cmd.Time,
-		Position:       cmd.Position,
+		Version:        cmd.Version,
 		GlobalPosition: cmd.GlobalPosition,
 	}
 	return msgEnv, nil
@@ -69,7 +69,7 @@ type Event struct {
 	EntityID       string //EntityID
 	StreamCategory string //StreamCategory
 	MessageType    string
-	Position       int64
+	Version        int64
 	GlobalPosition int64
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
@@ -116,7 +116,7 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		Data:           data,
 		Metadata:       metadata,
 		Time:           event.Time,
-		Position:       event.Position,
+		Version:        event.Version,
 		GlobalPosition: event.GlobalPosition,
 	}
 

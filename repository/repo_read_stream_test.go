@@ -74,7 +74,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 					if row.StreamName == test.streamName {
 						addedMessage++
 						rows.AddRow(
-							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Position, row.GlobalPosition, row.Data, row.Metadata, row.Time,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -180,7 +180,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 					if row.StreamName == test.streamName && row.GlobalPosition >= test.position {
 						addedMessage++
 						rows.AddRow(
-							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Position, row.GlobalPosition, row.Data, row.Metadata, row.Time,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -269,7 +269,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "stream_name", "stream_category", "type", "position", "global_position", "data", "metadata", "time"})
 				if lastRow != nil {
 					rows.AddRow(
-						lastRow.ID, lastRow.StreamName, lastRow.StreamCategory, lastRow.MessageType, lastRow.Position, lastRow.GlobalPosition, lastRow.Data, lastRow.Metadata, lastRow.Time,
+						lastRow.ID, lastRow.StreamName, lastRow.StreamCategory, lastRow.MessageType, lastRow.Version, lastRow.GlobalPosition, lastRow.Data, lastRow.Metadata, lastRow.Time,
 					)
 				}
 

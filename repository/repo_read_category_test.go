@@ -78,7 +78,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 					if row.StreamCategory == test.category {
 						addedMessage++
 						rows.AddRow(
-							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Position, row.GlobalPosition, row.Data, row.Metadata, row.Time,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}
@@ -186,7 +186,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 					if row.StreamCategory == test.streamType && row.GlobalPosition >= test.position {
 						addedMessage++
 						rows.AddRow(
-							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Position, row.GlobalPosition, row.Data, row.Metadata, row.Time,
+							row.ID, row.StreamName, row.StreamCategory, row.MessageType, row.Version, row.GlobalPosition, row.Data, row.Metadata, row.Time,
 						)
 					}
 				}

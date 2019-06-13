@@ -1,10 +1,17 @@
 package repository_test
 
 import (
+	"io/ioutil"
 	"time"
 
 	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/sirupsen/logrus"
 )
+
+// disable logging during tests
+func init() {
+	logrus.SetOutput(ioutil.Discard)
+}
 
 // prevent weirdness with pointers
 func copyAndAppend(i []*MessageEnvelope, vals ...*MessageEnvelope) []*MessageEnvelope {
@@ -19,7 +26,7 @@ var mockMessages = []*MessageEnvelope{{
 	MessageType:    "some_type",
 	StreamName:     "some_type-12345",
 	StreamCategory: "some_type",
-	Position:       0,
+	Version:        0,
 	Data:           []byte("{a:{b:1}, c:\"123\"}"),
 	Time:           time.Unix(1545539339, 0),
 }, {
@@ -28,7 +35,7 @@ var mockMessages = []*MessageEnvelope{{
 	MessageType:    "some_type",
 	StreamName:     "some_type-23456",
 	StreamCategory: "some_type",
-	Position:       0,
+	Version:        0,
 	Data:           []byte("{a:false, b:123}"),
 	Time:           time.Unix(1546773906, 0),
 }, {
@@ -37,7 +44,7 @@ var mockMessages = []*MessageEnvelope{{
 	MessageType:    "some_other_type",
 	StreamName:     "some_other_type-23456",
 	StreamCategory: "some_other_type",
-	Position:       0,
+	Version:        0,
 	Data:           []byte("{d:\"a\"}"),
 	Time:           time.Unix(1546773907, 0),
 }, {
@@ -46,7 +53,7 @@ var mockMessages = []*MessageEnvelope{{
 	MessageType:    "some_other_other_type",
 	StreamName:     "some_other_other_type-23456",
 	StreamCategory: "some_other_other_type",
-	Position:       0,
+	Version:        0,
 	Data:           []byte("{d:\"a\"}"),
 	Time:           time.Unix(1546773907, 0),
 }, {
@@ -55,7 +62,7 @@ var mockMessages = []*MessageEnvelope{{
 	MessageType:    "some_type",
 	StreamName:     "some_type-12345",
 	StreamCategory: "some_type",
-	Position:       1,
+	Version:        1,
 	Data:           []byte("{a:{b:1}, c:\"123\"}"),
 	Time:           time.Unix(1545549339, 0),
 }}

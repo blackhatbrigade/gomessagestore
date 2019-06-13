@@ -31,7 +31,7 @@ type MessageEnvelope struct {
 	StreamName     string    `db:"stream_name"`     //Stream
 	StreamCategory string    `db:"stream_category"` //StreamType
 	MessageType    string    `db:"type"`            //Type
-	Position       int64     `db:"position"`
+	Version        int64     `db:"position"`
 	GlobalPosition int64     `db:"global_position"`
 	Data           []byte    `db:"data"`
 	Metadata       []byte    `db:"metadata"` //eventideMessageMetaData
