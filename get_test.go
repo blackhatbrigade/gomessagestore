@@ -220,3 +220,36 @@ func TestGetMessagesRequiresEitherStreamOrCategory(t *testing.T) {
 		t.Errorf("Expected ErrGetMessagesRequiresEitherStreamOrCategory, but got %s", err)
 	}
 }
+
+func TestGetWithAlternateConverters(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleOtherMessage()
+	ctx := context.Background()
+
+	msgEnv := getSampleEventAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory).
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
+
+	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgs, err := msgStore.Get(
+		ctx,
+		Category(msg.StreamCategory),
+		Converter(convertEnvelopeToOtherMessage),
+	)
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesOtherMessage(t, msgs[0], msg)
+	}
+}

@@ -32,6 +32,7 @@ func Pack(source interface{}) (map[string]interface{}, error) {
 }
 
 //MessageConverter allows the MsgEnvelopesToMessages to convert to structs that aren't defined in this library
+// if the message isn't the correct type, returning nil or an error will cause the default converters to run
 type MessageConverter func(*repository.MessageEnvelope) (Message, error)
 
 //MsgEnvelopesToMessages converts envelopes to any number of different structs that impliment the Message interface
@@ -47,19 +48,18 @@ func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converte
 
 		for _, converter := range myConverters {
 			message, err := converter(messageEnvelope)
-			if message == nil || err != nil {
-				continue
+			if message != nil && err == nil {
+				messages = append(messages, message)
+				break // only one successful conversion per envelope
 			}
 
-			messages = append(messages, message)
-			break // only one successful conversion per envelope
 		}
 	}
 
 	return messages
 }
 
-func convertCommandToEnvelope(messageEnvelope *repository.MessageEnvelope) (Message, error) {
+func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
 		data := make(map[string]interface{})
 		if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
@@ -86,7 +86,7 @@ func convertCommandToEnvelope(messageEnvelope *repository.MessageEnvelope) (Mess
 	}
 }
 
-func convertEventToEnvelope(messageEnvelope *repository.MessageEnvelope) (Message, error) {
+func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	data := make(map[string]interface{})
 	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
@@ -120,7 +120,7 @@ func convertEventToEnvelope(messageEnvelope *repository.MessageEnvelope) (Messag
 
 func defaultConverters() []MessageConverter {
 	return []MessageConverter{
-		convertCommandToEnvelope,
-		convertEventToEnvelope, // always run this one last, as it always passes
+		convertEnvelopeToCommand,
+		convertEnvelopeToEvent, // always run this one last, as it always passes
 	}
 }

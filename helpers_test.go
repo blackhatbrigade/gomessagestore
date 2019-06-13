@@ -1,8 +1,11 @@
 package gomessagestore_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,6 +48,22 @@ func getSampleEvent() *Event {
 	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
 	return &Event{
+		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		MessageType:    "test type",
+		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		Position:       9,
+		GlobalPosition: 9,
+		StreamCategory: "test cat",
+		Data:           packed,
+		Metadata:       packed,
+		Time:           time.Unix(1, 0),
+	}
+}
+
+func getSampleOtherMessage() *otherMessage {
+	packed, err := Pack(dummyData{"a"})
+	panicIf(err)
+	return &otherMessage{
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		MessageType:    "test type",
 		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
@@ -244,6 +263,34 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 	}
 }
 
+func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMessage) {
+	switch other := msgEnv.(type) {
+	case *otherMessage:
+		if other.ID != msg.ID {
+			t.Error("ID in message does not match")
+		}
+		if other.MessageType != msg.MessageType {
+			t.Error("MessageType in message does not match")
+		}
+		if other.EntityID != msg.EntityID {
+			t.Error("EntityID in message does not match")
+		}
+		if other.StreamCategory != msg.StreamCategory {
+			t.Error("StreamCategory in message does not match")
+		}
+		data := new(dummyData)
+		err := Unpack(other.Data, data)
+		if err != nil {
+			t.Error("Couldn't unpack data from message")
+		}
+		if !reflect.DeepEqual(&dummyData{"a"}, data) {
+			t.Error("Messages are not correct")
+		}
+	default:
+		t.Errorf("Unknown type of Message %T", msgEnv)
+	}
+}
+
 type mockDataStructure struct {
 	MockReducer1Called bool
 	MockReducer2Called bool
@@ -300,4 +347,98 @@ func eventsToMessageSlice(events []*Event) []Message {
 	}
 
 	return newMsgs
+}
+
+// this is all just the same as Event
+type otherMessage struct {
+	ID             string //ID
+	EntityID       string //EntityID
+	StreamCategory string //StreamCategory
+	MessageType    string
+	Position       int64
+	GlobalPosition int64
+	Data           map[string]interface{}
+	Metadata       map[string]interface{}
+	Time           time.Time
+}
+
+func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
+	if other.MessageType == "" {
+		return nil, ErrMissingMessageType
+	}
+
+	if strings.Contains(other.StreamCategory, "-") {
+		return nil, ErrInvalidMessageCategory
+	}
+
+	if other.Data == nil {
+		return nil, ErrMissingMessageData
+	}
+
+	if other.ID == "" {
+		return nil, ErrMessageNoID
+	}
+
+	if other.EntityID == "" {
+		return nil, ErrMissingMessageCategoryID
+	}
+
+	if other.StreamCategory == "" {
+		return nil, ErrMissingMessageCategory
+	}
+
+	data, err := json.Marshal(other.Data)
+	metadata, errm := json.Marshal(other.Metadata)
+	if err != nil || errm != nil {
+		return nil, ErrUnserializableData
+	}
+
+	msgEnv := &repository.MessageEnvelope{
+		ID:             other.ID,
+		MessageType:    other.MessageType,
+		StreamName:     fmt.Sprintf("%s-%s", other.StreamCategory, other.EntityID),
+		StreamCategory: other.StreamCategory,
+		Data:           data,
+		Metadata:       metadata,
+		Time:           other.Time,
+		Position:       other.Position,
+		GlobalPosition: other.GlobalPosition,
+	}
+
+	return msgEnv, nil
+}
+
+func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
+
+	fmt.Print("I've been called")
+	data := make(map[string]interface{})
+	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
+	}
+	metadata := make(map[string]interface{})
+	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
+		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
+	}
+
+	category, id := "", ""
+	cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
+	if len(cats) > 0 {
+		category = cats[0]
+		if len(cats) == 2 {
+			id = cats[1]
+		}
+	}
+	other := &otherMessage{
+		ID:             messageEnvelope.ID,
+		Position:       messageEnvelope.Position,
+		GlobalPosition: messageEnvelope.GlobalPosition,
+		MessageType:    messageEnvelope.MessageType,
+		StreamCategory: category,
+		EntityID:       id,
+		Data:           data,
+		Metadata:       metadata,
+		Time:           messageEnvelope.Time,
+	}
+
+	return other, nil
 }
