@@ -21,6 +21,11 @@ type Command struct {
 	Time           time.Time
 }
 
+//Type returns the type of this message (business action taking place)
+func (cmd *Command) Type() string {
+	return cmd.MessageType
+}
+
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if cmd.MessageType == "" {
@@ -74,6 +79,11 @@ type Event struct {
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
+}
+
+//Type returns the type of this message (business action taking place)
+func (event *Event) Type() string {
+	return event.MessageType
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.

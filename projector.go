@@ -1,9 +1,8 @@
 package gomessagestore
 
 import (
+	"context"
 	"reflect"
-
-	"golang.org/x/net/context"
 )
 
 //CreateProjector creates a projector for use with MessageReducers to get projections
@@ -59,15 +58,8 @@ func (proj *projector) Run(ctx context.Context, category string, entityID string
 	state := proj.defaultState
 	for _, message := range msgs {
 		for _, reducer := range proj.reducers {
-			switch msg := message.(type) {
-			case *Event:
-				if reducer.Type() == msg.MessageType {
-					state = reducer.Reduce(message, state)
-				}
-			case *Command:
-				if reducer.Type() == msg.MessageType {
-					state = reducer.Reduce(message, state)
-				}
+			if reducer.Type() == message.Type() {
+				state = reducer.Reduce(message, state)
 			}
 		}
 	}

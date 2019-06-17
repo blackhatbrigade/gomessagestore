@@ -371,6 +371,10 @@ type otherMessage struct {
 	Time           time.Time
 }
 
+func (other *otherMessage) Type() string {
+	return other.MessageType
+}
+
 func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if other.MessageType == "" {
 		return nil, ErrMissingMessageType
