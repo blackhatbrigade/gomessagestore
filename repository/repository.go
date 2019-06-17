@@ -1,9 +1,8 @@
 package repository
 
 import (
+	"context"
 	"errors"
-
-	"golang.org/x/net/context"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/repository Repository > mocks/repository.go"

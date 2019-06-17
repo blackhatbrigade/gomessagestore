@@ -1,10 +1,10 @@
 package repository
 
 import (
+	"context"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 )
 
 func (r postgresRepo) GetAllMessagesInCategory(ctx context.Context, category string) (m []*MessageEnvelope, err error) {

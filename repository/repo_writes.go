@@ -1,8 +1,9 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 )
 
 func (r postgresRepo) WriteMessage(ctx context.Context, msg *MessageEnvelope) error {

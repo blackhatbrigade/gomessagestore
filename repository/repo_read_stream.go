@@ -1,8 +1,9 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 )
 
 func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamID string) ([]*MessageEnvelope, error) {
