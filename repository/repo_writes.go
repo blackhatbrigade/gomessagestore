@@ -24,7 +24,7 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 	}
 
 	if msg.StreamName == "" {
-		return ErrInvalidStreamID
+		return ErrInvalidStreamName
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled

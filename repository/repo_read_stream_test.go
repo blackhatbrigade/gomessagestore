@@ -40,8 +40,8 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		streamName:       "some_type-12345",
 		expectedMessages: []*MessageEnvelope{},
 	}, {
-		name:        "when asking for messages from a stream with a blank ID, an error is returned",
-		expectedErr: ErrInvalidStreamID,
+		name:        "when asking for messages from a stream with a blank Name, an error is returned",
+		expectedErr: ErrInvalidStreamName,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
 		streamName:  "some_type-12345",
@@ -146,8 +146,8 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		streamName:       "some_type-12345",
 		expectedMessages: []*MessageEnvelope{},
 	}, {
-		name:        "when asking for messages from a stream with a blank ID, an error is returned",
-		expectedErr: ErrInvalidStreamID,
+		name:        "when asking for messages from a stream with a blank Name, an error is returned",
+		expectedErr: ErrInvalidStreamName,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
 		streamName:  "some_type-12345",
@@ -230,8 +230,8 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 		name:       "when there are no existing messages it should return no message",
 		streamName: "some_type-12345",
 	}, {
-		name:        "when asking for messages from a stream with a blank ID, an error is returned",
-		expectedErr: ErrInvalidStreamID,
+		name:        "when asking for messages from a stream with a blank Name, an error is returned",
+		expectedErr: ErrInvalidStreamName,
 	}, {
 		name:        "when there is an issue getting the message an error should be returned",
 		streamName:  "some_type-12345",
