@@ -31,6 +31,7 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 		ms:             ms,
 		pollTime:       200 * time.Millisecond,
 		updateInterval: 100,
+		handlers:       handlers,
 	}
 
 	for _, option := range opts {
@@ -78,11 +79,23 @@ func (sub *subscriber) UpdatePollTime(pollTime time.Duration) error {
 
 //Start
 func (sub *subscriber) Start(ctx context.Context) error {
-	sub.ms.Get(
-		ctx,
-		EventStream(sub.category, sub.entityID),
+	opts := []GetOption{
 		Since(0),
-	)
+	}
+	if sub.entityID == "" {
+		opts = append(opts, Category(sub.category))
+	} else {
+		if sub.commandCategory != "" {
+			opts = append(opts, CommandStream(sub.commandCategory))
+		} else {
+			opts = append(opts, EventStream(sub.category, sub.entityID))
+		}
+	}
+	msgs, _ := sub.ms.Get(ctx, opts...)
+
+	for _, msg := range msgs {
+		sub.handlers[0].Process(ctx, msg)
+	}
 
 	return nil
 }
