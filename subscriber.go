@@ -2,21 +2,23 @@ package gomessagestore
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
 //Subscriber allows for reaching out to the message service on a continual basis
 type Subscriber interface {
-	Start(*context.Context) error
+	Start(context.Context) error
 }
 
 type subscriber struct {
-	ms       MessageStore
-	handlers []MessageHandler
-	stream   string
-	category string
-	pollTime time.Duration
+	ms              MessageStore
+	handlers        []MessageHandler
+	entityID        string
+	category        string
+	commandCategory string
+	pollTime        time.Duration
+	updateInterval  int
+	batchSize       int
 }
 
 //SubscriberOption allows for various options when creating a subscriber
@@ -26,11 +28,15 @@ type SubscriberOption func(sub *subscriber) error
 func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error) {
 
 	subscriber := &subscriber{
-		ms:       ms,
-		pollTime: 200 * time.Millisecond,
+		ms:             ms,
+		pollTime:       200 * time.Millisecond,
+		updateInterval: 100,
 	}
 
 	for _, option := range opts {
+		if option == nil {
+			return nil, ErrSubscriberNilOption
+		}
 		err := option(subscriber)
 		if err != nil {
 			return nil, err
@@ -38,9 +44,6 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 	}
 
 	//Validate the params
-	if subscriber.stream != "" && subscriber.category != "" {
-		return nil, ErrSubscriberCannotUseBothStreamAndCategory
-	}
 	if handlers == nil {
 		return nil, ErrSubscriberMessageHandlersEqualToNil
 	}
@@ -55,11 +58,14 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 	if subscriberID == "" {
 		return nil, ErrSubscriberIDCannotBeEmpty
 	}
-	if subscriber.stream == "" && subscriber.category == "" {
+	if subscriber.entityID == "" && subscriber.category == "" {
 		return nil, ErrSubscriberNeedsCategoryOrStream
 	}
 	if subscriber.pollTime <= 0 {
 		return nil, ErrInvalidPollTime
+	}
+	if subscriber.updateInterval < 2 {
+		return nil, ErrInvalidMsgInterval
 	}
 
 	return subscriber, nil
@@ -71,7 +77,12 @@ func (sub *subscriber) UpdatePollTime(pollTime time.Duration) error {
 }
 
 //Start
-func (sub *subscriber) Start(ctx *context.Context) error {
+func (sub *subscriber) Start(ctx context.Context) error {
+	sub.ms.Get(
+		ctx,
+		EventStream(sub.category, sub.entityID),
+		Since(0),
+	)
 
 	return nil
 }
@@ -79,11 +90,12 @@ func (sub *subscriber) Start(ctx *context.Context) error {
 //Subscribe to a specific entity stream
 func SubscribeToEntityStream(category, entityID string) SubscriberOption {
 	return func(sub *subscriber) error {
-		if sub.stream != "" {
+		if sub.entityID != "" {
 			return ErrSubscriberCannotSubscribeToMultipleStreams
 		}
 		if category != "" && entityID != "" {
-			sub.stream = fmt.Sprintf("%s-%s", category, entityID)
+			sub.entityID = entityID
+			sub.category = category
 		}
 		return nil
 	}
@@ -92,11 +104,15 @@ func SubscribeToEntityStream(category, entityID string) SubscriberOption {
 //Subscribe to a specific command stream
 func SubscribeToCommandStream(category string) SubscriberOption {
 	return func(sub *subscriber) error {
-		if sub.stream != "" {
+		if sub.entityID != "" {
 			return ErrSubscriberCannotSubscribeToMultipleStreams
 		}
+		if sub.category != "" {
+			return ErrSubscriberCannotUseBothStreamAndCategory
+		}
 		if category != "" {
-			sub.stream = fmt.Sprintf("%s:command", category)
+			sub.commandCategory = category
+			sub.entityID = "none"
 		}
 		return nil
 	}
@@ -105,6 +121,9 @@ func SubscribeToCommandStream(category string) SubscriberOption {
 //Subscribe to a category of streams
 func SubscribeToCategory(category string) SubscriberOption {
 	return func(sub *subscriber) error {
+		if sub.entityID != "" {
+			return ErrSubscriberCannotUseBothStreamAndCategory
+		}
 		if sub.category != "" {
 			return ErrSubscriberCannotSubscribeToMultipleCategories
 		}
@@ -113,9 +132,30 @@ func SubscribeToCategory(category string) SubscriberOption {
 	}
 }
 
+//PollTime sets the interval between handling operations
 func PollTime(pollTime time.Duration) SubscriberOption {
 	return func(sub *subscriber) error {
 		sub.pollTime = pollTime
+		return nil
+	}
+}
+
+//UpdatePostionEvery updates position of subscriber based on a msgInterval (cannot be < 2)
+//An interval of 1 would create an event on every message, and possibly be picked up by itself, creating another event, and so on
+func UpdatePositionEvery(msgInterval int) SubscriberOption {
+	return func(sub *subscriber) error {
+		sub.updateInterval = msgInterval
+		return nil
+	}
+}
+
+//SubscribeBatchSize sets the amount of messages to retrieve in a single handling operation
+func SubscribeBatchSize(batchSize int) SubscriberOption {
+	return func(sub *subscriber) error {
+		if batchSize < 1 {
+			return ErrInvalidBatchSize
+		}
+		sub.batchSize = batchSize
 		return nil
 	}
 }

@@ -6,6 +6,8 @@ import "errors"
 var (
 	ErrSubscriberCannotUseBothStreamAndCategory      = errors.New("Subscriber function cannot use both Stream and Category")
 	ErrInvalidPollTime                               = errors.New("Invalid Subscriber poll time provided, can not be negative or zero")
+	ErrInvalidBatchSize                              = errors.New("Invalid Subscriber batch size provided, can not be negative or zero")
+	ErrInvalidMsgInterval                            = errors.New("MsgInterval cannot be less than 2")
 	ErrSubscriberNeedsCategoryOrStream               = errors.New("Subscriber needs at least one of category or stream to be set upon creation")
 	ErrSubscriberIDCannotBeEmpty                     = errors.New("Subscriber ID cannot be nil")
 	ErrSubscriberNeedsAtLeastOneMessageHandler       = errors.New("Subscriber needs at least one handler upon creation")
@@ -14,6 +16,7 @@ var (
 	ErrProjectorNeedsAtLeastOneReducer               = errors.New("Projector needs at least one reducer upon creation")
 	ErrSubscriberMessageHandlerEqualToNil            = errors.New("Subscriber Message Handler cannot be equal to nil")
 	ErrSubscriberMessageHandlersEqualToNil           = errors.New("Subscriber Message Handler array cannot be equal to nil")
+	ErrSubscriberNilOption                           = errors.New("Options cannot include an option whose value is equal to nil")
 	ErrDefaultStateNotSet                            = errors.New("Default state not set while trying to create a new projector")
 	ErrDefaultStateCannotBePointer                   = errors.New("Default state cannot be a pointer when creating a projector")
 	ErrGetMessagesCannotUseBothStreamAndCategory     = errors.New("Get messages function cannot use both Stream and Category")
