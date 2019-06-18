@@ -8,6 +8,7 @@ import (
 //Subscriber allows for reaching out to the message service on a continual basis
 type Subscriber interface {
 	Start(context.Context) error
+	Poll(context.Context) error
 }
 
 type subscriber struct {
@@ -19,6 +20,7 @@ type subscriber struct {
 	pollTime        time.Duration
 	updateInterval  int
 	batchSize       int
+	subscriberID    string
 }
 
 //SubscriberOption allows for various options when creating a subscriber
@@ -32,6 +34,7 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 		pollTime:       200 * time.Millisecond,
 		updateInterval: 100,
 		handlers:       handlers,
+		subscriberID:   subscriberID,
 	}
 
 	for _, option := range opts {
@@ -74,29 +77,6 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 
 //UpdatePollTime
 func (sub *subscriber) UpdatePollTime(pollTime time.Duration) error {
-	return nil
-}
-
-//Start
-func (sub *subscriber) Start(ctx context.Context) error {
-	opts := []GetOption{
-		Since(0),
-	}
-	if sub.entityID == "" {
-		opts = append(opts, Category(sub.category))
-	} else {
-		if sub.commandCategory != "" {
-			opts = append(opts, CommandStream(sub.commandCategory))
-		} else {
-			opts = append(opts, EventStream(sub.category, sub.entityID))
-		}
-	}
-	msgs, _ := sub.ms.Get(ctx, opts...)
-
-	for _, msg := range msgs {
-		sub.handlers[0].Process(ctx, msg)
-	}
-
 	return nil
 }
 

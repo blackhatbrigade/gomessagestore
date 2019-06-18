@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -251,5 +252,173 @@ func TestGetWithAlternateConverters(t *testing.T) {
 		t.Error("Incorrect number of messages returned")
 	} else {
 		assertMessageMatchesOtherMessage(t, msgs[0], msg)
+	}
+}
+
+func TestGetWithPositionSucceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	subscriberId := "12345"
+
+	msg := getSampleEvent()
+	ctx := context.Background()
+
+	msgEnv := getSampleEventAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetLastMessageInStream(ctx, fmt.Sprintf("%s+position", subscriberId)).
+		Return(msgEnv, nil)
+
+	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgs, err := msgStore.Get(
+		ctx,
+		PositionStream(subscriberId),
+		Last(),
+	)
+
+	if err != nil {
+		t.Error("An error has ocurred while getting position from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesEvent(t, msgs[0], msg)
+	}
+}
+
+func TestOptionErrors(t *testing.T) {
+	tests := []struct {
+		name          string
+		expectedError error
+		opts          []GetOption
+	}{{
+		name:          "Last fails when stream is not set",
+		expectedError: ErrGetLastRequiresStream,
+		opts: []GetOption{
+			Last(),
+			Category("Blah"),
+		},
+	}, {
+		name:          "Last is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			Last(),
+			Last(),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "Since is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			Since(5),
+			Since(10),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "Category is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			Category("yayaya"),
+			Category("yayaya"),
+		},
+	}, {
+		name:          "Command Stream is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			CommandStream("yayaya"),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "Event Stream is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			EventStream("blah", "1234"),
+			EventStream("blah", "1234"),
+		},
+	}, {
+		name:          "Position Stream is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			PositionStream("blah"),
+			PositionStream("blah"),
+		},
+	}, {
+		name:          "Since and Last are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			Since(5),
+			Last(),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "Command Stream and Event Stream are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			CommandStream("yayaya"),
+			EventStream("blah", "1234"),
+		},
+	}, {
+		name:          "Event Stream and Position Stream are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			EventStream("blah", "1234"),
+			PositionStream("blah"),
+		},
+	}, {
+		name:          "Command Stream and Position Stream are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			CommandStream("blah"),
+			PositionStream("blah"),
+		},
+	}, {
+		name:          "Category cannot contain a hyphen",
+		expectedError: ErrInvalidMessageCategory,
+		opts: []GetOption{
+			Category("-"),
+		},
+	}, {
+		name:          "Command Stream cannot contain a hyphen",
+		expectedError: ErrInvalidCommandStream,
+		opts: []GetOption{
+			CommandStream("hyphen-hyphen"),
+		},
+	}, {
+		name:          "Event Stream cannot contain a hyphen",
+		expectedError: ErrInvalidEventStream,
+		opts: []GetOption{
+			EventStream("hyphen-hyphen", "12355"),
+		},
+	}, {
+		name:          "Position Stream cannot contain a hyphen",
+		expectedError: ErrInvalidPositionStream,
+		opts: []GetOption{
+			PositionStream("hyphen-hyphen"),
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := mock_repository.NewMockRepository(ctrl)
+
+			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+
+			_, err := myMessageStore.Get(
+				ctx,
+				test.opts...,
+			)
+
+			if err != test.expectedError {
+				t.Errorf("Failed to get expected error from Get\nExpected: %s\n and got: %s\n", test.expectedError, err)
+			}
+		})
 	}
 }
