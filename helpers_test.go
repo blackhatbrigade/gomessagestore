@@ -31,6 +31,7 @@ func init() {
 
 func getSampleCommand() *Command {
 	packed, err := Pack(dummyData{"a"})
+	panicIf(err)
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &Command{
@@ -47,6 +48,7 @@ func getSampleCommand() *Command {
 
 func getSampleEvent() *Event {
 	packed, err := Pack(dummyData{"a"})
+	panicIf(err)
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &Event{
@@ -64,6 +66,7 @@ func getSampleEvent() *Event {
 
 func getSampleOtherMessage() *otherMessage {
 	packed, err := Pack(dummyData{"a"})
+	panicIf(err)
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &otherMessage{
@@ -81,8 +84,11 @@ func getSampleOtherMessage() *otherMessage {
 
 func getSampleCommands() []*Command {
 	packed1, err := Pack(dummyData{"a"})
+	panicIf(err)
 	packed2, err := Pack(dummyData{"c"})
+	panicIf(err)
 	packedMeta1, err := Pack(dummyData{"b"})
+	panicIf(err)
 	packedMeta2, err := Pack(dummyData{"d"})
 	panicIf(err)
 	return []*Command{
@@ -109,8 +115,11 @@ func getSampleCommands() []*Command {
 
 func getSampleEvents() []*Event {
 	packed1, err := Pack(dummyData{"a"})
+	panicIf(err)
 	packed2, err := Pack(dummyData{"c"})
+	panicIf(err)
 	packedMeta1, err := Pack(dummyData{"b"})
+	panicIf(err)
 	packedMeta2, err := Pack(dummyData{"d"})
 	panicIf(err)
 	return []*Event{
@@ -137,6 +146,29 @@ func getSampleEvents() []*Event {
 		}}
 }
 
+func getLotsOfSampleEvents(amount, startingAt int) []*Event {
+	packed, err := Pack(dummyData{"a"})
+	panicIf(err)
+	packedMeta, err := Pack(dummyData{"b"})
+	panicIf(err)
+	events := make([]*Event, amount)
+	for index, _ := range events {
+		events[index] = &Event{
+			ID:             fmt.Sprintf("544477d6-453f-4b48-8460-%012d", startingAt+index),
+			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
+			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Version:        int64(4 + startingAt + index),
+			GlobalPosition: int64(500 + startingAt + index),
+			Data:           packed,
+			Metadata:       packedMeta,
+			Time:           time.Unix(1, 3),
+		}
+	}
+
+	return events
+}
+
 func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
@@ -151,6 +183,25 @@ func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 	}
 
 	return msgEnv
+}
+
+func getLotsOfSampleEventsAsEnvelopes(amount, startingAt int) []*repository.MessageEnvelope {
+	events := make([]*repository.MessageEnvelope, amount)
+	for index, _ := range events {
+		events[index] = &repository.MessageEnvelope{
+			ID:             fmt.Sprintf("544477d6-453f-4b48-8460-%012d", startingAt+index),
+			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
+			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamCategory: "test cat",
+			Version:        int64(4 + startingAt + index),
+			GlobalPosition: int64(500 + startingAt + index),
+			Data:           []byte(`{"Field1":"a"}`),
+			Metadata:       []byte(`{"Field1":"b"}`),
+			Time:           time.Unix(1, 3),
+		}
+	}
+
+	return events
 }
 
 func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
@@ -301,8 +352,10 @@ func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMe
 }
 
 type mockDataStructure struct {
-	MockReducer1Called bool
-	MockReducer2Called bool
+	MockReducer1Called    bool
+	MockReducer2Called    bool
+	MockReducer1CallCount int
+	MockReducer2CallCount int
 }
 
 type mockReducer1 struct {
@@ -314,6 +367,7 @@ func (red *mockReducer1) Reduce(msg Message, previousState interface{}) interfac
 	switch state := previousState.(type) {
 	case mockDataStructure:
 		state.MockReducer1Called = true
+		state.MockReducer1CallCount++
 		return state
 	}
 	return nil
@@ -332,6 +386,7 @@ func (red *mockReducer2) Reduce(msg Message, previousState interface{}) interfac
 	switch state := previousState.(type) {
 	case mockDataStructure:
 		state.MockReducer2Called = true
+		state.MockReducer2CallCount++
 		return state
 	}
 	return nil
@@ -369,6 +424,10 @@ type otherMessage struct {
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
+}
+
+func (other *otherMessage) MessageVersion() int64 {
+	return other.Version
 }
 
 func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {

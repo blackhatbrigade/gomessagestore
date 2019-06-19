@@ -21,6 +21,11 @@ type Command struct {
 	Time           time.Time
 }
 
+//MessageVersion gets the command's Version field
+func (cmd *Command) MessageVersion() int64 {
+	return cmd.Version
+}
+
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if cmd.MessageType == "" {
@@ -74,6 +79,11 @@ type Event struct {
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
+}
+
+//MessageVersion gets the event's Version field
+func (event *Event) MessageVersion() int64 {
+	return event.Version
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
