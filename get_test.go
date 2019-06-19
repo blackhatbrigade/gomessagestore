@@ -148,6 +148,40 @@ func TestGetWithCategory(t *testing.T) {
 	}
 }
 
+func TestGetWithCategoryAndSince(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	var globalPosition int64
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleEvent()
+	ctx := context.Background()
+
+	msgEnv := getSampleEventAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInCategorySince(ctx, msgEnv.StreamCategory, globalPosition, 1000).
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
+
+	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgs, err := msgStore.Get(
+		ctx,
+		SincePosition(globalPosition),
+		Category(msg.StreamCategory),
+	)
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesEvent(t, msgs[0], msg)
+	}
+}
+
 func TestGetMessagesCannotUseBothStreamAndCategory(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -173,7 +207,7 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 
 	msg := getSampleEvent()
 	ctx := context.Background()
-	var globalPosition int64
+	var localPosition int64
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
 
@@ -181,12 +215,12 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition, 1000).
+		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, localPosition, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
 		ctx,
-		Since(globalPosition),
+		SinceVersion(localPosition),
 		EventStream(msg.StreamCategory, msg.EntityID),
 	)
 
@@ -209,7 +243,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 
 	msg := getSampleCommand()
 	ctx := context.Background()
-	var globalPosition int64
+	var localPosition int64
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
 
@@ -217,12 +251,12 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition, 1000).
+		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, localPosition, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
 		ctx,
-		Since(globalPosition),
+		SinceVersion(localPosition),
 		CommandStream(msg.StreamCategory),
 	)
 
@@ -247,7 +281,10 @@ func TestGetMessagesRequiresEitherStreamOrCategory(t *testing.T) {
 	ctx := context.Background()
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
-	_, err := msgStore.Get(ctx, Since(globalPosition))
+	_, err := msgStore.Get(
+		ctx,
+		SincePosition(globalPosition),
+	)
 
 	if err != ErrGetMessagesRequiresEitherStreamOrCategory {
 		t.Errorf("Expected ErrGetMessagesRequiresEitherStreamOrCategory, but got %s", err)

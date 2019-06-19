@@ -9,11 +9,13 @@ import (
 )
 
 type getOpts struct {
-	stream     *string
-	category   *string
-	since      *int64
-	converters []MessageConverter
-	batchsize  int
+	stream        *string
+	category      *string
+	sincePosition bool
+	sinceVersion  bool
+	since         *int64
+	converters    []MessageConverter
+	batchsize     int
 }
 
 //GetOption provide optional arguments to the Get function
@@ -93,10 +95,19 @@ func Category(category string) GetOption {
 	}
 }
 
-//Since allows for getting only more recent messages
-func Since(since int64) GetOption {
+//SincePosition allows for getting only more recent messages
+func SincePosition(position int64) GetOption {
 	return func(g *getOpts) {
-		g.since = &since
+		g.since = &position
+		g.sincePosition = true
+	}
+}
+
+//SinceVersion allows for getting only more recent messages
+func SinceVersion(version int64) GetOption {
+	return func(g *getOpts) {
+		g.since = &version
+		g.sinceVersion = true
 	}
 }
 
