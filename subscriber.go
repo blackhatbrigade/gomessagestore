@@ -9,6 +9,9 @@ import (
 type Subscriber interface {
 	Start(context.Context) error
 	Poll(context.Context) error
+	GetMessages(ctx context.Context, position int64) ([]Message, error)
+	ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error)
+	GetPosition(ctx context.Context) (int64, error)
 }
 
 type subscriber struct {
@@ -21,6 +24,7 @@ type subscriber struct {
 	updateInterval  int
 	batchSize       int
 	subscriberID    string
+	position        int64
 }
 
 //SubscriberOption allows for various options when creating a subscriber

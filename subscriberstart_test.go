@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestSubscriberPoll(t *testing.T) {
+func TestSubscriberGetsMessages(t *testing.T) {
 	messageHandler := &msgHandler{}
 
 	tests := []struct {
@@ -29,7 +29,7 @@ func TestSubscriberPoll(t *testing.T) {
 		expectedHandled     []string
 		positionEnvelope    *repository.MessageEnvelope
 	}{{
-		name:           "Repository is called for a stream when Poll method is invoked",
+		name:           "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
 		subscriberID:   "some id",
 		expectedStream: "some category-some id1",
 		handlers:       []MessageHandler{messageHandler},
@@ -37,7 +37,7 @@ func TestSubscriberPoll(t *testing.T) {
 			SubscribeToEntityStream("some category", "some id1"),
 		},
 	}, {
-		name:             "Repository is called for a category when Poll method is invoked",
+		name:             "When subscriber is called with SubscribeToCategory() option, repository is called correctly",
 		subscriberID:     "some id",
 		expectedCategory: "some category",
 		handlers:         []MessageHandler{messageHandler},
@@ -45,22 +45,12 @@ func TestSubscriberPoll(t *testing.T) {
 			SubscribeToCategory("some category"),
 		},
 	}, {
-		name:           "Repository is called for a command stream  when Poll method is invoked",
+		name:           "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
 		handlers:       []MessageHandler{messageHandler},
 		expectedStream: "some category:command",
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("some category"),
 		},
-	}, {
-		name:                "Subscriber Poll processes a message in the registered handler",
-		handlers:            []MessageHandler{&msgHandler{}},
-		expectedHandlerBool: true,
-		expectedHandled:     []string{"Command MessageType 1"},
-		expectedStream:      "category:command",
-		opts: []SubscriberOption{
-			SubscribeToCommandStream("category"),
-		},
-		messageEnvelopes: getSampleCommandsAsEnvelopes(),
 	}}
 
 	for _, test := range tests {
@@ -83,7 +73,6 @@ func TestSubscriberPoll(t *testing.T) {
 					GetAllMessagesInCategorySince(ctx, test.expectedCategory, test.expectedPosition).
 					Return(test.messageEnvelopes, test.repoReturnError)
 			}
-			mockRepo.EXPECT().GetLastMessageInStream(ctx, "some id+position").Return(test.positionEnvelope, nil)
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
@@ -98,7 +87,79 @@ func TestSubscriberPoll(t *testing.T) {
 				return
 			}
 
-			err = mySubscriber.Poll(ctx)
+			_, err = mySubscriber.GetMessages(ctx, test.expectedPosition)
+			if err != test.expectedError {
+				t.Errorf("Failed to get expected error from GetMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+			}
+
+			if test.expectedHandlerBool {
+				switch handler := test.handlers[0].(type) {
+				case *msgHandler:
+					if !handler.Called {
+						t.Error("Handler was not called")
+					}
+					if !reflect.DeepEqual(handler.Handled, test.expectedHandled) {
+						t.Errorf("Handler was called for the wrong messages, \nCalled: %s\nExpected: %s\n", handler.Handled, test.expectedHandled)
+					}
+
+				default:
+					t.Errorf("Invalid type found %T", test.handlers[0])
+				}
+			}
+		})
+	}
+}
+
+func TestSubscriberProcessesMessages(t *testing.T) {
+
+	tests := []struct {
+		name                string
+		subscriberID        string
+		expectedError       error
+		handlers            []MessageHandler
+		expectedPosition    int64
+		expectedStream      string
+		expectedCategory    string
+		opts                []SubscriberOption
+		messages            []Message
+		repoReturnError     error
+		expectedHandlerBool bool
+		expectedHandled     []string
+		positionEnvelope    *repository.MessageEnvelope
+	}{{
+		name:                "Subscriber Poll processes a message in the registered handler",
+		handlers:            []MessageHandler{&msgHandler{}},
+		expectedHandlerBool: true,
+		expectedHandled:     []string{"Command MessageType 1"},
+		expectedStream:      "category:command",
+		opts: []SubscriberOption{
+			SubscribeToCommandStream("category"),
+		},
+		messages: commandsToMessageSlice(getSampleCommands()),
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			ctx := context.Background()
+			mockRepo := mock_repository.NewMockRepository(ctrl)
+
+			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+
+			mySubscriber, err := myMessageStore.CreateSubscriber(
+				"some id",
+				test.handlers,
+				test.opts...,
+			)
+
+			if err != nil {
+				t.Errorf("Failed on CreateSubscriber() Got: %s\n", err)
+				return
+			}
+
+			_, _, err = mySubscriber.ProcessMessages(ctx, test.messages)
 			if err != test.expectedError {
 				t.Errorf("Failed to get expected error from Poll()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}
@@ -121,28 +182,16 @@ func TestSubscriberPoll(t *testing.T) {
 	}
 }
 
-func TestPollKeepsTrackOfPositionForStream(t *testing.T) {
+func TestSubscriberGetsPosition(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	var expectedPos int64 = 0
+
 	handlers := []MessageHandler{&msgHandler{}}
-	expectedStream := "some category-1234"
 
 	ctx := context.Background()
 	mockRepo := mock_repository.NewMockRepository(ctrl)
-
-	messageEnvelopes := getSampleCommandsAsEnvelopes()
-
-	firstCall := mockRepo.
-		EXPECT().
-		GetAllMessagesInStreamSince(ctx, expectedStream, 0).
-		Return(messageEnvelopes, nil)
-
-	mockRepo.
-		EXPECT().
-		GetAllMessagesInStreamSince(ctx, expectedStream, messageEnvelopes[1].Version+1).
-		Return(messageEnvelopes, nil).
-		After(firstCall)
 
 	mockRepo.
 		EXPECT().
@@ -163,13 +212,13 @@ func TestPollKeepsTrackOfPositionForStream(t *testing.T) {
 		return
 	}
 
-	err = mySubscriber.Poll(ctx)
+	pos, err := mySubscriber.GetPosition(ctx)
 
 	if err != nil {
-		t.Errorf("Failed first call: %v", err)
+		t.Errorf("Failed on GetPosition() because of %v", err)
 	}
-	err = mySubscriber.Poll(ctx)
-	if err != nil {
-		t.Errorf("Failed second call: %v", err)
+
+	if pos != expectedPos {
+		t.Errorf("Failed on GetPosition()\n Expected%d\n     Got: %d", expectedPos, pos)
 	}
 }

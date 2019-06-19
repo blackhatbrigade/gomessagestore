@@ -132,3 +132,55 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 	return msgEnv, nil
 }
+
+type positionMessage struct {
+	ID           string
+	Position     int64
+	SubscriberID string
+	Version      int64
+}
+
+type positionData struct {
+	Position int64 `json:"position"`
+}
+
+func (posMsg *positionMessage) Type() string {
+	return "PositionCommitted"
+}
+
+func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
+	messageType := posMsg.Type()
+
+	if messageType == "" {
+		return nil, ErrMissingMessageType
+	}
+
+	if posMsg.ID == "" {
+		return nil, ErrMessageNoID
+	}
+
+	//new error
+	if posMsg.SubscriberID == "" {
+	}
+
+	//another new error
+	if posMsg.Version < 0 {
+	}
+
+	posData := positionData{posMsg.Position}
+
+	data, err := json.Marshal(posData)
+	if err != nil {
+		return nil, ErrUnserializableData
+	}
+
+	msgEnv := &repository.MessageEnvelope{
+		ID:          posMsg.ID,
+		MessageType: messageType,
+		StreamName:  fmt.Sprintf("%s+position", posMsg.ID),
+		Data:        data,
+		Version:     posMsg.Version,
+	}
+
+	return msgEnv, nil
+}

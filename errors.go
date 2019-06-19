@@ -26,6 +26,7 @@ var (
 	ErrGetLastRequiresStream                         = errors.New("Get Last option requires a stream")
 	ErrIncorrectNumberOfPositionsFound               = errors.New("Exactly one position should be found per subscriber")
 	ErrInvalidHandler                                = errors.New("Handler cannot be nil")
+	ErrIncorrectMessageInPositionStream              = errors.New("Position streams can only have position messages")
 	ErrHandlerError                                  = errors.New("Handler failed to handle message")
 	ErrMissingMessageType                            = errors.New("All messages require a type")
 	ErrMissingMessageCategory                        = errors.New("All messages require a category")
