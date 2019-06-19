@@ -13,13 +13,14 @@ type getOpts struct {
 	category   *string
 	since      *int64
 	converters []MessageConverter
+	batchsize  int
 }
 
 //GetOption provide optional arguments to the Get function
 type GetOption func(g *getOpts)
 
 func checkGetOptions(opts ...GetOption) *getOpts {
-	g := &getOpts{}
+	g := &getOpts{batchsize: 1000}
 	for _, option := range opts {
 		option(g)
 	}
@@ -45,18 +46,18 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 
 	if getOptions.since != nil {
 		if getOptions.stream != nil {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInStreamSince(ctx, *getOptions.stream, *getOptions.since)
+			msgEnvelopes, err = ms.repo.GetAllMessagesInStreamSince(ctx, *getOptions.stream, *getOptions.since, getOptions.batchsize)
 		} else {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInCategorySince(ctx, *getOptions.category, *getOptions.since)
+			msgEnvelopes, err = ms.repo.GetAllMessagesInCategorySince(ctx, *getOptions.category, *getOptions.since, getOptions.batchsize)
 		}
 	} else {
 
 		if getOptions.stream != nil {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream)
+			msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream, getOptions.batchsize)
 		}
 
 		if getOptions.category != nil {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category)
+			msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category, getOptions.batchsize)
 		}
 	}
 
@@ -103,5 +104,12 @@ func Since(since int64) GetOption {
 func Converter(converter MessageConverter) GetOption {
 	return func(g *getOpts) {
 		g.converters = append(g.converters, converter)
+	}
+}
+
+//BatchSize changes how many messages are returned (default 1000)
+func BatchSize(batchsize int) GetOption {
+	return func(g *getOpts) {
+		g.batchsize = batchsize
 	}
 }

@@ -5,8 +5,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamID string) ([]*MessageEnvelope, error) {
-	return r.GetAllMessagesInStreamSince(ctx, streamID, 0)
+func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamID string, batchSize int) ([]*MessageEnvelope, error) {
+	return r.GetAllMessagesInStreamSince(ctx, streamID, 0, batchSize)
 }
 
 func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error) {
@@ -57,11 +57,16 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID strin
 	}
 }
 
-func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*MessageEnvelope, error) {
+func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error) {
 	if streamID == "" {
 		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 
 		return nil, ErrInvalidStreamID
+	}
+	if batchSize < 0 {
+		logrus.WithError(ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+
+		return nil, ErrNegativeBatchSize
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled

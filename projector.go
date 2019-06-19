@@ -48,9 +48,7 @@ type projector struct {
 }
 
 func (proj *projector) Run(ctx context.Context, category string, entityID string) (interface{}, error) {
-	msgs, err := proj.ms.Get(ctx,
-		EventStream(category, entityID),
-	)
+	msgs, err := proj.getMessages(ctx, category, entityID)
 
 	if err != nil {
 		return nil, err
@@ -87,4 +85,36 @@ func DefaultState(defaultState interface{}) ProjectorOption {
 	return func(proj *projector) {
 		proj.defaultState = defaultState
 	}
+}
+
+func (proj *projector) getMessages(ctx context.Context, category string, entityID string) ([]Message, error) {
+	batchsize := 1000
+	msgs, err := proj.ms.Get(ctx,
+		EventStream(category, entityID),
+		BatchSize(batchsize),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(msgs) == batchsize {
+		allMsgs := make([]Message, 0, batchsize*2)
+		allMsgs = append(allMsgs, msgs...)
+		for len(msgs) == batchsize {
+			msgs, err = proj.ms.Get(ctx,
+				EventStream(category, entityID),
+				BatchSize(batchsize),
+				Since(msgs[batchsize-1].MessageVersion()+1), // Since grabs an inclusive list, so grab 1 after the latest version
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			allMsgs = append(allMsgs, msgs...)
+		}
+
+		return allMsgs, nil
+	}
+
+	return msgs, nil
 }

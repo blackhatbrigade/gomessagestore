@@ -14,14 +14,12 @@ type Repository interface {
 	WriteMessage(ctx context.Context, message *MessageEnvelope) error
 	WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error
 	// reads from stream
-	GetAllMessagesInStream(ctx context.Context, streamID string) ([]*MessageEnvelope, error)
-	GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64) ([]*MessageEnvelope, error)
+	GetAllMessagesInStream(ctx context.Context, streamID string, batchSize int) ([]*MessageEnvelope, error)
+	GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error)
 	GetLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error)
 	// reads from category
-	GetAllMessagesInCategory(ctx context.Context, category string) ([]*MessageEnvelope, error)
-	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) ([]*MessageEnvelope, error)
-
-	// TODO: number of messages returned should be a) capped, and b) optional
+	GetAllMessagesInCategory(ctx context.Context, category string, batchSize int) ([]*MessageEnvelope, error)
+	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error)
 }
 
 //Errors

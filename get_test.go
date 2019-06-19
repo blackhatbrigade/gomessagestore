@@ -24,11 +24,44 @@ func TestGetWithCommandStream(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, msgEnv.StreamName).
+		GetAllMessagesInStream(ctx, msgEnv.StreamName, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamCategory))
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesCommand(t, msgs[0], msg)
+	}
+}
+
+func TestGetWithBatchSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleCommand()
+	ctx := context.Background()
+
+	msgEnv := getSampleCommandAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInStream(ctx, msgEnv.StreamName, 50).
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
+
+	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgs, err := msgStore.Get(
+		ctx,
+		CommandStream(msgEnv.StreamCategory),
+		BatchSize(50),
+	)
 
 	if err != nil {
 		t.Error("An error has ocurred while getting messages from message store")
@@ -70,7 +103,7 @@ func TestGetWithEventStream(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, msgEnv.StreamName).
+		GetAllMessagesInStream(ctx, msgEnv.StreamName, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
@@ -99,7 +132,7 @@ func TestGetWithCategory(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory).
+		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
@@ -148,7 +181,7 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition).
+		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
@@ -184,7 +217,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition).
+		GetAllMessagesInStreamSince(ctx, msgEnv.StreamName, globalPosition, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgs, err := msgStore.Get(
@@ -234,7 +267,7 @@ func TestGetWithAlternateConverters(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory).
+		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo)
