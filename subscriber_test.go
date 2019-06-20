@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -200,11 +199,9 @@ func (mh *msgHandler) Process(ctx context.Context, msg Message) error {
 	mh.Called = true
 	switch msg.(type) {
 	case *Event:
-		fmt.Println(msg)
 		mh.class = msg.Type()
 		mh.Handled = append(mh.Handled, mh.class)
 	case *Command:
-		fmt.Println(msg)
 		mh.class = msg.Type()
 		mh.Handled = append(mh.Handled, mh.class)
 	}

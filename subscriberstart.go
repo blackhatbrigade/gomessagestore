@@ -79,8 +79,10 @@ func (sub *subscriber) GetMessages(ctx context.Context, position int64) ([]Messa
 func (sub *subscriber) ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error) {
 
 	for _, msg := range msgs {
-		if sub.handlers[0].Type() == msg.Type() {
-			sub.handlers[0].Process(ctx, msg)
+		for _, handler := range sub.handlers {
+			if handler.Type() == msg.Type() {
+				handler.Process(ctx, msg)
+			}
 		}
 	}
 	return

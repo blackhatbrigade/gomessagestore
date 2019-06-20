@@ -2,9 +2,9 @@ package gomessagestore_test
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -16,32 +16,30 @@ func TestSubscriberGetsMessages(t *testing.T) {
 	messageHandler := &msgHandler{}
 
 	tests := []struct {
-		name                string
-		subscriberID        string
-		expectedError       error
-		handlers            []MessageHandler
-		expectedPosition    int64
-		expectedStream      string
-		expectedCategory    string
-		opts                []SubscriberOption
-		messageEnvelopes    []*repository.MessageEnvelope
-		repoReturnError     error
-		expectedHandlerBool bool
-		expectedHandled     []string
-		positionEnvelope    *repository.MessageEnvelope
+		name             string
+		expectedError    error
+		handlers         []MessageHandler
+		expectedPosition int64
+		expectedStream   string
+		expectedCategory string
+		opts             []SubscriberOption
+		messageEnvelopes []*repository.MessageEnvelope
+		repoReturnError  error
+		expectedHandled  []string
+		positionEnvelope *repository.MessageEnvelope
 	}{{
-		name:           "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
-		subscriberID:   "some id",
-		expectedStream: "some category-some id1",
-		handlers:       []MessageHandler{messageHandler},
+		name:             "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
+		expectedStream:   "some category-some id1",
+		handlers:         []MessageHandler{messageHandler},
+		expectedPosition: 5,
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("some category", "some id1"),
 		},
 	}, {
 		name:             "When subscriber is called with SubscribeToCategory() option, repository is called correctly",
-		subscriberID:     "some id",
 		expectedCategory: "some category",
 		handlers:         []MessageHandler{messageHandler},
+		expectedPosition: 5,
 		opts: []SubscriberOption{
 			SubscribeToCategory("some category"),
 		},
@@ -92,21 +90,6 @@ func TestSubscriberGetsMessages(t *testing.T) {
 			if err != test.expectedError {
 				t.Errorf("Failed to get expected error from GetMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}
-
-			if test.expectedHandlerBool {
-				switch handler := test.handlers[0].(type) {
-				case *msgHandler:
-					if !handler.Called {
-						t.Error("Handler was not called")
-					}
-					if !reflect.DeepEqual(handler.Handled, test.expectedHandled) {
-						t.Errorf("Handler was called for the wrong messages, \nCalled: %s\nExpected: %s\n", handler.Handled, test.expectedHandled)
-					}
-
-				default:
-					t.Errorf("Invalid type found %T", test.handlers[0])
-				}
-			}
 		})
 	}
 }
@@ -114,35 +97,43 @@ func TestSubscriberGetsMessages(t *testing.T) {
 func TestSubscriberProcessesMessages(t *testing.T) {
 
 	tests := []struct {
-		name                string
-		subscriberID        string
-		expectedError       error
-		handlers            []MessageHandler
-		expectedPosition    int64
-		expectedStream      string
-		expectedCategory    string
-		opts                []SubscriberOption
-		messages            []Message
-		repoReturnError     error
-		expectedHandlerBool bool
-		expectedHandled     []string
-		positionEnvelope    *repository.MessageEnvelope
+		name             string
+		subscriberID     string
+		expectedError    error
+		handlers         []MessageHandler
+		expectedStream   string
+		expectedCategory string
+		opts             []SubscriberOption
+		messages         []Message
+		repoReturnError  error
+		expectedHandled  []string
+		positionEnvelope *repository.MessageEnvelope
 	}{{
-		name:                "Subscriber Poll processes a message in the registered handler with command stream",
-		handlers:            []MessageHandler{&msgHandler{}},
-		expectedHandlerBool: true,
-		expectedHandled:     []string{"Command MessageType 1"},
-		expectedStream:      "category:command",
+		name: "Subscriber Poll processes a message in the registered handler with command stream",
+		handlers: []MessageHandler{
+			&msgHandler{class: "Command MessageType 1"},
+			&msgHandler{class: "Command MessageType 2"},
+		},
+		expectedHandled: []string{
+			"Command MessageType 1",
+			"Command MessageType 2",
+		},
+		expectedStream: "category:command",
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("category"),
 		},
 		messages: commandsToMessageSlice(getSampleCommands()),
 	}, {
-		name:                "Subscriber Poll processes a message in the registered handler with entity stream",
-		handlers:            []MessageHandler{&msgHandler{}},
-		expectedHandlerBool: true,
-		expectedHandled:     []string{"Event MessageType 1"},
-		expectedStream:      "category-someid",
+		name: "Subscriber Poll processes a message in the registered handler with entity stream",
+		handlers: []MessageHandler{
+			&msgHandler{class: "Event MessageType 1"},
+			&msgHandler{class: "Event MessageType 2"},
+		},
+		expectedHandled: []string{
+			"Event MessageType 1",
+			"Event MessageType 2",
+		},
+		expectedStream: "category-someid",
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("category", "someid"),
 		},
@@ -175,20 +166,16 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 				t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}
 
-			if test.expectedHandlerBool {
-				switch handler := test.handlers[0].(type) {
-				case *msgHandler:
-					fmt.Printf("handler looks like: %+v\n", handler)
-					if !handler.Called {
-						t.Error("Handler was not called")
-					}
-					if !reflect.DeepEqual(handler.Handled, test.expectedHandled) {
-						t.Errorf("Handler was called for the wrong messages, \nCalled: %s\nExpected: %s\n", handler.Handled, test.expectedHandled)
-					}
-
-				default:
-					t.Errorf("Invalid type found %T", test.handlers[0])
+			handled := make([]string, 0, len(test.expectedHandled))
+			for _, handlerI := range test.handlers {
+				handler := handlerI.(*msgHandler)
+				if !handler.Called {
+					t.Error("Handler was not called")
 				}
+				handled = append(handled, handler.Handled...) // cause variable names are hard
+			}
+			if !reflect.DeepEqual(handled, test.expectedHandled) {
+				t.Errorf("Handler was called for the wrong messages, \nCalled: %s\nExpected: %s\n", handled, test.expectedHandled)
 			}
 		})
 	}
@@ -197,19 +184,18 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 func TestSubscriberGetsPosition(t *testing.T) {
 
 	tests := []struct {
-		name                string
-		subscriberID        string
-		expectedError       error
-		handlers            []MessageHandler
-		expectedPosition    int64
-		expectedStream      string
-		expectedCategory    string
-		opts                []SubscriberOption
-		messages            []Message
-		repoReturnError     error
-		expectedHandlerBool bool
-		expectedHandled     []string
-		positionEnvelope    *repository.MessageEnvelope
+		name             string
+		subscriberID     string
+		expectedError    error
+		handlers         []MessageHandler
+		expectedPosition int64
+		expectedStream   string
+		expectedCategory string
+		opts             []SubscriberOption
+		messages         []Message
+		repoReturnError  error
+		expectedHandled  []string
+		positionEnvelope *repository.MessageEnvelope
 	}{{
 		name:             "When GetPosition is called subscriber returns a position that matches the expected position",
 		expectedPosition: 0,
@@ -218,6 +204,25 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("some category", "1234"),
 			SubscribeBatchSize(1),
+		},
+	}, {
+		name:             "When GetPosition is called subscriber returns a position that matches the expected position",
+		expectedPosition: 400,
+		handlers:         []MessageHandler{&msgHandler{}},
+		subscriberID:     "some id",
+		opts: []SubscriberOption{
+			SubscribeToEntityStream("some category", "1234"),
+			SubscribeBatchSize(1),
+		},
+		positionEnvelope: &repository.MessageEnvelope{
+			ID:             "some-id-goes-here",
+			StreamName:     "I_am_subscriber_id+position",
+			StreamCategory: "I_am_subscriber_id+position",
+			MessageType:    "CommittedPosition",
+			Version:        5,
+			GlobalPosition: 500,
+			Data:           []byte("{\"position\":400}"),
+			Time:           time.Unix(1, 5),
 		},
 	}}
 
