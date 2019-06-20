@@ -197,7 +197,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		expectedHandled  []string
 		positionEnvelope *repository.MessageEnvelope
 	}{{
-		name:             "When GetPosition is called subscriber returns a position that matches the expected position",
+		name:             "When GetPosition is called (when no committed position exists) subscriber returns a position that matches the expected position",
 		expectedPosition: 0,
 		handlers:         []MessageHandler{&msgHandler{}},
 		subscriberID:     "some id",
@@ -206,12 +206,50 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			SubscribeBatchSize(1),
 		},
 	}, {
-		name:             "When GetPosition is called subscriber returns a position that matches the expected position",
+		name:             "When GetPosition is called (for category) subscriber returns a position that matches the expected position",
+		expectedPosition: 400,
+		handlers:         []MessageHandler{&msgHandler{}},
+		subscriberID:     "some id",
+		opts: []SubscriberOption{
+			SubscribeToCategory("some category"),
+			SubscribeBatchSize(1),
+		},
+		positionEnvelope: &repository.MessageEnvelope{
+			ID:             "some-id-goes-here",
+			StreamName:     "I_am_subscriber_id+position",
+			StreamCategory: "I_am_subscriber_id+position",
+			MessageType:    "CommittedPosition",
+			Version:        5,
+			GlobalPosition: 500,
+			Data:           []byte("{\"position\":400}"),
+			Time:           time.Unix(1, 5),
+		},
+	}, {
+		name:             "When GetPosition is called (for event stream) subscriber returns a position that matches the expected position",
 		expectedPosition: 400,
 		handlers:         []MessageHandler{&msgHandler{}},
 		subscriberID:     "some id",
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("some category", "1234"),
+			SubscribeBatchSize(1),
+		},
+		positionEnvelope: &repository.MessageEnvelope{
+			ID:             "some-id-goes-here",
+			StreamName:     "I_am_subscriber_id+position",
+			StreamCategory: "I_am_subscriber_id+position",
+			MessageType:    "CommittedPosition",
+			Version:        5,
+			GlobalPosition: 500,
+			Data:           []byte("{\"position\":400}"),
+			Time:           time.Unix(1, 5),
+		},
+	}, {
+		name:             "When GetPosition is called (for command stream) subscriber returns a position that matches the expected position",
+		expectedPosition: 400,
+		handlers:         []MessageHandler{&msgHandler{}},
+		subscriberID:     "some id",
+		opts: []SubscriberOption{
+			SubscribeToCommandStream("some category"),
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
@@ -237,7 +275,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			mockRepo.
 				EXPECT().
 				GetLastMessageInStream(ctx, "some id+position").
-				Return(&repository.MessageEnvelope{}, nil)
+				Return(test.positionEnvelope, nil)
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 

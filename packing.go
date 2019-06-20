@@ -118,20 +118,6 @@ func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Messag
 	return event, nil
 }
 
-func convertEnvelopeToPositionMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
-	data := positionData{}
-	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
-		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
-		return nil, err
-	}
-
-	positionMsg := &positionMessage{
-		ID:       messageEnvelope.ID,
-		Position: data.Position,
-	}
-	return positionMsg, nil
-}
-
 func defaultConverters() []MessageConverter {
 	return []MessageConverter{
 		convertEnvelopeToCommand,

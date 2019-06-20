@@ -2,7 +2,11 @@ package gomessagestore
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
@@ -86,6 +90,83 @@ func (sub *subscriber) ProcessMessages(ctx context.Context, msgs []Message) (mes
 		}
 	}
 	return
+}
+
+func convertEnvelopeToPositionMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
+	data := positionData{}
+	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
+		return nil, err
+	}
+
+	halves := strings.Split(messageEnvelope.StreamName, "+")
+	if len(halves) != 2 || halves[1] != "position" {
+		return nil, ErrInvalidPositionStream
+	}
+
+	positionMsg := &positionMessage{
+		ID:           messageEnvelope.ID,
+		Position:     data.Position,
+		Version:      messageEnvelope.Version,
+		SubscriberID: halves[0],
+	}
+	return positionMsg, nil
+}
+
+type positionMessage struct {
+	ID           string
+	Position     int64
+	SubscriberID string
+	Version      int64
+}
+
+type positionData struct {
+	Position int64 `json:"position"`
+}
+
+func (posMsg *positionMessage) Type() string {
+	return "PositionCommitted"
+}
+
+func (posMsg *positionMessage) MessageVersion() int64 {
+	return posMsg.Version
+}
+
+func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
+	messageType := posMsg.Type()
+
+	if messageType == "" {
+		return nil, ErrMissingMessageType
+	}
+
+	if posMsg.ID == "" {
+		return nil, ErrMessageNoID
+	}
+
+	if posMsg.SubscriberID == "" {
+		return nil, ErrSubscriberIDCannotBeEmpty
+	}
+
+	if posMsg.Version < 0 {
+		return nil, ErrPositionVersionMissing
+	}
+
+	posData := positionData{posMsg.Position}
+
+	data, err := json.Marshal(posData)
+	if err != nil {
+		return nil, ErrUnserializableData
+	}
+
+	msgEnv := &repository.MessageEnvelope{
+		ID:          posMsg.ID,
+		MessageType: messageType,
+		StreamName:  fmt.Sprintf("%s+position", posMsg.ID),
+		Data:        data,
+		Version:     posMsg.Version,
+	}
+
+	return msgEnv, nil
 }
 
 //SetPosition phase four
