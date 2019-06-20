@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -188,18 +189,24 @@ func TestCreateSubscriberOptions(t *testing.T) {
 type msgHandler struct {
 	Called  bool
 	Handled []string
+	class   string
 }
 
 func (mh *msgHandler) Type() string {
-	return "Command MessageType 1"
+	return mh.class
 }
 
 func (mh *msgHandler) Process(ctx context.Context, msg Message) error {
 	mh.Called = true
-	if mh.Handled == nil {
-		mh.Handled = []string{msg.Type()}
-	} else {
-		mh.Handled = append(mh.Handled, msg.Type())
+	switch msg.(type) {
+	case *Event:
+		fmt.Println(msg)
+		mh.class = msg.Type()
+		mh.Handled = append(mh.Handled, mh.class)
+	case *Command:
+		fmt.Println(msg)
+		mh.class = msg.Type()
+		mh.Handled = append(mh.Handled, mh.class)
 	}
 	return nil
 }

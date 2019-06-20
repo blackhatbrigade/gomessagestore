@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -127,7 +128,7 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 		expectedHandled     []string
 		positionEnvelope    *repository.MessageEnvelope
 	}{{
-		name:                "Subscriber Poll processes a message in the registered handler",
+		name:                "Subscriber Poll processes a message in the registered handler with command stream",
 		handlers:            []MessageHandler{&msgHandler{}},
 		expectedHandlerBool: true,
 		expectedHandled:     []string{"Command MessageType 1"},
@@ -136,6 +137,16 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			SubscribeToCommandStream("category"),
 		},
 		messages: commandsToMessageSlice(getSampleCommands()),
+	}, {
+		name:                "Subscriber Poll processes a message in the registered handler with entity stream",
+		handlers:            []MessageHandler{&msgHandler{}},
+		expectedHandlerBool: true,
+		expectedHandled:     []string{"Event MessageType 1"},
+		expectedStream:      "category-someid",
+		opts: []SubscriberOption{
+			SubscribeToEntityStream("category", "someid"),
+		},
+		messages: eventsToMessageSlice(getSampleEvents()),
 	}}
 
 	for _, test := range tests {
@@ -161,12 +172,13 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 
 			_, _, err = mySubscriber.ProcessMessages(ctx, test.messages)
 			if err != test.expectedError {
-				t.Errorf("Failed to get expected error from Poll()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+				t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}
 
 			if test.expectedHandlerBool {
 				switch handler := test.handlers[0].(type) {
 				case *msgHandler:
+					fmt.Printf("handler looks like: %+v\n", handler)
 					if !handler.Called {
 						t.Error("Handler was not called")
 					}
@@ -183,42 +195,67 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 }
 
 func TestSubscriberGetsPosition(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
-	var expectedPos int64 = 0
+	tests := []struct {
+		name                string
+		subscriberID        string
+		expectedError       error
+		handlers            []MessageHandler
+		expectedPosition    int64
+		expectedStream      string
+		expectedCategory    string
+		opts                []SubscriberOption
+		messages            []Message
+		repoReturnError     error
+		expectedHandlerBool bool
+		expectedHandled     []string
+		positionEnvelope    *repository.MessageEnvelope
+	}{{
+		name:             "When GetPosition is called subscriber returns a position that matches the expected position",
+		expectedPosition: 0,
+		handlers:         []MessageHandler{&msgHandler{}},
+		subscriberID:     "some id",
+		opts: []SubscriberOption{
+			SubscribeToEntityStream("some category", "1234"),
+			SubscribeBatchSize(1),
+		},
+	}}
 
-	handlers := []MessageHandler{&msgHandler{}}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	ctx := context.Background()
-	mockRepo := mock_repository.NewMockRepository(ctrl)
+			ctx := context.Background()
+			mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	mockRepo.
-		EXPECT().
-		GetLastMessageInStream(ctx, "some id+position").
-		Return(&repository.MessageEnvelope{}, nil)
+			mockRepo.
+				EXPECT().
+				GetLastMessageInStream(ctx, "some id+position").
+				Return(&repository.MessageEnvelope{}, nil)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
-	mySubscriber, err := myMessageStore.CreateSubscriber(
-		"some id",
-		handlers,
-		SubscribeToEntityStream("some category", "1234"),
-		SubscribeBatchSize(1),
-	)
+			mySubscriber, err := myMessageStore.CreateSubscriber(
+				test.subscriberID,
+				test.handlers,
+				test.opts...,
+			)
 
-	if err != nil {
-		t.Errorf("Failed on CreateSubscriber() Got: %s\n", err)
-		return
-	}
+			if err != nil {
+				t.Errorf("Failed on CreateSubscriber() Got: %s\n", err)
+				return
+			}
 
-	pos, err := mySubscriber.GetPosition(ctx)
+			pos, err := mySubscriber.GetPosition(ctx)
 
-	if err != nil {
-		t.Errorf("Failed on GetPosition() because of %v", err)
-	}
+			if err != nil {
+				t.Errorf("Failed on GetPosition() because of %v", err)
+			}
 
-	if pos != expectedPos {
-		t.Errorf("Failed on GetPosition()\n Expected%d\n     Got: %d", expectedPos, pos)
+			if pos != test.expectedPosition {
+				t.Errorf("Failed on GetPosition()\n Expected%d\n Got: %d", test.expectedPosition, pos)
+			}
+		})
 	}
 }
