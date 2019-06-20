@@ -77,6 +77,12 @@ func validateGetParams(getOptions *getOpts) error {
 	if getOptions.last && getOptions.since != nil {
 		return ErrInvalidOptionCombination
 	}
+	if getOptions.stream != nil && getOptions.sincePosition {
+		return ErrInvalidOptionCombination // need to use SinceVersion with Streams
+	}
+	if getOptions.category != nil && getOptions.sinceVersion {
+		return ErrInvalidOptionCombination // need to use SincePosition with Categories
+	}
 
 	return nil
 }

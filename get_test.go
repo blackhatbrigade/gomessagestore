@@ -449,6 +449,27 @@ func TestOptionErrors(t *testing.T) {
 			CommandStream("yayaya"),
 		},
 	}, {
+		name:          "SinceVersion and Category are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			SinceVersion(5),
+			Category("yayaya"),
+		},
+	}, {
+		name:          "SincePosition and EventStream are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			SincePosition(5),
+			EventStream("yayaya", "bababa"),
+		},
+	}, {
+		name:          "SincePosition and CommandStream are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			SincePosition(5),
+			CommandStream("yayaya"),
+		},
+	}, {
 		name:          "Command Stream and Event Stream are both set",
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
