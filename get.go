@@ -17,7 +17,7 @@ type getOpts struct {
 	since         *int64
 	converters    []MessageConverter
 	batchsize     int
-	last       bool
+	last          bool
 }
 
 //GetOption provide optional arguments to the Get function
@@ -97,13 +97,14 @@ func (ms *msgStore) callCorrectRepositoryGetFunction(ctx context.Context, getOpt
 			}
 		} else {
 
-		if getOptions.stream != nil {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream, getOptions.batchsize)
-		}
+			if getOptions.stream != nil {
+				msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream, getOptions.batchsize)
+			}
 
-		if getOptions.category != nil {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category, getOptions.batchsize)
+			if getOptions.category != nil {
+				msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category, getOptions.batchsize)
 
+			}
 		}
 	}
 
@@ -214,7 +215,8 @@ func Converter(converter MessageConverter) GetOption {
 
 //BatchSize changes how many messages are returned (default 1000)
 func BatchSize(batchsize int) GetOption {
-	return func(g *getOpts) {
+	return func(g *getOpts) error {
 		g.batchsize = batchsize
+		return nil
 	}
 }

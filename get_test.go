@@ -381,11 +381,27 @@ func TestOptionErrors(t *testing.T) {
 			CommandStream("yayaya"),
 		},
 	}, {
-		name:          "Since is set twice",
+		name:          "SincePosition is set twice",
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
-			Since(5),
-			Since(10),
+			SincePosition(5),
+			SincePosition(10),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "SinceVersion is set twice",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			SinceVersion(5),
+			SinceVersion(10),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "SincePosition and SinceVersion are set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			SincePosition(5),
+			SinceVersion(10),
 			CommandStream("yayaya"),
 		},
 	}, {
@@ -417,10 +433,18 @@ func TestOptionErrors(t *testing.T) {
 			PositionStream("blah"),
 		},
 	}, {
-		name:          "Since and Last are both set",
+		name:          "SincePosition and Last are both set",
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
-			Since(5),
+			SincePosition(5),
+			Last(),
+			CommandStream("yayaya"),
+		},
+	}, {
+		name:          "SinceVersion and Last are both set",
+		expectedError: ErrInvalidOptionCombination,
+		opts: []GetOption{
+			SinceVersion(5),
 			Last(),
 			CommandStream("yayaya"),
 		},

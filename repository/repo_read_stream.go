@@ -7,7 +7,7 @@ import (
 )
 
 func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamName string, batchSize int) ([]*MessageEnvelope, error) {
-	return r.GetAllMessagesInStreamSince(ctx, steamName, 0, batchSize)
+	return r.GetAllMessagesInStreamSince(ctx, streamName, 0, batchSize)
 }
 
 func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName string) (*MessageEnvelope, error) {

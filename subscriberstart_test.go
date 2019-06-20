@@ -64,13 +64,13 @@ func TestSubscriberGetsMessages(t *testing.T) {
 			if test.expectedStream != "" {
 				mockRepo.
 					EXPECT().
-					GetAllMessagesInStreamSince(ctx, test.expectedStream, test.expectedPosition).
+					GetAllMessagesInStreamSince(ctx, test.expectedStream, test.expectedPosition, 1000).
 					Return(test.messageEnvelopes, test.repoReturnError)
 			}
 			if test.expectedCategory != "" {
 				mockRepo.
 					EXPECT().
-					GetAllMessagesInCategorySince(ctx, test.expectedCategory, test.expectedPosition).
+					GetAllMessagesInCategorySince(ctx, test.expectedCategory, test.expectedPosition, 1000).
 					Return(test.messageEnvelopes, test.repoReturnError)
 			}
 
