@@ -100,7 +100,7 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInStream(ctx, mockEventEnvs[0].StreamName).
+		GetAllMessagesInStream(ctx, mockEventEnvs[0].StreamName, 1000).
 		Return(mockEventEnvs, nil)
 
 	projection, err := myprojector.Run(ctx, expectedEvents[0].StreamCategory, expectedEvents[0].EntityID)
@@ -119,6 +119,81 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 			}
 			if !myStruct.MockReducer2Called {
 				t.Error("Reducer 2 was not called")
+			}
+			if myStruct.MockReducer1CallCount != len(expectedEvents)/2 {
+				t.Errorf("Reducer 1 was not called the correct number of times:\nExpected: %d\n     Got: %d\n", len(expectedEvents)/2, myStruct.MockReducer1CallCount)
+			}
+			if myStruct.MockReducer2CallCount != len(expectedEvents)/2 {
+				t.Errorf("Reducer 2 was not called the correct number of times:\nExpected: %d\n     Got: %d\n", len(expectedEvents)/2, myStruct.MockReducer2CallCount)
+			}
+		default:
+			t.Errorf("Received incorrect type of state back: %T", projection)
+		}
+	}
+}
+
+func TestProjectorPicksUpAfterFullBatch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+
+	defstate := mockDataStructure{}
+
+	myprojector, err := myMessageStore.CreateProjector(
+		DefaultState(defstate),
+		WithReducer(new(mockReducer1)),
+		WithReducer(new(mockReducer2)),
+	)
+
+	if err != nil {
+		t.Errorf("Error creating projector: %s", err)
+	}
+
+	if myprojector == nil {
+		t.Errorf("Failed to create projector: %s", myprojector)
+		return
+	}
+
+	mockEventEnvsBatch1 := getLotsOfSampleEventsAsEnvelopes(1000, 0)
+	mockEventEnvsBatch2 := getLotsOfSampleEventsAsEnvelopes(500, 1000)
+	expectedEvents := getLotsOfSampleEvents(1500, 0)
+	ctx := context.Background()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInStream(ctx, mockEventEnvsBatch1[0].StreamName, 1000).
+		Return(mockEventEnvsBatch1, nil)
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInStreamSince(ctx, mockEventEnvsBatch1[0].StreamName, mockEventEnvsBatch1[len(mockEventEnvsBatch1)-1].Version+1, 1000).
+		Return(mockEventEnvsBatch2, nil)
+
+	projection, err := myprojector.Run(ctx, expectedEvents[0].StreamCategory, expectedEvents[0].EntityID)
+
+	if err != nil {
+		t.Errorf("An error has occurred with running a projector, err: %s", err)
+	}
+
+	if projection == nil {
+		t.Error("projection from projector.Run() is nil")
+	} else {
+		switch myStruct := projection.(type) {
+		case mockDataStructure:
+			if !myStruct.MockReducer1Called {
+				t.Error("Reducer 1 was not called")
+			}
+			if !myStruct.MockReducer2Called {
+				t.Error("Reducer 2 was not called")
+			}
+			if myStruct.MockReducer1CallCount != len(expectedEvents)/2 {
+				t.Errorf("Reducer 1 was not called the correct number of times:\nExpected: %d\n     Got: %d\n", len(expectedEvents)/2, myStruct.MockReducer1CallCount)
+			}
+			if myStruct.MockReducer2CallCount != len(expectedEvents)/2 {
+				t.Errorf("Reducer 2 was not called the correct number of times:\nExpected: %d\n     Got: %d\n", len(expectedEvents)/2, myStruct.MockReducer2CallCount)
 			}
 		default:
 			t.Errorf("Received incorrect type of state back: %T", projection)

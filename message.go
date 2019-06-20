@@ -6,4 +6,5 @@ import "github.com/blackhatbrigade/gomessagestore/repository"
 type Message interface {
 	ToEnvelope() (*repository.MessageEnvelope, error)
 	Type() string
+	MessageVersion() int64
 }

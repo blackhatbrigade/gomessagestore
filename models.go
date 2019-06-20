@@ -25,6 +25,10 @@ type Command struct {
 func (cmd *Command) Type() string {
 	return cmd.MessageType
 }
+//MessageVersion gets the command's Version field
+func (cmd *Command) MessageVersion() int64 {
+	return cmd.Version
+}
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
@@ -84,6 +88,10 @@ type Event struct {
 //Type returns the type of this message (business action taking place)
 func (event *Event) Type() string {
 	return event.MessageType
+}
+//MessageVersion gets the event's Version field
+func (event *Event) MessageVersion() int64 {
+	return event.Version
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.

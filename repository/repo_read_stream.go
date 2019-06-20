@@ -6,8 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamName string) ([]*MessageEnvelope, error) {
-	return r.GetAllMessagesInStreamSince(ctx, streamName, 0)
+func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamName string, batchSize int) ([]*MessageEnvelope, error) {
+	return r.GetAllMessagesInStreamSince(ctx, steamName, 0, batchSize)
 }
 
 func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName string) (*MessageEnvelope, error) {
@@ -58,11 +58,16 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName str
 	}
 }
 
-func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64) ([]*MessageEnvelope, error) {
+func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error) {
 	if streamName == "" {
 		logrus.WithError(ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 
 		return nil, ErrInvalidStreamName
+	}
+	if batchSize < 0 {
+		logrus.WithError(ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+
+		return nil, ErrNegativeBatchSize
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled

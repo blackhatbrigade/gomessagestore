@@ -10,18 +10,21 @@ import (
 )
 
 type getOpts struct {
-	stream     *string
-	category   *string
-	since      *int64
+	stream        *string
+	category      *string
+	sincePosition bool
+	sinceVersion  bool
+	since         *int64
+	converters    []MessageConverter
+	batchsize     int
 	last       bool
-	converters []MessageConverter
 }
 
 //GetOption provide optional arguments to the Get function
 type GetOption func(g *getOpts) error
 
 func checkGetOptions(opts ...GetOption) (*getOpts, error) {
-	g := &getOpts{}
+	g := &getOpts{batchsize: 1000}
 	for _, option := range opts {
 		if err := option(g); err != nil {
 			return nil, err
@@ -81,9 +84,9 @@ func validateGetParams(getOptions *getOpts) error {
 func (ms *msgStore) callCorrectRepositoryGetFunction(ctx context.Context, getOptions *getOpts) (msgEnvelopes []*repository.MessageEnvelope, err error) {
 	if getOptions.since != nil {
 		if getOptions.stream != nil {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInStreamSince(ctx, *getOptions.stream, *getOptions.since)
+			msgEnvelopes, err = ms.repo.GetAllMessagesInStreamSince(ctx, *getOptions.stream, *getOptions.since, getOptions.batchsize)
 		} else {
-			msgEnvelopes, err = ms.repo.GetAllMessagesInCategorySince(ctx, *getOptions.category, *getOptions.since)
+			msgEnvelopes, err = ms.repo.GetAllMessagesInCategorySince(ctx, *getOptions.category, *getOptions.since, getOptions.batchsize)
 		}
 	} else {
 		if getOptions.last {
@@ -94,13 +97,13 @@ func (ms *msgStore) callCorrectRepositoryGetFunction(ctx context.Context, getOpt
 			}
 		} else {
 
-			if getOptions.stream != nil {
-				msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream)
-			}
+		if getOptions.stream != nil {
+			msgEnvelopes, err = ms.repo.GetAllMessagesInStream(ctx, *getOptions.stream, getOptions.batchsize)
+		}
 
-			if getOptions.category != nil {
-				msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category)
-			}
+		if getOptions.category != nil {
+			msgEnvelopes, err = ms.repo.GetAllMessagesInCategory(ctx, *getOptions.category, getOptions.batchsize)
+
 		}
 	}
 
@@ -177,13 +180,26 @@ func Last() GetOption {
 	}
 }
 
-//Since allows for getting only more recent messages
-func Since(since int64) GetOption {
+//SincePosition allows for getting only more recent messages
+func SincePosition(position int64) GetOption {
 	return func(g *getOpts) error {
 		if g.since != nil {
 			return ErrInvalidOptionCombination
 		}
-		g.since = &since
+		g.since = &position
+		g.sincePosition = true
+		return nil
+	}
+}
+
+//SinceVersion allows for getting only more recent messages
+func SinceVersion(version int64) GetOption {
+	return func(g *getOpts) error {
+		if g.since != nil {
+			return ErrInvalidOptionCombination
+		}
+		g.since = &version
+		g.sinceVersion = true
 		return nil
 	}
 }
@@ -193,5 +209,12 @@ func Converter(converter MessageConverter) GetOption {
 	return func(g *getOpts) error {
 		g.converters = append(g.converters, converter)
 		return nil
+	}
+}
+
+//BatchSize changes how many messages are returned (default 1000)
+func BatchSize(batchsize int) GetOption {
+	return func(g *getOpts) {
+		g.batchsize = batchsize
 	}
 }
