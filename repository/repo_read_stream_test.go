@@ -20,39 +20,52 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		expectedErr      error
 		streamName       string
 		callCancel       bool
+		batchSize        int
 	}{{
 		name:             "when there are existing messages it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		expectedMessages: copyAndAppend(mockMessages[:1], mockMessages[4:]...),
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
 		existingMessages: mockMessages,
 		streamName:       "some_other_type-23456",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
+		batchSize:        1000,
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamName:       "some_other_non_existant_type-124555",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamName:       "some_type-12345",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:        "when asking for messages from a stream with a blank Name, an error is returned",
 		expectedErr: ErrInvalidStreamName,
+		batchSize:   1000,
+	}, {
+		name:        "when asking for messages with a negative batch size, an error is returned",
+		streamName:  "something-12345",
+		expectedErr: ErrNegativeBatchSize,
+		batchSize:   -10,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
 		streamName:  "some_type-12345",
 		dbError:     errors.New("bad things with db happened"),
 		expectedErr: errors.New("bad things with db happened"),
+		batchSize:   1000,
 	}, {
 		name:             "when it is asked to cancel, it does",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		callCancel:       true,
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}}
 
 	for _, test := range tests {
@@ -87,7 +100,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.GetAllMessagesInStream(ctx, test.streamName)
+			messages, err := repo.GetAllMessagesInStream(ctx, test.streamName, test.batchSize)
 
 			assert.Equal(test.expectedMessages, messages)
 			assert.Equal(test.expectedErr, err)
@@ -106,59 +119,75 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		streamName       string
 		callCancel       bool
 		position         int64
+		batchSize        int
 	}{{
 		name:             "when there are existing messages past position -1 it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		expectedMessages: copyAndAppend(mockMessages[:1], mockMessages[4:]...),
 		position:         -1,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages past position 0 it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		expectedMessages: copyAndAppend(mockMessages[:1], mockMessages[4:]...),
 		position:         0,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages past position 5 it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		expectedMessages: mockMessages[4:],
 		position:         5,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		expectedMessages: []*MessageEnvelope{},
 		position:         10,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
 		existingMessages: mockMessages,
 		streamName:       "some_other_type-23456",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
 		messagesMetadata: []string{"this isn't JSON", "{\"alternate\":\"json\"}"},
+		batchSize:        1000,
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamName:       "some_other_non_existant_type-124555",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamName:       "some_type-12345",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:        "when asking for messages from a stream with a blank Name, an error is returned",
 		expectedErr: ErrInvalidStreamName,
+		batchSize:   1000,
+	}, {
+		name:        "when asking for messages with a negative batch size, an error is returned",
+		streamName:  "something-12345",
+		expectedErr: ErrNegativeBatchSize,
+		batchSize:   -10,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
 		streamName:  "some_type-12345",
 		dbError:     errors.New("bad things with db happened"),
 		expectedErr: errors.New("bad things with db happened"),
+		batchSize:   1000,
 	}, {
 		name:             "when it is asked to cancel, it does",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		callCancel:       true,
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}}
 
 	for _, test := range tests {
@@ -193,7 +222,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.GetAllMessagesInStreamSince(ctx, test.streamName, test.position)
+			messages, err := repo.GetAllMessagesInStreamSince(ctx, test.streamName, test.position, test.batchSize)
 
 			assert.Equal(test.expectedMessages, messages)
 			assert.Equal(test.expectedErr, err)

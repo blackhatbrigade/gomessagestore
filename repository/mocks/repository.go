@@ -35,63 +35,63 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // GetAllMessagesInCategory mocks base method
-func (m *MockRepository) GetAllMessagesInCategory(arg0 context.Context, arg1 string) ([]*repository.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInCategory(arg0 context.Context, arg1 string, arg2 int) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllMessagesInCategory", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetAllMessagesInCategory", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllMessagesInCategory indicates an expected call of GetAllMessagesInCategory
-func (mr *MockRepositoryMockRecorder) GetAllMessagesInCategory(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAllMessagesInCategory(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInCategory", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInCategory), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInCategory", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInCategory), arg0, arg1, arg2)
 }
 
 // GetAllMessagesInCategorySince mocks base method
-func (m *MockRepository) GetAllMessagesInCategorySince(arg0 context.Context, arg1 string, arg2 int64) ([]*repository.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInCategorySince(arg0 context.Context, arg1 string, arg2 int64, arg3 int) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllMessagesInCategorySince", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetAllMessagesInCategorySince", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllMessagesInCategorySince indicates an expected call of GetAllMessagesInCategorySince
-func (mr *MockRepositoryMockRecorder) GetAllMessagesInCategorySince(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAllMessagesInCategorySince(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInCategorySince", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInCategorySince), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInCategorySince", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInCategorySince), arg0, arg1, arg2, arg3)
 }
 
 // GetAllMessagesInStream mocks base method
-func (m *MockRepository) GetAllMessagesInStream(arg0 context.Context, arg1 string) ([]*repository.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInStream(arg0 context.Context, arg1 string, arg2 int) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllMessagesInStream", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetAllMessagesInStream", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllMessagesInStream indicates an expected call of GetAllMessagesInStream
-func (mr *MockRepositoryMockRecorder) GetAllMessagesInStream(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAllMessagesInStream(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInStream", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInStream), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInStream", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInStream), arg0, arg1, arg2)
 }
 
 // GetAllMessagesInStreamSince mocks base method
-func (m *MockRepository) GetAllMessagesInStreamSince(arg0 context.Context, arg1 string, arg2 int64) ([]*repository.MessageEnvelope, error) {
+func (m *MockRepository) GetAllMessagesInStreamSince(arg0 context.Context, arg1 string, arg2 int64, arg3 int) ([]*repository.MessageEnvelope, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllMessagesInStreamSince", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetAllMessagesInStreamSince", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]*repository.MessageEnvelope)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllMessagesInStreamSince indicates an expected call of GetAllMessagesInStreamSince
-func (mr *MockRepositoryMockRecorder) GetAllMessagesInStreamSince(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAllMessagesInStreamSince(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInStreamSince", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInStreamSince), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMessagesInStreamSince", reflect.TypeOf((*MockRepository)(nil).GetAllMessagesInStreamSince), arg0, arg1, arg2, arg3)
 }
 
 // GetLastMessageInStream mocks base method

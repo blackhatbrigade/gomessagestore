@@ -26,6 +26,11 @@ func (cmd *Command) Type() string {
 	return cmd.MessageType
 }
 
+//MessageVersion gets the command's Version field
+func (cmd *Command) MessageVersion() int64 {
+	return cmd.Version
+}
+
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if cmd.MessageType == "" {
@@ -84,6 +89,11 @@ type Event struct {
 //Type returns the type of this message (business action taking place)
 func (event *Event) Type() string {
 	return event.MessageType
+}
+
+//MessageVersion gets the event's Version field
+func (event *Event) MessageVersion() int64 {
+	return event.Version
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
@@ -146,6 +156,10 @@ type positionData struct {
 
 func (posMsg *positionMessage) Type() string {
 	return "PositionCommitted"
+}
+
+func (posMsg *positionMessage) MessageVersion() int64 {
+	return posMsg.Version
 }
 
 func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error) {

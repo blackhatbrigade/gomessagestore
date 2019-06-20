@@ -20,43 +20,57 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		expectedErr      error
 		streamCategory   string
 		callCancel       bool
+		batchSize        int
 	}{{
 		name:             "when there are existing messages it should return them",
 		existingMessages: mockMessages,
 		streamCategory:   "other_type",
 		expectedMessages: copyAndAppend(mockMessages[:2], mockMessages[4:]...),
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
 		existingMessages: mockMessages,
 		streamCategory:   "some_other_type",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
+		batchSize:        1000,
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamCategory:   "some_other_non_existant_type",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamCategory:   "other_type",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:           "when asking for messages from a stream with a invalid category, an error is returned",
 		streamCategory: "something-with-a-hyphen",
 		expectedErr:    ErrInvalidCategory,
+		batchSize:      1000,
 	}, {
 		name:        "when asking for messages from a stream with a blank category, an error is returned",
 		expectedErr: ErrBlankCategory,
+		batchSize:   1000,
+	}, {
+		name:           "when asking for messages with a negative batch size, an error is returned",
+		streamCategory: "something",
+		expectedErr:    ErrNegativeBatchSize,
+		batchSize:      -10,
 	}, {
 		name:           "when there is an issue getting the messages an error should be returned",
 		streamCategory: "other_type",
 		dbError:        errors.New("bad things with db happened"),
 		expectedErr:    errors.New("bad things with db happened"),
+		batchSize:      1000,
 	}, {
 		name:             "when it is asked to cancel, it does",
 		existingMessages: mockMessages,
 		streamCategory:   "other_type",
 		callCancel:       true,
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}}
 
 	for _, test := range tests {
@@ -67,8 +81,8 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			expectedQuery := mockDb.
-				ExpectQuery("SELECT \\* FROM get_category_messages\\(\\$1, \\$2\\)").
-				WithArgs(test.streamCategory, 0).
+				ExpectQuery("SELECT \\* FROM get_category_messages\\(\\$1, \\$2, \\$3\\)").
+				WithArgs(test.streamCategory, 0, test.batchSize).
 				WillDelayFor(time.Millisecond * 10)
 
 			addedMessage := -1
@@ -91,7 +105,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.GetAllMessagesInCategory(ctx, test.streamCategory)
+			messages, err := repo.GetAllMessagesInCategory(ctx, test.streamCategory, test.batchSize)
 
 			assert.Equal(test.expectedErr, err)
 			assert.Equal(test.expectedMessages, messages)
@@ -109,62 +123,79 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		streamType       string
 		callCancel       bool
 		position         int64
+		batchSize        int
 	}{{
 		name:             "when there are existing messages past position -1 it should return them",
 		existingMessages: mockMessages,
 		streamType:       "other_type",
 		expectedMessages: copyAndAppend(mockMessages[:2], mockMessages[4:]...),
 		position:         -1,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages past position 0 it should return them",
 		existingMessages: mockMessages,
 		streamType:       "other_type",
 		expectedMessages: copyAndAppend(mockMessages[:2], mockMessages[4:]...),
 		position:         0,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages past position 5 it should return them",
 		existingMessages: mockMessages,
 		streamType:       "other_type",
 		expectedMessages: mockMessages[4:],
 		position:         5,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
 		streamType:       "other_type",
 		expectedMessages: []*MessageEnvelope{},
 		position:         10,
+		batchSize:        1000,
 	}, {
 		name:             "when there are existing messages with bad metadata it should return them, ignoring the bad metadata",
 		existingMessages: mockMessages,
 		streamType:       "some_other_type",
 		expectedMessages: mockMessagesWithNoMetaData[:1],
+		batchSize:        1000,
 	}, {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamType:       "some_other_non_existant_type",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamType:       "other_type",
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}, {
 		name:        "when asking for messages from a category, if blank, an error is returned",
 		expectedErr: ErrBlankCategory,
+		batchSize:   1000,
+	}, {
+		name:        "when asking for messages with a negative batch size, an error is returned",
+		streamType:  "something",
+		expectedErr: ErrNegativeBatchSize,
+		batchSize:   -10,
 	}, {
 		name:        "when asking for messages from a category, if is invalid, an error is returned",
 		expectedErr: ErrInvalidCategory,
 		streamType:  "something-bad",
+		batchSize:   1000,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
 		streamType:  "other_type",
 		dbError:     errors.New("bad things with db happened"),
 		expectedErr: errors.New("bad things with db happened"),
+		batchSize:   1000,
 	}, {
 		name:             "when it is asked to cancel, it does",
 		existingMessages: mockMessages,
 		streamType:       "other_type",
 		callCancel:       true,
 		expectedMessages: []*MessageEnvelope{},
+		batchSize:        1000,
 	}}
 
 	for _, test := range tests {
@@ -175,8 +206,8 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			expectedQuery := mockDb.
-				ExpectQuery("SELECT \\* FROM get_category_messages\\(\\$1, \\$2\\)").
-				WithArgs(test.streamType, test.position).
+				ExpectQuery("SELECT \\* FROM get_category_messages\\(\\$1, \\$2, \\$3\\)").
+				WithArgs(test.streamType, test.position, test.batchSize).
 				WillDelayFor(time.Millisecond * 10)
 
 			addedMessage := -1
@@ -199,7 +230,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 			if test.callCancel {
 				time.AfterFunc(time.Millisecond*5, cancel) // after the call to the DB, but before it finishes
 			}
-			messages, err := repo.GetAllMessagesInCategorySince(ctx, test.streamType, test.position)
+			messages, err := repo.GetAllMessagesInCategorySince(ctx, test.streamType, test.position, test.batchSize)
 
 			assert.Equal(test.expectedErr, err)
 			assert.Equal(test.expectedMessages, messages)

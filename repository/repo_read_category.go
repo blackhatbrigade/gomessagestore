@@ -7,15 +7,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (r postgresRepo) GetAllMessagesInCategory(ctx context.Context, category string) (m []*MessageEnvelope, err error) {
-	return r.GetAllMessagesInCategorySince(ctx, category, 0)
+func (r postgresRepo) GetAllMessagesInCategory(ctx context.Context, category string, batchSize int) (m []*MessageEnvelope, err error) {
+	return r.GetAllMessagesInCategorySince(ctx, category, 0, batchSize)
 }
 
-func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64) (m []*MessageEnvelope, err error) {
+func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64, batchSize int) (m []*MessageEnvelope, err error) {
 	if category == "" {
 		logrus.WithError(ErrBlankCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 
 		return nil, ErrBlankCategory
+	}
+	if batchSize < 0 {
+		logrus.WithError(ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+
+		return nil, ErrNegativeBatchSize
 	}
 	if strings.Contains(category, "-") {
 		logrus.WithError(ErrInvalidCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
@@ -38,8 +43,8 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 		  _condition varchar DEFAULT NULL
 		)*/
 
-		query := "SELECT * FROM get_category_messages($1, $2)"
-		if err := r.dbx.SelectContext(ctx, &msgs, query, category, globalPosition); err != nil {
+		query := "SELECT * FROM get_category_messages($1, $2, $3)"
+		if err := r.dbx.SelectContext(ctx, &msgs, query, category, globalPosition, batchSize); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 			retChan <- returnPair{nil, err}
 			return
