@@ -52,7 +52,7 @@ func (sub *subscriber) GetPosition(ctx context.Context) (int64, error) {
 
 	switch pos := msgs[0].(type) {
 	case *positionMessage:
-		return pos.Position, nil
+		return pos.MyPosition, nil
 	default:
 		log.
 			WithError(ErrIncorrectMessageInPositionStream).
@@ -85,7 +85,17 @@ func (sub *subscriber) ProcessMessages(ctx context.Context, msgs []Message) (mes
 	for _, msg := range msgs {
 		for _, handler := range sub.handlers {
 			if handler.Type() == msg.Type() {
-				handler.Process(ctx, msg)
+				if err = handler.Process(ctx, msg); err != nil {
+					return
+				}
+				messagesHandled++
+				if sub.entityID == "" {
+					// category subscriptions care about position
+					positionOfLastHandled = msg.Position()
+				} else {
+					// stream subscriptions care about version
+					positionOfLastHandled = msg.Version()
+				}
 			}
 		}
 	}
@@ -105,19 +115,20 @@ func convertEnvelopeToPositionMessage(messageEnvelope *repository.MessageEnvelop
 	}
 
 	positionMsg := &positionMessage{
-		ID:           messageEnvelope.ID,
-		Position:     data.Position,
-		Version:      messageEnvelope.Version,
-		SubscriberID: halves[0],
+		ID:             messageEnvelope.ID,
+		MyPosition:     data.Position,
+		MessageVersion: messageEnvelope.Version,
+		SubscriberID:   halves[0],
 	}
 	return positionMsg, nil
 }
 
 type positionMessage struct {
-	ID           string
-	Position     int64
-	SubscriberID string
-	Version      int64
+	ID             string
+	MyPosition     int64
+	SubscriberID   string
+	MessageVersion int64
+	GlobalPosition int64
 }
 
 type positionData struct {
@@ -128,8 +139,12 @@ func (posMsg *positionMessage) Type() string {
 	return "PositionCommitted"
 }
 
-func (posMsg *positionMessage) MessageVersion() int64 {
-	return posMsg.Version
+func (posMsg *positionMessage) Version() int64 {
+	return posMsg.MessageVersion
+}
+
+func (posMsg *positionMessage) Position() int64 {
+	return posMsg.GlobalPosition
 }
 
 func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
@@ -147,11 +162,11 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 		return nil, ErrSubscriberIDCannotBeEmpty
 	}
 
-	if posMsg.Version < 0 {
+	if posMsg.MessageVersion < 0 {
 		return nil, ErrPositionVersionMissing
 	}
 
-	posData := positionData{posMsg.Position}
+	posData := positionData{posMsg.MyPosition}
 
 	data, err := json.Marshal(posData)
 	if err != nil {
@@ -159,11 +174,12 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 	}
 
 	msgEnv := &repository.MessageEnvelope{
-		ID:          posMsg.ID,
-		MessageType: messageType,
-		StreamName:  fmt.Sprintf("%s+position", posMsg.ID),
-		Data:        data,
-		Version:     posMsg.Version,
+		ID:             posMsg.ID,
+		MessageType:    messageType,
+		StreamName:     fmt.Sprintf("%s+position", posMsg.ID),
+		Data:           data,
+		Version:        posMsg.MessageVersion,
+		GlobalPosition: posMsg.GlobalPosition,
 	}
 
 	return msgEnv, nil

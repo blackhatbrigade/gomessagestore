@@ -96,7 +96,7 @@ func (proj *projector) getMessages(ctx context.Context, category string, entityI
 			msgs, err = proj.ms.Get(ctx,
 				EventStream(category, entityID),
 				BatchSize(batchsize),
-				SinceVersion(msgs[batchsize-1].MessageVersion()+1), // Since grabs an inclusive list, so grab 1 after the latest version
+				SinceVersion(msgs[batchsize-1].Version()+1), // Since grabs an inclusive list, so grab 1 after the latest version
 			)
 			if err != nil {
 				return nil, err

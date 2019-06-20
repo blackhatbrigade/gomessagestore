@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -196,9 +197,10 @@ func TestCreateSubscriberOptions(t *testing.T) {
 }
 
 type msgHandler struct {
-	Called  bool
-	Handled []string
+	called  bool
+	handled []string
 	class   string
+	retErr  error
 }
 
 func (mh *msgHandler) Type() string {
@@ -206,14 +208,19 @@ func (mh *msgHandler) Type() string {
 }
 
 func (mh *msgHandler) Process(ctx context.Context, msg Message) error {
-	mh.Called = true
+	mh.called = true
+	if mh.retErr != nil {
+		return mh.retErr
+	}
 	switch msg.(type) {
 	case *Event:
 		mh.class = msg.Type()
-		mh.Handled = append(mh.Handled, mh.class)
+		mh.handled = append(mh.handled, mh.class)
 	case *Command:
 		mh.class = msg.Type()
-		mh.Handled = append(mh.Handled, mh.class)
+		mh.handled = append(mh.handled, mh.class)
+	default:
+		return errors.New("something weird got handed to me")
 	}
 	return nil
 }

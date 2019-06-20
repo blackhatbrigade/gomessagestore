@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -11,6 +12,8 @@ import (
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
 )
+
+var potato = errors.New("I'm a potato")
 
 func TestSubscriberGetsMessages(t *testing.T) {
 	messageHandler := &msgHandler{}
@@ -25,8 +28,6 @@ func TestSubscriberGetsMessages(t *testing.T) {
 		opts             []SubscriberOption
 		messageEnvelopes []*repository.MessageEnvelope
 		repoReturnError  error
-		expectedHandled  []string
-		positionEnvelope *repository.MessageEnvelope
 	}{{
 		name:             "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
 		expectedStream:   "some category-some id1",
@@ -49,6 +50,24 @@ func TestSubscriberGetsMessages(t *testing.T) {
 		expectedStream: "some category:command",
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("some category"),
+		},
+	}, {
+		name:            "repository errors are passed on down",
+		repoReturnError: potato,
+		expectedError:   potato,
+		handlers:        []MessageHandler{messageHandler},
+		expectedStream:  "some category:command",
+		opts: []SubscriberOption{
+			SubscribeToCommandStream("some category"),
+		},
+	}, {
+		name:             "repository errors are passed on down",
+		repoReturnError:  potato,
+		expectedError:    potato,
+		handlers:         []MessageHandler{messageHandler},
+		expectedCategory: "some category",
+		opts: []SubscriberOption{
+			SubscribeToCategory("some category"),
 		},
 	}}
 
@@ -97,19 +116,16 @@ func TestSubscriberGetsMessages(t *testing.T) {
 func TestSubscriberProcessesMessages(t *testing.T) {
 
 	tests := []struct {
-		name             string
-		subscriberID     string
-		expectedError    error
-		handlers         []MessageHandler
-		expectedStream   string
-		expectedCategory string
-		opts             []SubscriberOption
-		messages         []Message
-		repoReturnError  error
-		expectedHandled  []string
-		positionEnvelope *repository.MessageEnvelope
+		name                  string
+		expectedError         error
+		handlers              []MessageHandler
+		opts                  []SubscriberOption
+		messages              []Message
+		expectedHandled       []string
+		expectedFinalPosition int64
+		expectedNumHandled    int
 	}{{
-		name: "Subscriber Poll processes a message in the registered handler with command stream",
+		name: "Subscriber processes a message in the registered handler with command stream",
 		handlers: []MessageHandler{
 			&msgHandler{class: "Command MessageType 1"},
 			&msgHandler{class: "Command MessageType 2"},
@@ -118,13 +134,14 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			"Command MessageType 1",
 			"Command MessageType 2",
 		},
-		expectedStream: "category:command",
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("category"),
 		},
-		messages: commandsToMessageSlice(getSampleCommands()),
+		messages:              commandsToMessageSlice(getSampleCommands()),
+		expectedFinalPosition: 2, // second message, from Version
+		expectedNumHandled:    2, // both messages
 	}, {
-		name: "Subscriber Poll processes a message in the registered handler with entity stream",
+		name: "Subscriber processes a message in the registered handler with entity stream",
 		handlers: []MessageHandler{
 			&msgHandler{class: "Event MessageType 1"},
 			&msgHandler{class: "Event MessageType 2"},
@@ -133,11 +150,44 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			"Event MessageType 1",
 			"Event MessageType 2",
 		},
-		expectedStream: "category-someid",
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("category", "someid"),
 		},
-		messages: eventsToMessageSlice(getSampleEvents()),
+		messages:              eventsToMessageSlice(getSampleEvents()),
+		expectedFinalPosition: 8, // second message, from Version
+		expectedNumHandled:    2, // both messages
+	}, {
+		name: "Subscriber processes a message in the registered handler with category",
+		handlers: []MessageHandler{
+			&msgHandler{class: "Event MessageType 1"},
+			&msgHandler{class: "Event MessageType 2"},
+		},
+		expectedHandled: []string{
+			"Event MessageType 1",
+			"Event MessageType 2",
+		},
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
+		},
+		messages:              eventsToMessageSlice(getSampleEvents()),
+		expectedFinalPosition: 349, // second message, from Position
+		expectedNumHandled:    2,   // both messages
+	}, {
+		name: "Subscriber processes a message in the registered handler with category, up until it receives an error",
+		handlers: []MessageHandler{
+			&msgHandler{class: "Event MessageType 2"},
+			&msgHandler{class: "Event MessageType 1", retErr: potato}, // 1 comes after 2 in getSampleEvents
+		},
+		expectedHandled: []string{
+			"Event MessageType 2",
+		},
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
+		},
+		messages:              eventsToMessageSlice(getSampleEvents()),
+		expectedError:         potato,
+		expectedFinalPosition: 345, // first message, from Position
+		expectedNumHandled:    1,   // first message only
 	}}
 
 	for _, test := range tests {
@@ -161,18 +211,26 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 				return
 			}
 
-			_, _, err = mySubscriber.ProcessMessages(ctx, test.messages)
+			numHandled, posLastHandled, err := mySubscriber.ProcessMessages(ctx, test.messages)
 			if err != test.expectedError {
 				t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+			}
+
+			if numHandled != test.expectedNumHandled {
+				t.Errorf("Failed to get expected number-of-messages-handled from ProcessMessages()\nExpected: %d\n and got: %d\n", test.expectedNumHandled, numHandled)
+			}
+
+			if posLastHandled != test.expectedFinalPosition {
+				t.Errorf("Failed to get expected final-position from ProcessMessages()\nExpected: %d\n and got: %d\n", test.expectedFinalPosition, posLastHandled)
 			}
 
 			handled := make([]string, 0, len(test.expectedHandled))
 			for _, handlerI := range test.handlers {
 				handler := handlerI.(*msgHandler)
-				if !handler.Called {
+				if !handler.called {
 					t.Error("Handler was not called")
 				}
-				handled = append(handled, handler.Handled...) // cause variable names are hard
+				handled = append(handled, handler.handled...) // cause variable names are hard
 			}
 			if !reflect.DeepEqual(handled, test.expectedHandled) {
 				t.Errorf("Handler was called for the wrong messages, \nCalled: %s\nExpected: %s\n", handled, test.expectedHandled)
@@ -193,7 +251,6 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		expectedCategory string
 		opts             []SubscriberOption
 		messages         []Message
-		repoReturnError  error
 		expectedHandled  []string
 		positionEnvelope *repository.MessageEnvelope
 	}{{

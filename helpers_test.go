@@ -37,7 +37,7 @@ func getSampleCommand() *Command {
 	return &Command{
 		MessageType:    "test type",
 		StreamCategory: "test cat",
-		Version:        10,
+		MessageVersion: 10,
 		GlobalPosition: 10,
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		Data:           packed,
@@ -55,7 +55,7 @@ func getSampleEvent() *Event {
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		MessageType:    "test type",
 		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
-		Version:        9,
+		MessageVersion: 9,
 		GlobalPosition: 9,
 		StreamCategory: "test cat",
 		Data:           packed,
@@ -73,7 +73,7 @@ func getSampleOtherMessage() *otherMessage {
 		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
 		MessageType:    "test type",
 		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
-		Version:        9,
+		MessageVersion: 9,
 		GlobalPosition: 9,
 		StreamCategory: "test cat",
 		Data:           packed,
@@ -96,8 +96,8 @@ func getSampleCommands() []*Command {
 			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
 			MessageType:    "Command MessageType 2",
 			StreamCategory: "test cat",
-			Version:        1,
-			GlobalPosition: 1,
+			MessageVersion: 1,
+			GlobalPosition: 1011,
 			Data:           packed1,
 			Metadata:       packedMeta1,
 			Time:           time.Unix(1, 1),
@@ -105,8 +105,8 @@ func getSampleCommands() []*Command {
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Command MessageType 1",
 			StreamCategory: "test cat",
-			Version:        2,
-			GlobalPosition: 2,
+			MessageVersion: 2,
+			GlobalPosition: 1012,
 			Data:           packed2,
 			Metadata:       packedMeta2,
 			Time:           time.Unix(1, 2),
@@ -128,8 +128,8 @@ func getSampleEvents() []*Event {
 			MessageType:    "Event MessageType 2",
 			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
 			StreamCategory: "test cat",
-			Version:        4,
-			GlobalPosition: 4,
+			MessageVersion: 4,
+			GlobalPosition: 345,
 			Data:           packed1,
 			Metadata:       packedMeta1,
 			Time:           time.Unix(1, 3),
@@ -137,8 +137,8 @@ func getSampleEvents() []*Event {
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Event MessageType 1",
 			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			Version:        3,
-			GlobalPosition: 3,
+			MessageVersion: 8,
+			GlobalPosition: 349,
 			StreamCategory: "test cat",
 			Data:           packed2,
 			Metadata:       packedMeta2,
@@ -158,7 +158,7 @@ func getLotsOfSampleEvents(amount, startingAt int) []*Event {
 			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
 			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
 			StreamCategory: "test cat",
-			Version:        int64(4 + startingAt + index),
+			MessageVersion: int64(4 + startingAt + index),
 			GlobalPosition: int64(500 + startingAt + index),
 			Data:           packed,
 			Metadata:       packedMeta,
@@ -212,7 +212,7 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
 			StreamCategory: "test cat",
 			Version:        4,
-			GlobalPosition: 4,
+			GlobalPosition: 345,
 			Data:           []byte(`{"Field1":"a"}`),
 			Metadata:       []byte(`{"Field1":"b"}`),
 			Time:           time.Unix(1, 3),
@@ -220,8 +220,8 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
 			MessageType:    "Event MessageType 1",
 			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
-			Version:        3,
-			GlobalPosition: 3,
+			Version:        8,
+			GlobalPosition: 349,
 			StreamCategory: "test cat",
 			Data:           []byte(`{"Field1":"c"}`),
 			Metadata:       []byte(`{"Field1":"d"}`),
@@ -253,7 +253,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			StreamName:     "test cat:command",
 			StreamCategory: "test cat",
 			Version:        1,
-			GlobalPosition: 1,
+			GlobalPosition: 1011,
 			Data:           []byte(`{"Field1":"a"}`),
 			Metadata:       []byte(`{"Field1":"b"}`),
 			Time:           time.Unix(1, 1),
@@ -262,7 +262,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			MessageType:    "Command MessageType 1",
 			StreamName:     "test cat:command",
 			Version:        2,
-			GlobalPosition: 2,
+			GlobalPosition: 1012,
 			StreamCategory: "test cat",
 			Data:           []byte(`{"Field1":"c"}`),
 			Metadata:       []byte(`{"Field1":"d"}`),
@@ -419,7 +419,7 @@ type otherMessage struct {
 	EntityID       string
 	StreamCategory string
 	MessageType    string
-	Version        int64
+	MessageVersion int64
 	GlobalPosition int64
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
@@ -430,8 +430,12 @@ func (other *otherMessage) Type() string {
 	return other.MessageType
 }
 
-func (other *otherMessage) MessageVersion() int64 {
-	return other.Version
+func (other *otherMessage) Version() int64 {
+	return other.MessageVersion
+}
+
+func (other *otherMessage) Position() int64 {
+	return other.GlobalPosition
 }
 
 func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
@@ -473,7 +477,7 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 		Data:           data,
 		Metadata:       metadata,
 		Time:           other.Time,
-		Version:        other.Version,
+		Version:        other.MessageVersion,
 		GlobalPosition: other.GlobalPosition,
 	}
 
@@ -502,7 +506,7 @@ func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) 
 	}
 	other := &otherMessage{
 		ID:             messageEnvelope.ID,
-		Version:        messageEnvelope.Version,
+		MessageVersion: messageEnvelope.Version,
 		GlobalPosition: messageEnvelope.GlobalPosition,
 		MessageType:    messageEnvelope.MessageType,
 		StreamCategory: category,
