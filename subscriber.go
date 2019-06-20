@@ -2,6 +2,7 @@ package gomessagestore
 
 import (
 	"context"
+	"strings"
 	"time"
 )
 
@@ -65,6 +66,12 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 	}
 	if subscriberID == "" {
 		return nil, ErrSubscriberIDCannotBeEmpty
+	}
+	if strings.Contains(subscriberID, "-") {
+		return nil, ErrInvalidSubscriberID
+	}
+	if strings.Contains(subscriberID, "+") {
+		return nil, ErrInvalidSubscriberID
 	}
 	if subscriber.entityID == "" && subscriber.category == "" {
 		return nil, ErrSubscriberNeedsCategoryOrStream

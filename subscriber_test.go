@@ -24,8 +24,18 @@ func TestCreateSubscriber(t *testing.T) {
 		expectedError: ErrSubscriberNeedsAtLeastOneMessageHandler,
 		handlers:      []MessageHandler{},
 	}, {
-		name:          "when subscriberID is nil",
+		name:          "when subscriberID is blank",
 		expectedError: ErrSubscriberIDCannotBeEmpty,
+		handlers:      []MessageHandler{messageHandler},
+	}, {
+		name:          "when subscriberID contains a hyphen",
+		subscriberID:  "someid1-plus a hyphen",
+		expectedError: ErrInvalidSubscriberID,
+		handlers:      []MessageHandler{messageHandler},
+	}, {
+		name:          "when subscriberID contains a plus",
+		subscriberID:  "someid1+a plus",
+		expectedError: ErrInvalidSubscriberID,
 		handlers:      []MessageHandler{messageHandler},
 	}, {
 		name:          "messageHandler is equal to nil",
