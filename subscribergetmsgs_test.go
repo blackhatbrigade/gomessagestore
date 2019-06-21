@@ -92,18 +92,22 @@ func TestSubscriberGetsMessages(t *testing.T) {
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
-			mySubscriber, err := myMessageStore.CreateSubscriber(
+			opts, err := GetSubscriberConfig(test.opts...)
+			panicIf(err)
+
+			myWorker, err := CreateWorker(
+				myMessageStore,
 				"some id",
 				test.handlers,
-				test.opts...,
+				opts,
 			)
 
 			if err != nil {
-				t.Errorf("Failed on CreateSubscriber() Got: %s\n", err)
+				t.Errorf("Failed on CreateWorker() Got: %s\n", err)
 				return
 			}
 
-			_, err = mySubscriber.GetMessages(ctx, test.expectedPosition)
+			_, err = myWorker.GetMessages(ctx, test.expectedPosition)
 			if err != test.expectedError {
 				t.Errorf("Failed to get expected error from GetMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}

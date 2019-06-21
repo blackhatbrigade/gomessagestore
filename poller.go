@@ -4,17 +4,19 @@ import (
 	"context"
 )
 
+//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Poller > mocks/poller.go"
+
 type Poller interface {
 	Poll(context.Context) error
 }
 
 type poller struct {
-	opts   []SubscriberOption
+	opts   *SubscriberConfig
 	ms     MessageStore
 	worker *subscriptionWorker
 }
 
-func CreatePoller(ms MessageStore, worker *subscriptionWorker, opts ...SubscriberOption) (*poller, error) {
+func CreatePoller(ms MessageStore, worker *subscriptionWorker, opts *SubscriberConfig) (*poller, error) {
 	return &poller{
 		ms:     ms,
 		opts:   opts,

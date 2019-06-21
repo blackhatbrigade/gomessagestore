@@ -108,18 +108,22 @@ func TestSubscriberGetsPosition(t *testing.T) {
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
-			mySubscriber, err := myMessageStore.CreateSubscriber(
-				test.subscriberID,
+			opts, err := GetSubscriberConfig(test.opts...)
+			panicIf(err)
+
+			myWorker, err := CreateWorker(
+				myMessageStore,
+				"some id",
 				test.handlers,
-				test.opts...,
+				opts,
 			)
 
 			if err != nil {
-				t.Errorf("Failed on CreateSubscriber() Got: %s\n", err)
+				t.Errorf("Failed on CreateWorker() Got: %s\n", err)
 				return
 			}
 
-			pos, err := mySubscriber.GetPosition(ctx)
+			pos, err := myWorker.GetPosition(ctx)
 
 			if err != nil {
 				t.Errorf("Failed on GetPosition() because of %v", err)

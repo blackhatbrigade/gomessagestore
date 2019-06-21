@@ -7,14 +7,14 @@ import (
 //GetMessages phase two
 func (sw *subscriptionWorker) GetMessages(ctx context.Context, position int64) ([]Message, error) {
 	opts := []GetOption{}
-	if sw.sub.config.entityID == "" {
-		opts = append(opts, SincePosition(position), Category(sw.sub.config.category))
+	if sw.config.entityID == "" {
+		opts = append(opts, SincePosition(position), Category(sw.config.category))
 	} else {
 		opts = append(opts, SinceVersion(position))
-		if sw.sub.config.commandCategory != "" {
-			opts = append(opts, CommandStream(sw.sub.config.commandCategory))
+		if sw.config.commandCategory != "" {
+			opts = append(opts, CommandStream(sw.config.commandCategory))
 		} else {
-			opts = append(opts, EventStream(sw.sub.config.category, sw.sub.config.entityID))
+			opts = append(opts, EventStream(sw.config.category, sw.config.entityID))
 		}
 	}
 

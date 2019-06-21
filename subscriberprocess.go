@@ -14,7 +14,7 @@ func (sw *subscriptionWorker) ProcessMessages(ctx context.Context, msgs []Messag
 					return
 				}
 				messagesHandled++
-				if sw.sub.config.entityID == "" {
+				if sw.config.entityID == "" {
 					// category subscriptions care about position
 					positionOfLastHandled = msg.Position()
 				} else {
