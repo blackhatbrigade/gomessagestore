@@ -5,19 +5,18 @@ import (
 )
 
 //GetMessages phase two
-func (sub *subscriber) GetMessages(ctx context.Context, position int64) ([]Message, error) {
+func (sw *subscriptionWorker) GetMessages(ctx context.Context, position int64) ([]Message, error) {
 	opts := []GetOption{}
-	if sub.entityID == "" {
-		opts = append(opts, SincePosition(position))
-		opts = append(opts, Category(sub.category))
+	if sw.sub.config.entityID == "" {
+		opts = append(opts, SincePosition(position), Category(sw.sub.config.category))
 	} else {
 		opts = append(opts, SinceVersion(position))
-		if sub.commandCategory != "" {
-			opts = append(opts, CommandStream(sub.commandCategory))
+		if sw.sub.config.commandCategory != "" {
+			opts = append(opts, CommandStream(sw.sub.config.commandCategory))
 		} else {
-			opts = append(opts, EventStream(sub.category, sub.entityID))
+			opts = append(opts, EventStream(sw.sub.config.category, sw.sub.config.entityID))
 		}
 	}
 
-	return sub.ms.Get(ctx, opts...)
+	return sw.ms.Get(ctx, opts...)
 }

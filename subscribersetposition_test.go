@@ -1,0 +1,1 @@
+package gomessagestore_test

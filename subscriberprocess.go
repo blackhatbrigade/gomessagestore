@@ -5,16 +5,16 @@ import (
 )
 
 //ProcessMessages phase three
-func (sub *subscriber) ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error) {
+func (sw *subscriptionWorker) ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error) {
 
 	for _, msg := range msgs {
-		for _, handler := range sub.handlers {
+		for _, handler := range sw.handlers {
 			if handler.Type() == msg.Type() {
 				if err = handler.Process(ctx, msg); err != nil {
 					return
 				}
 				messagesHandled++
-				if sub.entityID == "" {
+				if sw.sub.config.entityID == "" {
 					// category subscriptions care about position
 					positionOfLastHandled = msg.Position()
 				} else {

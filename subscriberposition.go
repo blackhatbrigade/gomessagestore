@@ -11,13 +11,14 @@ import (
 )
 
 //GetPosition starts phase one of the polling loop
-func (sub *subscriber) GetPosition(ctx context.Context) (int64, error) {
+func (sw *subscriptionWorker) GetPosition(ctx context.Context) (int64, error) {
+	sub := sw.sub
 	log := logrus.
 		WithFields(logrus.Fields{
 			"SubscriberID": sub.subscriberID,
 		})
 
-	msgs, _ := sub.ms.Get(
+	msgs, _ := sw.ms.Get(
 		ctx,
 		PositionStream(sub.subscriberID),
 		Converter(convertEnvelopeToPositionMessage),
@@ -120,9 +121,4 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 	}
 
 	return msgEnv, nil
-}
-
-//SetPosition phase four
-func (sub *subscriber) SetPosition(ctx context.Context, msgs []Message) error {
-	return nil
 }
