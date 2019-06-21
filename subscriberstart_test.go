@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
+	mock_gomessagestore "github.com/blackhatbrigade/gomessagestore/mocks"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
 )
@@ -17,7 +18,7 @@ func TestSubscriberStartCallsPoll(t *testing.T) {
 		messages      []Message
 		opts          []SubscriberOption
 	}{{
-		name:     "Start should cancel when given a context.Cancel()",
+		name:     "Start should call poll",
 		handlers: []MessageHandler{&msgHandler{}},
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
@@ -31,12 +32,20 @@ func TestSubscriberStartCallsPoll(t *testing.T) {
 
 			ctx := context.Background()
 			mockRepo := mock_repository.NewMockRepository(ctrl)
+			mockPoller := mock_gomessagestore.NewMockPoller(ctrl)
+
+			mockPoller.
+				EXPECT().
+				Poll(ctx).
+				Return(nil)
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
-			mySubscriber, err := myMessageStore.CreateSubscriber(
+			mySubscriber, err := CreateSubscriberWithPoller(
+				myMessageStore,
 				"someid",
 				test.handlers,
+				mockPoller,
 				test.opts...,
 			)
 			if err != nil {

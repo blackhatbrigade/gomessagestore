@@ -20,11 +20,52 @@ type subscriber struct {
 
 //CreateSubscriber
 func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error) {
+	subscriber, err := createSubscriberWithPoller(
+		ms,
+		subscriberID,
+		handlers,
+		nil,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	worker, err := CreateWorker(
+		subscriber.ms,
+		subscriberID,
+		subscriber.handlers,
+		subscriber.config)
+	if err != nil {
+		return nil, err
+	}
+
+	subscriber.poller, err = CreatePoller(subscriber.ms, worker, subscriber.config)
+	if err != nil {
+		return nil, err
+	}
+
+	return subscriber, nil
+}
+
+//CreateSubscriberWithPoller is used for testing with dependency injection
+func CreateSubscriberWithPoller(ms MessageStore, subscriberID string, handlers []MessageHandler, poller Poller, opts ...SubscriberOption) (Subscriber, error) {
+	return createSubscriberWithPoller(
+		ms,
+		subscriberID,
+		handlers,
+		poller,
+		opts...,
+	)
+}
+
+func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers []MessageHandler, poller Poller, opts ...SubscriberOption) (*subscriber, error) {
 
 	subscriber := &subscriber{
 		ms:           ms,
 		handlers:     handlers,
 		subscriberID: subscriberID,
+		poller:       poller,
 	}
 
 	//Validate the params
@@ -54,17 +95,6 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 	} else {
 		subscriber.config = config
 	}
-
-	worker, err := CreateWorker(
-		subscriber.ms,
-		subscriberID,
-		subscriber.handlers,
-		subscriber.config)
-	if err != nil {
-		return nil, err
-	}
-
-	subscriber.poller, err = CreatePoller(subscriber.ms, worker, subscriber.config)
 
 	return subscriber, nil
 }
