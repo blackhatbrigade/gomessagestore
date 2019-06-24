@@ -2,7 +2,6 @@ package gomessagestore
 
 import (
 	"context"
-	"fmt"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Poller > mocks/poller.go"
@@ -28,7 +27,6 @@ func CreatePoller(ms MessageStore, worker *subscriptionWorker, opts *SubscriberC
 //Poll Handles a single tick of the handlers firing
 func (pol poller) Poll(ctx context.Context) error {
 	worker := pol.worker
-
 	pos, err := worker.GetPosition(ctx)
 	if err != nil {
 		return err
@@ -38,18 +36,11 @@ func (pol poller) Poll(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var numberOfMsgsHandled int
-	var posOfLastHandled int64
 
-	numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
-	if err != nil {
-		return err
-	}
+	//numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
 
-	fmt.Println(numberOfMsgsHandled, posOfLastHandled, err)
-	err = worker.SetPosition(ctx, msgs)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, _, err = worker.ProcessMessages(ctx, msgs)
+	//err = worker.SetPosition(ctx, msgs)
+
+	return err
 }
