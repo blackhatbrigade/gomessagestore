@@ -129,7 +129,3 @@ func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 		return true // timed out
 	}
 }
-
-/*
-	should wait defined intervals between calling Poll()
-*/
