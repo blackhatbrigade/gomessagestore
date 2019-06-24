@@ -14,6 +14,7 @@ type MessageStore interface {
 	Write(ctx context.Context, message Message, opts ...WriteOption) error
 	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
 	CreateProjector(opts ...ProjectorOption) (Projector, error)
+	CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error)
 }
 
 type msgStore struct {

@@ -14,16 +14,26 @@ type Command struct {
 	ID             string
 	StreamCategory string
 	MessageType    string
-	Version        int64
+	MessageVersion int64
 	GlobalPosition int64
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
 }
 
-//MessageVersion gets the command's Version field
-func (cmd *Command) MessageVersion() int64 {
-	return cmd.Version
+//Type returns the type of this message (business action taking place)
+func (cmd *Command) Type() string {
+	return cmd.MessageType
+}
+
+//Version gets the command's Version field
+func (cmd *Command) Version() int64 {
+	return cmd.MessageVersion
+}
+
+//Position gets the command's Position field
+func (cmd *Command) Position() int64 {
+	return cmd.GlobalPosition
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
@@ -62,7 +72,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		Data:           data,
 		Metadata:       metadata,
 		Time:           cmd.Time,
-		Version:        cmd.Version,
+		Version:        cmd.MessageVersion,
 		GlobalPosition: cmd.GlobalPosition,
 	}
 	return msgEnv, nil
@@ -74,16 +84,26 @@ type Event struct {
 	EntityID       string
 	StreamCategory string
 	MessageType    string
-	Version        int64
+	MessageVersion int64
 	GlobalPosition int64
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
 }
 
-//MessageVersion gets the event's Version field
-func (event *Event) MessageVersion() int64 {
-	return event.Version
+//Type returns the type of this message (business action taking place)
+func (event *Event) Type() string {
+	return event.MessageType
+}
+
+//Version gets the event's Version field
+func (event *Event) Version() int64 {
+	return event.MessageVersion
+}
+
+//Position gets the events's Position field
+func (event *Event) Position() int64 {
+	return event.GlobalPosition
 }
 
 //ToEnvelope Allows for exporting to a MessageEnvelope type.
@@ -126,7 +146,7 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		Data:           data,
 		Metadata:       metadata,
 		Time:           event.Time,
-		Version:        event.Version,
+		Version:        event.MessageVersion,
 		GlobalPosition: event.GlobalPosition,
 	}
 

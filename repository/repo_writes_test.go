@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -8,7 +9,6 @@ import (
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	. "github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 )
 
 func TestPostgresRepoWriteMessage(t *testing.T) {
@@ -33,7 +33,7 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 	}, {
 		name:        "when the message has no stream name, an error is returned",
 		msg:         mockMessageNoStream,
-		expectedErr: ErrInvalidStreamID,
+		expectedErr: ErrInvalidStreamName,
 	}, {
 		name: "when there is no db error, it should write the message",
 		msg:  mockMessages[0],
@@ -106,7 +106,7 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 	}, {
 		name:        "when the message has no stream name, an error is returned",
 		msg:         mockMessageNoStream,
-		expectedErr: ErrInvalidStreamID,
+		expectedErr: ErrInvalidStreamName,
 		position:    1,
 	}, {
 		name:     "when the position is at 0, no error is returned",

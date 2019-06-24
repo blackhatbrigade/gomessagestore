@@ -1,9 +1,8 @@
 package repository
 
 import (
+	"context"
 	"errors"
-
-	"golang.org/x/net/context"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/repository Repository > mocks/repository.go"
@@ -14,9 +13,9 @@ type Repository interface {
 	WriteMessage(ctx context.Context, message *MessageEnvelope) error
 	WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error
 	// reads from stream
-	GetAllMessagesInStream(ctx context.Context, streamID string, batchSize int) ([]*MessageEnvelope, error)
-	GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error)
-	GetLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error)
+	GetAllMessagesInStream(ctx context.Context, streamName string, batchSize int) ([]*MessageEnvelope, error)
+	GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error)
+	GetLastMessageInStream(ctx context.Context, streamName string) (*MessageEnvelope, error)
 	// reads from category
 	GetAllMessagesInCategory(ctx context.Context, category string, batchSize int) ([]*MessageEnvelope, error)
 	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error)
@@ -25,7 +24,7 @@ type Repository interface {
 //Errors
 var (
 	ErrInvalidSubscriberID       = errors.New("Subscriber ID cannot be blank")
-	ErrInvalidStreamID           = errors.New("Stream ID cannot be blank")
+	ErrInvalidStreamName         = errors.New("Stream Name cannot be blank")
 	ErrBlankCategory             = errors.New("Category cannot be blank")
 	ErrInvalidCategory           = errors.New("Category cannot contain a hyphen")
 	ErrInvalidSubscriberPosition = errors.New("Subscriber position must be greater than or equal to -1")

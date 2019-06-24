@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -8,7 +9,6 @@ import (
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	. "github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 )
 
 func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
@@ -45,8 +45,8 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		expectedMessages: []*MessageEnvelope{},
 		batchSize:        1000,
 	}, {
-		name:        "when asking for messages from a stream with a blank ID, an error is returned",
-		expectedErr: ErrInvalidStreamID,
+		name:        "when asking for messages from a stream with a blank Name, an error is returned",
+		expectedErr: ErrInvalidStreamName,
 		batchSize:   1000,
 	}, {
 		name:        "when asking for messages with a negative batch size, an error is returned",
@@ -167,8 +167,8 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		expectedMessages: []*MessageEnvelope{},
 		batchSize:        1000,
 	}, {
-		name:        "when asking for messages from a stream with a blank ID, an error is returned",
-		expectedErr: ErrInvalidStreamID,
+		name:        "when asking for messages from a stream with a blank Name, an error is returned",
+		expectedErr: ErrInvalidStreamName,
 		batchSize:   1000,
 	}, {
 		name:        "when asking for messages with a negative batch size, an error is returned",
@@ -259,8 +259,8 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 		name:       "when there are no existing messages it should return no message",
 		streamName: "some_type-12345",
 	}, {
-		name:        "when asking for messages from a stream with a blank ID, an error is returned",
-		expectedErr: ErrInvalidStreamID,
+		name:        "when asking for messages from a stream with a blank Name, an error is returned",
+		expectedErr: ErrInvalidStreamName,
 	}, {
 		name:        "when there is an issue getting the message an error should be returned",
 		streamName:  "some_type-12345",

@@ -73,7 +73,7 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 			ID:             messageEnvelope.ID,
 			MessageType:    messageEnvelope.MessageType,
 			StreamCategory: strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
-			Version:        messageEnvelope.Version,
+			MessageVersion: messageEnvelope.Version,
 			GlobalPosition: messageEnvelope.GlobalPosition,
 			Data:           data,
 			Metadata:       metadata,
@@ -105,7 +105,7 @@ func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Messag
 	}
 	event := &Event{
 		ID:             messageEnvelope.ID,
-		Version:        messageEnvelope.Version,
+		MessageVersion: messageEnvelope.Version,
 		GlobalPosition: messageEnvelope.GlobalPosition,
 		MessageType:    messageEnvelope.MessageType,
 		StreamCategory: category,

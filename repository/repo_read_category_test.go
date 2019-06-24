@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -8,7 +9,6 @@ import (
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	. "github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 )
 
 func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {

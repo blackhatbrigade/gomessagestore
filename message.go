@@ -2,8 +2,10 @@ package gomessagestore
 
 import "github.com/blackhatbrigade/gomessagestore/repository"
 
-//Message Defines an interface that can consume Commands or Events.
+//Message Defines an interface that can define more specific class of messages such as Commands or Events.
 type Message interface {
 	ToEnvelope() (*repository.MessageEnvelope, error)
-	MessageVersion() int64
+	Type() string
+	Version() int64
+	Position() int64
 }

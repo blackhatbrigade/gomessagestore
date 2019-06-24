@@ -53,6 +53,26 @@ func (mr *MockMessageStoreMockRecorder) CreateProjector(arg0 ...interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProjector", reflect.TypeOf((*MockMessageStore)(nil).CreateProjector), arg0...)
 }
 
+// CreateSubscriber mocks base method
+func (m *MockMessageStore) CreateSubscriber(arg0 string, arg1 []gomessagestore.MessageHandler, arg2 ...gomessagestore.SubscriberOption) (gomessagestore.Subscriber, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateSubscriber", varargs...)
+	ret0, _ := ret[0].(gomessagestore.Subscriber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSubscriber indicates an expected call of CreateSubscriber
+func (mr *MockMessageStoreMockRecorder) CreateSubscriber(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubscriber", reflect.TypeOf((*MockMessageStore)(nil).CreateSubscriber), varargs...)
+}
+
 // Get mocks base method
 func (m *MockMessageStore) Get(arg0 context.Context, arg1 ...gomessagestore.GetOption) ([]gomessagestore.Message, error) {
 	m.ctrl.T.Helper()

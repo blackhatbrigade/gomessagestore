@@ -1,19 +1,20 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 )
 
-func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamID string, batchSize int) ([]*MessageEnvelope, error) {
-	return r.GetAllMessagesInStreamSince(ctx, streamID, 0, batchSize)
+func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamName string, batchSize int) ([]*MessageEnvelope, error) {
+	return r.GetAllMessagesInStreamSince(ctx, streamName, 0, batchSize)
 }
 
-func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID string) (*MessageEnvelope, error) {
-	if streamID == "" {
-		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::GetLastMessageInStream")
+func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName string) (*MessageEnvelope, error) {
+	if streamName == "" {
+		logrus.WithError(ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 
-		return nil, ErrInvalidStreamID
+		return nil, ErrInvalidStreamName
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled
@@ -29,7 +30,7 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID strin
 		  _stream_name varchar,
 		)*/
 		query := "SELECT * FROM get_last_message($1)"
-		if err := r.dbx.SelectContext(ctx, &msgs, query, streamID); err != nil {
+		if err := r.dbx.SelectContext(ctx, &msgs, query, streamName); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 			retChan <- returnPair{nil, err}
 			return
@@ -57,11 +58,11 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamID strin
 	}
 }
 
-func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error) {
-	if streamID == "" {
-		logrus.WithError(ErrInvalidStreamID).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
+func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error) {
+	if streamName == "" {
+		logrus.WithError(ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 
-		return nil, ErrInvalidStreamID
+		return nil, ErrInvalidStreamName
 	}
 	if batchSize < 0 {
 		logrus.WithError(ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
@@ -85,7 +86,7 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamID 
 		  _condition varchar DEFAULT NULL
 		)*/
 		query := "SELECT * FROM get_stream_messages($1, $2)"
-		if err := r.dbx.SelectContext(ctx, &msgs, query, streamID, globalPosition); err != nil {
+		if err := r.dbx.SelectContext(ctx, &msgs, query, streamName, globalPosition); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 			retChan <- returnPair{nil, err}
 			return
