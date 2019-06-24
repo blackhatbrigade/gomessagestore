@@ -10,7 +10,7 @@ type SubscriptionWorker interface {
 	GetMessages(ctx context.Context, position int64) ([]Message, error)
 	ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error)
 	GetPosition(ctx context.Context) (int64, error)
-	SetPosition(ctx context.Context) error
+	SetPosition(ctx context.Context, msgs []Message) error
 }
 
 type subscriptionWorker struct {
@@ -20,7 +20,7 @@ type subscriptionWorker struct {
 	subscriberID string
 }
 
-func CreateWorker(ms MessageStore, subscriberID string, handlers []MessageHandler, config *SubscriberConfig) (*subscriptionWorker, error) {
+func CreateWorker(ms MessageStore, subscriberID string, handlers []MessageHandler, config *SubscriberConfig) (SubscriptionWorker, error) {
 	return &subscriptionWorker{
 		ms:           ms,
 		handlers:     handlers,

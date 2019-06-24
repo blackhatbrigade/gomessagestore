@@ -13,10 +13,10 @@ type Poller interface {
 type poller struct {
 	opts   *SubscriberConfig
 	ms     MessageStore
-	worker *subscriptionWorker
+	worker SubscriptionWorker
 }
 
-func CreatePoller(ms MessageStore, worker *subscriptionWorker, opts *SubscriberConfig) (*poller, error) {
+func CreatePoller(ms MessageStore, worker SubscriptionWorker, opts *SubscriberConfig) (*poller, error) {
 	return &poller{
 		ms:     ms,
 		opts:   opts,
