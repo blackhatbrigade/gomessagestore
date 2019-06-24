@@ -5,6 +5,6 @@ import (
 )
 
 //SetPosition sets the position of messages it recieves
-func (sub *subscriber) SetPosition(ctx context.Context, msgs []Message) error {
+func (sw *subscriptionWorker) SetPosition(ctx context.Context, msgs []Message) error {
 	return nil
 }

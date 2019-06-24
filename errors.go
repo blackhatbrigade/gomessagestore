@@ -7,6 +7,7 @@ var (
 	ErrInvalidOptionCombination                      = errors.New("Cannot have the current combination of options for Get()")
 	ErrSubscriberCannotUseBothStreamAndCategory      = errors.New("Subscriber function cannot use both Stream and Category")
 	ErrInvalidPollTime                               = errors.New("Invalid Subscriber poll time provided, can not be negative or zero")
+	ErrInvalidPollErrorDelay                         = errors.New("Invalid Subscriber poll error delay provided, can not be negative or zero")
 	ErrInvalidBatchSize                              = errors.New("Invalid Subscriber batch size provided, can not be negative or zero")
 	ErrInvalidMsgInterval                            = errors.New("MsgInterval cannot be less than 2")
 	ErrSubscriberNeedsCategoryOrStream               = errors.New("Subscriber needs at least one of category or stream to be set upon creation")

@@ -2,7 +2,10 @@ package gomessagestore_test
 
 import (
 	"context"
+	"errors"
+	"sync"
 	"testing"
+	"time"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	mock_gomessagestore "github.com/blackhatbrigade/gomessagestore/mocks"
@@ -10,19 +13,58 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestSubscriberStartCallsPoll(t *testing.T) {
+func TestSubscriberStartWithContext(t *testing.T) {
 	tests := []struct {
-		name          string
-		handlers      []MessageHandler
-		expectedError error
-		messages      []Message
-		opts          []SubscriberOption
+		name                string
+		handlers            []MessageHandler
+		expectedError       error
+		pollError           error
+		expectedTimesPolled int
+		sleepyTime          time.Duration
+		messages            []Message
+		opts                []SubscriberOption
+		cancelDelay         time.Duration
 	}{{
-		name:     "Start should call poll",
-		handlers: []MessageHandler{&msgHandler{}},
+		name:                "Should cancel when asked, nicely",
+		handlers:            []MessageHandler{&msgHandler{}},
+		sleepyTime:          200 * time.Millisecond,
+		expectedTimesPolled: 1,
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
+		cancelDelay: 30 * time.Millisecond,
+	}, {
+		name:                "When there is no error, start continues to call the Poll() function",
+		handlers:            []MessageHandler{&msgHandler{}},
+		sleepyTime:          20 * time.Millisecond, // will take 40 ms to run twice, so cancel will happen during the second run
+		expectedTimesPolled: 2,
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
+			PollTime(1),
+		},
+		cancelDelay: 30 * time.Millisecond,
+	}, {
+		name:                "Waits between Poll() calls",
+		handlers:            []MessageHandler{&msgHandler{}},
+		pollError:           errors.New("I'm an erorr"),
+		sleepyTime:          20 * time.Millisecond, // will take 40 ms to run twice, so cancel will happen during the second run, but our default delay add enough wait for it to only be called once
+		expectedTimesPolled: 1,
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
+		},
+		cancelDelay: 30 * time.Millisecond,
+	}, {
+		name:                "When Poll() returns an error, start continues to call the Poll() function, after a long delay",
+		handlers:            []MessageHandler{&msgHandler{}},
+		pollError:           errors.New("I'm an erorr"),
+		sleepyTime:          20 * time.Millisecond, // will take 40 ms to run twice, so cancel will happen during the second run
+		expectedTimesPolled: 2,
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
+			PollTime(1),
+			PollErrorDelay(100 * time.Millisecond),
+		},
+		cancelDelay: 30*time.Millisecond + 100*time.Millisecond,
 	}}
 
 	for _, test := range tests {
@@ -31,13 +73,23 @@ func TestSubscriberStartCallsPoll(t *testing.T) {
 			defer ctrl.Finish()
 
 			ctx := context.Background()
+			ctx, cancel := context.WithCancel(ctx)
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 			mockPoller := mock_gomessagestore.NewMockPoller(ctrl)
+
+			var wg sync.WaitGroup
+
+			wg.Add(test.expectedTimesPolled)
 
 			mockPoller.
 				EXPECT().
 				Poll(ctx).
-				Return(nil)
+				Do(func(ctx context.Context) {
+					wg.Done()
+					time.Sleep(test.sleepyTime)
+				}).
+				Return(test.pollError).
+				AnyTimes()
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
@@ -50,19 +102,45 @@ func TestSubscriberStartCallsPoll(t *testing.T) {
 			)
 			if err != nil {
 				t.Errorf("Failed on CreateSubscriber() Got: %s\n", err)
-				return
 			}
 
-			err = mySubscriber.Start(ctx)
-			if err != test.expectedError {
-				t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+			finished := make(chan error, 1)
+			go func() {
+				err = mySubscriber.Start(ctx)
+				finished <- err
+			}()
+
+			time.Sleep(test.cancelDelay)
+			cancel()
+
+			test.expectedError = ctx.Err()
+			select {
+			case err := <-finished:
+				if err != test.expectedError {
+					t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+				}
+			case <-time.After(60 * time.Millisecond):
+				t.Error("Timed out")
+			}
+			if waitTimeout(&wg, 500*time.Millisecond) {
+				t.Errorf("Failed to meet expected number of calls to Poll()\nExpected: %d\n", test.expectedTimesPolled)
 			}
 		})
 	}
 }
 
-/*
-should be able to cancel (either via context.Cancel() or via a new Stop() function on subscriber)
-		should not error when Poll() errors
-		should wait defined intervals between calling Poll()
-*/
+// waitTimeout waits for the waitgroup for the specified max timeout.
+// Returns true if waiting timed out.
+func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		wg.Wait()
+	}()
+	select {
+	case <-c:
+		return false // completed normally
+	case <-time.After(timeout):
+		return true // timed out
+	}
+}
