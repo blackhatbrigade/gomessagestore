@@ -23,6 +23,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		sleepyTime          time.Duration
 		messages            []Message
 		opts                []SubscriberOption
+		cancelDelay         time.Duration
 	}{{
 		name:                "Should cancel when asked, nicely",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -31,16 +32,17 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
+		cancelDelay: 30 * time.Millisecond,
 	}, {
-		name:                "When Poll() returns an error, start continues to call the Poll() function",
+		name:                "When there is no error, start continues to call the Poll() function",
 		handlers:            []MessageHandler{&msgHandler{}},
-		pollError:           errors.New("I'm an erorr"),
 		sleepyTime:          20 * time.Millisecond, // will take 40 ms to run twice, so cancel will happen during the second run
 		expectedTimesPolled: 2,
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 			PollTime(1),
 		},
+		cancelDelay: 30 * time.Millisecond,
 	}, {
 		name:                "Waits between Poll() calls",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -50,6 +52,19 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
+		cancelDelay: 30 * time.Millisecond,
+	}, {
+		name:                "When Poll() returns an error, start continues to call the Poll() function, after a long delay",
+		handlers:            []MessageHandler{&msgHandler{}},
+		pollError:           errors.New("I'm an erorr"),
+		sleepyTime:          20 * time.Millisecond, // will take 40 ms to run twice, so cancel will happen during the second run
+		expectedTimesPolled: 2,
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
+			PollTime(1),
+			PollErrorDelay(100 * time.Millisecond),
+		},
+		cancelDelay: 30*time.Millisecond + 100*time.Millisecond,
 	}}
 
 	for _, test := range tests {
@@ -95,7 +110,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				finished <- err
 			}()
 
-			time.Sleep(30 * time.Millisecond)
+			time.Sleep(test.cancelDelay)
 			cancel()
 
 			test.expectedError = ctx.Err()

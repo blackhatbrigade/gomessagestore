@@ -139,10 +139,24 @@ func TestCreateSubscriberOptions(t *testing.T) {
 			SubscribeToCategory("some category"),
 		},
 	}, {
+		name:          "Cannot set 0 poll error delay",
+		expectedError: ErrInvalidPollErrorDelay,
+		opts: []SubscriberOption{
+			PollErrorDelay(0),
+			SubscribeToCategory("some category"),
+		},
+	}, {
 		name:          "Cannot set negative poll time",
 		expectedError: ErrInvalidPollTime,
 		opts: []SubscriberOption{
 			PollTime(-100),
+			SubscribeToCategory("some category"),
+		},
+	}, {
+		name:          "Cannot set negative poll error delay",
+		expectedError: ErrInvalidPollErrorDelay,
+		opts: []SubscriberOption{
+			PollErrorDelay(-100),
 			SubscribeToCategory("some category"),
 		},
 	}, {

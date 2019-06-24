@@ -12,6 +12,7 @@ type SubscriberConfig struct {
 	category        string
 	commandCategory string
 	pollTime        time.Duration
+	pollErrorDelay  time.Duration
 	updateInterval  int
 	batchSize       int
 	position        int64
@@ -70,6 +71,14 @@ func PollTime(pollTime time.Duration) SubscriberOption {
 	}
 }
 
+//PollErrorDelay sets the interval between handling operations when Poll() errors
+func PollErrorDelay(pollErrorDelay time.Duration) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		sub.pollErrorDelay = pollErrorDelay
+		return nil
+	}
+}
+
 //UpdatePostionEvery updates position of subscriber based on a msgInterval (cannot be < 2)
 //An interval of 1 would create an event on every message, and possibly be picked up by itself, creating another event, and so on
 func UpdatePositionEvery(msgInterval int) SubscriberOption {
@@ -94,6 +103,7 @@ func SubscribeBatchSize(batchSize int) SubscriberOption {
 func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	config := &SubscriberConfig{
 		pollTime:       200 * time.Millisecond,
+		pollErrorDelay: 5 * time.Second,
 		updateInterval: 100,
 	}
 	for _, option := range opts {
@@ -110,6 +120,9 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	}
 	if config.pollTime <= 0 {
 		return nil, ErrInvalidPollTime
+	}
+	if config.pollErrorDelay <= 0 {
+		return nil, ErrInvalidPollErrorDelay
 	}
 	if config.updateInterval < 2 {
 		return nil, ErrInvalidMsgInterval
