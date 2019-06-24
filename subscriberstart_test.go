@@ -39,6 +39,16 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		expectedTimesPolled: 2,
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
+			PollTime(1),
+		},
+	}, {
+		name:                "Waits between Poll() calls",
+		handlers:            []MessageHandler{&msgHandler{}},
+		pollError:           errors.New("I'm an erorr"),
+		sleepyTime:          20 * time.Millisecond, // will take 40 ms to run twice, so cancel will happen during the second run, but our default delay add enough wait for it to only be called once
+		expectedTimesPolled: 1,
+		opts: []SubscriberOption{
+			SubscribeToCategory("category"),
 		},
 	}}
 

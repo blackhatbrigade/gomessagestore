@@ -2,6 +2,7 @@ package gomessagestore
 
 import (
 	"context"
+	"time"
 )
 
 //Start Handles polling at specified intervals
@@ -13,7 +14,7 @@ func (sub *subscriber) Start(ctx context.Context) error {
 			select {
 			case <-cancelled:
 				return
-			default:
+			case <-time.After(sub.config.pollTime):
 			}
 		}
 	}()
