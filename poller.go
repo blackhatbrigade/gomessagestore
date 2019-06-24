@@ -28,31 +28,28 @@ func CreatePoller(ms MessageStore, worker *subscriptionWorker, opts *SubscriberC
 //Poll Handles a single tick of the handlers firing
 func (pol poller) Poll(ctx context.Context) error {
 	worker := pol.worker
-	ctx = context.Background()
-	ctx, cancel := context.WithCancel(ctx)
 
-	go func() {
-		pos, err := worker.GetPosition(ctx)
-		if err != nil {
-			cancel()
-		}
+	pos, err := worker.GetPosition(ctx)
+	if err != nil {
+		return err
+	}
 
-		msgs, err := worker.GetMessages(ctx, pos)
-		if err != nil {
-			cancel()
-		}
-		var numberOfMsgsHandled int
-		var posOfLastHandled int64
+	msgs, err := worker.GetMessages(ctx, pos)
+	if err != nil {
+		return err
+	}
+	var numberOfMsgsHandled int
+	var posOfLastHandled int64
 
-		numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
-		if err != nil {
-			cancel()
-		}
+	numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
+	if err != nil {
+		return err
+	}
 
-		fmt.Println(numberOfMsgsHandled, posOfLastHandled, err)
-		err = worker.SetPosition(ctx, msgs)
-		if err != nil {
-			cancel()
-		}
-	}()
+	fmt.Println(numberOfMsgsHandled, posOfLastHandled, err)
+	err = worker.SetPosition(ctx, msgs)
+	if err != nil {
+		return err
+	}
+	return nil
 }

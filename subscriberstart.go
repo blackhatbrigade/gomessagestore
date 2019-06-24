@@ -5,14 +5,21 @@ import (
 )
 
 //Start Handles polling at specified intervals
-func (sub *subscriber) Start(ctx context.Context, out chan<- Value) error {
-	polling, err := sub.poller.Poll(ctx)
-	if err != nil {
-		return err
-	}
+func (sub *subscriber) Start(ctx context.Context) error {
+	cancelled := make(chan error, 1)
+	go func() {
+		for {
+			sub.poller.Poll(ctx)
+			select {
+			case <-cancelled:
+				return
+			default:
+			}
+		}
+	}()
 	select {
 	case <-ctx.Done():
+		cancelled <- ctx.Err()
 		return ctx.Err()
-	case out <- polling:
 	}
 }
