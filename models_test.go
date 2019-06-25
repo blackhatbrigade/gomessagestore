@@ -6,6 +6,7 @@ import (
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/google/uuid"
 )
 
 func getSampleEventMissing(key string) *Event {
@@ -13,7 +14,7 @@ func getSampleEventMissing(key string) *Event {
 
 	switch key {
 	case "ID":
-		event.ID = ""
+		event.ID = uuid.Nil
 	case "MessageType":
 		event.MessageType = ""
 	case "EntityID":
@@ -47,7 +48,7 @@ func getSampleCommandMissing(key string) *Command {
 	case "StreamCategory":
 		cmd.StreamCategory = ""
 	case "ID":
-		cmd.ID = ""
+		cmd.ID = uuid.Nil
 	case "Data":
 		cmd.Data = nil
 	}
@@ -115,7 +116,7 @@ func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
 func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 	cmd := getSampleCommand()
 
-	cmd.ID = ""
+	cmd.ID = uuid.Nil
 
 	_, err := cmd.ToEnvelope()
 

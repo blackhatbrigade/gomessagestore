@@ -11,6 +11,7 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 )
 
 func TestSetPosition(t *testing.T) {
@@ -140,7 +141,7 @@ func (envMatcher *envelopeMatcher) String() string {
 func (envMatcher *envelopeMatcher) Matches(param interface{}) bool {
 	switch s := param.(type) {
 	case *repository.MessageEnvelope:
-		if !isValidUUID(s.ID) {
+		if s.ID == uuid.Nil {
 			return false
 		}
 		if envMatcher.messageEnv.StreamName != s.StreamName {

@@ -301,7 +301,7 @@ func TestGetWithAlternateConverters(t *testing.T) {
 	msg := getSampleOtherMessage()
 	ctx := context.Background()
 
-	msgEnv := getSampleEventAsEnvelope()
+	msgEnv := getSampleOtherMessageAsEnvelope()
 
 	mockRepo.
 		EXPECT().

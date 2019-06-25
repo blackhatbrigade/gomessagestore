@@ -9,6 +9,7 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 )
 
 func TestSubscriberGetsPosition(t *testing.T) {
@@ -44,7 +45,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
-			ID:             "some-id-goes-here",
+			ID:             uuid.New(),
 			StreamName:     "I_am_subscriber_id+position",
 			StreamCategory: "I_am_subscriber_id+position",
 			MessageType:    "PositionCommitted",
@@ -63,7 +64,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
-			ID:             "some-id-goes-here",
+			ID:             uuid.New(),
 			StreamName:     "I_am_subscriber_id+position",
 			StreamCategory: "I_am_subscriber_id+position",
 			MessageType:    "PositionCommitted",
@@ -82,7 +83,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
-			ID:             "some-id-goes-here",
+			ID:             uuid.New(),
 			StreamName:     "I_am_subscriber_id+position",
 			StreamCategory: "I_am_subscriber_id+position",
 			MessageType:    "PositionCommitted",

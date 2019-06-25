@@ -3,11 +3,13 @@ package repository
 import (
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 //Actual values that come out of the database
 type MessageEnvelope struct {
-	ID             string    `db:"id"`
+	ID             uuid.UUID `db:"id"`
 	StreamName     string    `db:"stream_name"`
 	StreamCategory string    `db:"stream_category"`
 	MessageType    string    `db:"type"`

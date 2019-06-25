@@ -17,13 +17,13 @@ func (sw *subscriptionWorker) SetPosition(ctx context.Context, msg Message) erro
 	var posMsg Message
 	if sw.config.entityID != "" || sw.config.commandCategory != "" {
 		posMsg = &positionMessage{
-			ID:           newUUID.String(),
+			ID:           newUUID,
 			MyPosition:   msg.Version(),
 			SubscriberID: sw.subscriberID,
 		}
 	} else {
 		posMsg = &positionMessage{
-			ID:           newUUID.String(),
+			ID:           newUUID,
 			MyPosition:   msg.Position(),
 			SubscriberID: sw.subscriberID,
 		}
