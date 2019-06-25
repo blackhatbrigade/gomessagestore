@@ -113,7 +113,7 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 	msgEnv := &repository.MessageEnvelope{
 		ID:             posMsg.ID,
 		MessageType:    messageType,
-		StreamName:     fmt.Sprintf("%s+position", posMsg.ID),
+		StreamName:     fmt.Sprintf("%s+position", posMsg.SubscriberID),
 		Data:           data,
 		Version:        posMsg.MessageVersion,
 		GlobalPosition: posMsg.GlobalPosition,

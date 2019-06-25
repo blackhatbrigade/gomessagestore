@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -34,4 +35,8 @@ type MessageEnvelope struct {
 	Data           []byte    `db:"data"`
 	Metadata       []byte    `db:"metadata"`
 	Time           time.Time `db:"time"`
+}
+
+func (msgEnv *MessageEnvelope) String() string {
+	return fmt.Sprintf("GlobalPosition: %d | ID: %s\nMessageType: %s | StreamName: %s | StreamCategory: %s", msgEnv.GlobalPosition, msgEnv.ID, msgEnv.MessageType, msgEnv.StreamName, msgEnv.StreamCategory)
 }
