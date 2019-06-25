@@ -10,7 +10,6 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 )
 
 func TestSetPosition(t *testing.T) {
@@ -24,7 +23,23 @@ func TestSetPosition(t *testing.T) {
 		message          Message
 		positionEnvelope *repository.MessageEnvelope
 	}{{
-		name:         "When subscribed to a command stream it sets the position using global position",
+		name:         "When subscribed to a category it sets the position using global position",
+		subscriberID: "someID",
+		handlers:     []MessageHandler{&msgHandler{}},
+		opts: []SubscriberOption{
+			SubscribeToCategory("some cat"),
+		},
+		message: &Command{
+			GlobalPosition: 3,
+			MessageVersion: 2,
+		},
+		positionEnvelope: &repository.MessageEnvelope{
+			StreamName:  "someID+position",
+			MessageType: "PositionCommitted",
+			Data:        []byte("{\"position\":3}"),
+		},
+	}, {
+		name:         "When subscribed to a command stream it sets the position using version",
 		subscriberID: "someID",
 		handlers:     []MessageHandler{&msgHandler{}},
 		opts: []SubscriberOption{
@@ -37,7 +52,40 @@ func TestSetPosition(t *testing.T) {
 		positionEnvelope: &repository.MessageEnvelope{
 			StreamName:  "someID+position",
 			MessageType: "PositionCommitted",
-			Data:        []byte("{\"position\":3}"),
+			Data:        []byte("{\"position\":2}"),
+		},
+	}, {
+		name:         "When subscribed to an entity stream it sets the position using version",
+		subscriberID: "someID",
+		handlers:     []MessageHandler{&msgHandler{}},
+		opts: []SubscriberOption{
+			SubscribeToEntityStream("entity stream cat", "entityID"),
+		},
+		message: &Command{
+			GlobalPosition: 3,
+			MessageVersion: 2,
+		},
+		positionEnvelope: &repository.MessageEnvelope{
+			StreamName:  "someID+position",
+			MessageType: "PositionCommitted",
+			Data:        []byte("{\"position\":2}"),
+		},
+	}, {
+		name:          "When repository returns an error subscription worker returns the error",
+		subscriberID:  "someID",
+		handlers:      []MessageHandler{&msgHandler{}},
+		expectedError: ErrRepoError,
+		opts: []SubscriberOption{
+			SubscribeToEntityStream("entity stream cat", "entityID"),
+		},
+		message: &Command{
+			GlobalPosition: 3,
+			MessageVersion: 2,
+		},
+		positionEnvelope: &repository.MessageEnvelope{
+			StreamName:  "someID+position",
+			MessageType: "PositionCommitted",
+			Data:        []byte("{\"position\":2}"),
 		},
 	}}
 
@@ -52,7 +100,7 @@ func TestSetPosition(t *testing.T) {
 			mockRepo.
 				EXPECT().
 				WriteMessage(ctx, &envelopeMatcher{test.positionEnvelope}).
-				Return(nil)
+				Return(test.expectedError)
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
@@ -73,8 +121,8 @@ func TestSetPosition(t *testing.T) {
 
 			err = myWorker.SetPosition(ctx, test.message)
 
-			if err != nil {
-				t.Errorf("Failed on SetPosition() because of %v", err)
+			if err != test.expectedError {
+				t.Errorf("Failed on SetPosition() because of %v\nExpected: %v", err, test.expectedError)
 			}
 		})
 	}
@@ -91,47 +139,32 @@ func (envMatcher *envelopeMatcher) String() string {
 func (envMatcher *envelopeMatcher) Matches(param interface{}) bool {
 	switch s := param.(type) {
 	case *repository.MessageEnvelope:
-		if !IsValidUUID(s.ID) {
-			fmt.Println("1")
+		if !isValidUUID(s.ID) {
 			return false
 		}
 		if envMatcher.messageEnv.StreamName != s.StreamName {
-			fmt.Println("2")
 			return false
 		}
 		if envMatcher.messageEnv.StreamCategory != s.StreamCategory {
-			fmt.Println("3")
 			return false
 		}
 		if envMatcher.messageEnv.MessageType != s.MessageType {
-			fmt.Println("4")
 			return false
 		}
 		if envMatcher.messageEnv.Version != s.Version {
-			fmt.Println("5")
 			return false
 		}
 		if envMatcher.messageEnv.GlobalPosition != s.GlobalPosition {
-			fmt.Println("6")
 			return false
 		}
 		if !reflect.DeepEqual(envMatcher.messageEnv.Data, s.Data) {
-			fmt.Println("7")
 			return false
 		}
 		if !reflect.DeepEqual(envMatcher.messageEnv.Metadata, s.Metadata) {
-			fmt.Println("8")
 			return false
 		}
-		fmt.Println("9")
 		return true
 	default:
-		fmt.Println("10")
 		return false
 	}
-}
-
-func IsValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	return err == nil
 }

@@ -14,16 +14,23 @@ func (sw *subscriptionWorker) SetPosition(ctx context.Context, msg Message) erro
 	}
 
 	//only needs these three fields for writing
-	posMsg := &positionMessage{
-		ID:           newUUID.String(),
-		MyPosition:   msg.Position(),
-		SubscriberID: sw.subscriberID,
+	var posMsg Message
+	if sw.config.entityID != "" || sw.config.commandCategory != "" {
+		posMsg = &positionMessage{
+			ID:           newUUID.String(),
+			MyPosition:   msg.Version(),
+			SubscriberID: sw.subscriberID,
+		}
+	} else {
+		posMsg = &positionMessage{
+			ID:           newUUID.String(),
+			MyPosition:   msg.Position(),
+			SubscriberID: sw.subscriberID,
+		}
 	}
 
-	sw.ms.Write(
+	return sw.ms.Write(
 		ctx,
 		posMsg,
 	)
-
-	return nil
 }
