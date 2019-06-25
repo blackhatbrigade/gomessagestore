@@ -11,6 +11,7 @@ import (
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -517,4 +518,9 @@ func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) 
 	}
 
 	return other, nil
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }

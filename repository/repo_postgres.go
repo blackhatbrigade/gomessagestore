@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -21,17 +20,4 @@ type postgresRepo struct {
 type returnPair struct {
 	messages []*MessageEnvelope
 	err      error
-}
-
-//Actual values that come out of the database
-type MessageEnvelope struct {
-	ID             string    `db:"id"`
-	StreamName     string    `db:"stream_name"`
-	StreamCategory string    `db:"stream_category"`
-	MessageType    string    `db:"type"`
-	Version        int64     `db:"position"`
-	GlobalPosition int64     `db:"global_position"`
-	Data           []byte    `db:"data"`
-	Metadata       []byte    `db:"metadata"`
-	Time           time.Time `db:"time"`
 }

@@ -4,6 +4,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.3.1
+	github.com/google/uuid v1.1.1
 	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/kisielk/sqlstruct v0.0.0-20150923205031-648daed35d49 // indirect
