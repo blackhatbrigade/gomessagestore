@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -74,7 +75,7 @@ func TestSetPosition(t *testing.T) {
 		name:          "When repository returns an error subscription worker returns the error",
 		subscriberID:  "someID",
 		handlers:      []MessageHandler{&msgHandler{}},
-		expectedError: ErrRepoError,
+		expectedError: errors.New("threw an error"),
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("entity stream cat", "entityID"),
 		},

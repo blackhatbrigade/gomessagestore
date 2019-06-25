@@ -4,7 +4,6 @@ import "errors"
 
 //Errors
 var (
-	ErrRepoError                                     = errors.New("An error occurred while trying to write to the repository with a subscriber worker")
 	ErrInvalidOptionCombination                      = errors.New("Cannot have the current combination of options for Get()")
 	ErrSubscriberCannotUseBothStreamAndCategory      = errors.New("Subscriber function cannot use both Stream and Category")
 	ErrInvalidPollTime                               = errors.New("Invalid Subscriber poll time provided, can not be negative or zero")
