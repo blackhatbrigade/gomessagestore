@@ -109,7 +109,7 @@ func TestCreateSubscriberOptions(t *testing.T) {
 		name:          "Subscribe to entity stream, entityID cannot be blank",
 		expectedError: ErrSubscriberNeedsCategoryOrStream,
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", nil),
+			SubscribeToEntityStream("some category", NilUUID),
 		},
 	}, {
 		name:          "Subscribe to category stream, category cannot be blank",

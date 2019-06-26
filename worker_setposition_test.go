@@ -141,7 +141,7 @@ func (envMatcher *envelopeMatcher) String() string {
 func (envMatcher *envelopeMatcher) Matches(param interface{}) bool {
 	switch s := param.(type) {
 	case *repository.MessageEnvelope:
-		if s.ID == uuid.Nil {
+		if s.ID == NilUUID {
 			return false
 		}
 		if envMatcher.messageEnv.StreamName != s.StreamName {

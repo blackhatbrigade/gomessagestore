@@ -369,7 +369,7 @@ func TestGetWithInvalidUUIDInStreamNameSucceeds(t *testing.T) {
 	subscriberId := "12345"
 
 	msg := getSampleEvent()
-	msg.EntityID = nil // I expect this to be empty because it didn't get parsed out
+	msg.EntityID = NilUUID // I expect this to be empty because it didn't get parsed out
 	ctx := context.Background()
 
 	msgEnv := getSampleEventAsEnvelope()

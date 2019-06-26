@@ -27,7 +27,7 @@ func SubscribeToEntityStream(category string, entityID uuid.UUID) SubscriberOpti
 		if sub.stream {
 			return ErrSubscriberCannotSubscribeToMultipleStreams
 		}
-		if category != "" && entityID != nil {
+		if category != "" && entityID != NilUUID {
 			sub.entityID = entityID
 			sub.category = category
 			sub.stream = true

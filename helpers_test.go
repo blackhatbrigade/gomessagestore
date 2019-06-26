@@ -333,7 +333,7 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 		if event.MessageType != msg.MessageType {
 			t.Error("MessageType in message does not match")
 		}
-		if !reflect.DeepEqual(event.EntityID, msg.EntityID) {
+		if event.EntityID != msg.EntityID {
 			t.Error("EntityID in message does not match")
 		}
 		if event.StreamCategory != msg.StreamCategory {
@@ -361,7 +361,7 @@ func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMe
 		if other.MessageType != msg.MessageType {
 			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
 		}
-		if !reflect.DeepEqual(other.EntityID, msg.EntityID) {
+		if other.EntityID != msg.EntityID {
 			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
 		}
 		if other.StreamCategory != msg.StreamCategory {
@@ -480,11 +480,11 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if other.ID == uuid.Nil {
+	if other.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
 
-	if other.EntityID == nil {
+	if other.EntityID == NilUUID {
 		return nil, ErrMissingMessageCategoryID
 	}
 

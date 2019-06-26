@@ -92,7 +92,7 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 		return nil, ErrMissingMessageType
 	}
 
-	if posMsg.ID == uuid.Nil {
+	if posMsg.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
 
