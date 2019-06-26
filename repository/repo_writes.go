@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +19,7 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 		return ErrNilMessage
 	}
 
-	if msg.ID == uuid.Nil {
+	if msg.ID == nil {
 		return ErrMessageNoID
 	}
 

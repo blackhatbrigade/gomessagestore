@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
-	"github.com/google/uuid"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -92,7 +92,7 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 		return nil, ErrMissingMessageType
 	}
 
-	if posMsg.ID == uuid.Nil {
+	if posMsg.ID == nil {
 		return nil, ErrMessageNoID
 	}
 

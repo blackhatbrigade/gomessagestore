@@ -5,7 +5,7 @@ import (
 	"time"
 
 	. "github.com/blackhatbrigade/gomessagestore/repository"
-	"github.com/google/uuid"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 

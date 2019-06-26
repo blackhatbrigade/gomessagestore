@@ -3,15 +3,12 @@ package gomessagestore
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
 //SetPosition sets the position of messages it recieves
 func (sw *subscriptionWorker) SetPosition(ctx context.Context, msg Message) error {
-	newUUID, err := uuid.NewRandom()
-	if err != nil {
-		return err
-	}
+	newUUID := uuid.NewRandom()
 
 	//only needs these three fields for writing
 	var posMsg Message

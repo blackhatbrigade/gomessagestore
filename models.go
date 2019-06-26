@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
-	"github.com/google/uuid"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
 //Command the model for writing a command to the Message Store
@@ -51,7 +51,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrInvalidMessageCategory
 	}
 
-	if cmd.ID == uuid.Nil {
+	if cmd.ID == nil {
 		return nil, ErrMessageNoID
 	}
 
@@ -121,7 +121,7 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if event.ID == uuid.Nil {
+	if event.ID == nil {
 		return nil, ErrMessageNoID
 	}
 

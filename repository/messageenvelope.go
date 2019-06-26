@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
 //Actual values that come out of the database
