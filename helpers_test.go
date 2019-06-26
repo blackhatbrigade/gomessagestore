@@ -302,7 +302,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 	switch command := msgEnv.(type) {
 	case *Command:
-		if !reflect.DeepEqual(command.ID, msg.ID) {
+		if command.ID != msg.ID {
 			t.Error("ID in message does not match")
 		}
 		if command.MessageType != msg.MessageType {
@@ -327,7 +327,7 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 	switch event := msgEnv.(type) {
 	case *Event:
-		if !reflect.DeepEqual(event.ID, msg.ID) {
+		if event.ID != msg.ID {
 			t.Error("ID in message does not match")
 		}
 		if event.MessageType != msg.MessageType {
@@ -355,7 +355,7 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMessage) {
 	switch other := msgEnv.(type) {
 	case *otherMessage:
-		if !reflect.DeepEqual(other.ID, msg.ID) {
+		if other.ID != msg.ID {
 			t.Errorf("ID in message does not match\nHave: %s\nWant: %s\n", msg.ID, other.ID)
 		}
 		if other.MessageType != msg.MessageType {
@@ -480,7 +480,7 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if other.ID == nil {
+	if other.ID == uuid.Nil {
 		return nil, ErrMessageNoID
 	}
 

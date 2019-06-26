@@ -51,7 +51,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrInvalidMessageCategory
 	}
 
-	if cmd.ID == nil {
+	if cmd.ID == uuid.Nil {
 		return nil, ErrMessageNoID
 	}
 
@@ -121,7 +121,7 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if event.ID == nil {
+	if event.ID == uuid.Nil {
 		return nil, ErrMessageNoID
 	}
 
