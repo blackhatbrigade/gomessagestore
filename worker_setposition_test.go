@@ -10,6 +10,7 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/golang/mock/gomock"
 )
 
@@ -140,7 +141,7 @@ func (envMatcher *envelopeMatcher) String() string {
 func (envMatcher *envelopeMatcher) Matches(param interface{}) bool {
 	switch s := param.(type) {
 	case *repository.MessageEnvelope:
-		if s.ID == nil {
+		if s.ID == uuid.Nil {
 			return false
 		}
 		if envMatcher.messageEnv.StreamName != s.StreamName {
