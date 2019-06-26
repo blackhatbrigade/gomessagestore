@@ -10,6 +10,7 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/golang/mock/gomock"
 )
 
@@ -60,7 +61,7 @@ func TestSetPosition(t *testing.T) {
 		subscriberID: "someID",
 		handlers:     []MessageHandler{&msgHandler{}},
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("entity stream cat", "entityID"),
+			SubscribeToEntityStream("entity stream cat", uuid.NewRandom()),
 		},
 		message: &Command{
 			GlobalPosition: 3,
@@ -77,7 +78,7 @@ func TestSetPosition(t *testing.T) {
 		handlers:      []MessageHandler{&msgHandler{}},
 		expectedError: errors.New("threw an error"),
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("entity stream cat", "entityID"),
+			SubscribeToEntityStream("entity stream cat", uuid.NewRandom()),
 		},
 		message: &Command{
 			GlobalPosition: 3,

@@ -17,7 +17,7 @@ func getSampleEventMissing(key string) *Event {
 	case "MessageType":
 		event.MessageType = ""
 	case "EntityID":
-		event.EntityID = ""
+		event.EntityID = nil
 	case "StreamCategory":
 		event.StreamCategory = ""
 	case "Data":

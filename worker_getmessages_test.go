@@ -28,11 +28,11 @@ func TestSubscriberGetsMessages(t *testing.T) {
 		repoReturnError  error
 	}{{
 		name:             "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
-		expectedStream:   "some category-some id1",
+		expectedStream:   "some category-10000000-0000-0000-0000-000000000001",
 		handlers:         []MessageHandler{messageHandler},
 		expectedPosition: 5,
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", "some id1"),
+			SubscribeToEntityStream("some category", uuid1),
 		},
 	}, {
 		name:             "When subscriber is called with SubscribeToCategory() option, repository is called correctly",

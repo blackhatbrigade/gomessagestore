@@ -82,7 +82,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 //Event the model for writing an event to the Message Store
 type Event struct {
 	ID             uuid.UUID
-	EntityID       string
+	EntityID       uuid.UUID
 	StreamCategory string
 	MessageType    string
 	MessageVersion int64
@@ -125,7 +125,7 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMessageNoID
 	}
 
-	if event.EntityID == "" {
+	if event.EntityID == nil {
 		return nil, ErrMissingMessageCategoryID
 	}
 

@@ -3,6 +3,8 @@ package gomessagestore
 import (
 	"context"
 	"reflect"
+
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
 //CreateProjector creates a projector for use with MessageReducers to get projections
@@ -36,7 +38,7 @@ type ProjectorOption func(proj *projector)
 
 //Projector A base level interface that defines the projection functionality of gomessagestore.
 type Projector interface {
-	Run(ctx context.Context, category string, entityID string) (interface{}, error)
+	Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error)
 }
 
 //projector The base supported projector struct.
@@ -46,7 +48,7 @@ type projector struct {
 	defaultState interface{}
 }
 
-func (proj *projector) Run(ctx context.Context, category string, entityID string) (interface{}, error) {
+func (proj *projector) Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error) {
 	msgs, err := proj.getMessages(ctx, category, entityID)
 
 	if err != nil {
@@ -79,7 +81,7 @@ func DefaultState(defaultState interface{}) ProjectorOption {
 	}
 }
 
-func (proj *projector) getMessages(ctx context.Context, category string, entityID string) ([]Message, error) {
+func (proj *projector) getMessages(ctx context.Context, category string, entityID uuid.UUID) ([]Message, error) {
 	batchsize := 1000
 	msgs, err := proj.ms.Get(ctx,
 		EventStream(category, entityID),

@@ -12,7 +12,7 @@ func (sw *subscriptionWorker) SetPosition(ctx context.Context, msg Message) erro
 
 	//only needs these three fields for writing
 	var posMsg Message
-	if sw.config.entityID != "" || sw.config.commandCategory != "" {
+	if sw.config.stream {
 		posMsg = &positionMessage{
 			ID:           newUUID,
 			MyPosition:   msg.Version(),

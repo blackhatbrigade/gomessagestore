@@ -67,7 +67,7 @@ func getSampleEvent() *Event {
 	return &Event{
 		ID:             uuid2,
 		MessageType:    "test type",
-		EntityID:       uuid8.String(),
+		EntityID:       uuid8,
 		MessageVersion: 9,
 		GlobalPosition: 7,
 		StreamCategory: "test cat",
@@ -85,7 +85,7 @@ func getSampleOtherMessage() *otherMessage {
 	return &otherMessage{
 		ID:             uuid3,
 		MessageType:    "test type",
-		EntityID:       uuid9.String(),
+		EntityID:       uuid9,
 		MessageVersion: 9,
 		GlobalPosition: 7,
 		StreamCategory: "test cat",
@@ -139,7 +139,7 @@ func getSampleEvents() []*Event {
 		&Event{
 			ID:             uuid5,
 			MessageType:    "Event MessageType 2",
-			EntityID:       uuid8.String(),
+			EntityID:       uuid8,
 			StreamCategory: "test cat",
 			MessageVersion: 4,
 			GlobalPosition: 345,
@@ -149,7 +149,7 @@ func getSampleEvents() []*Event {
 		}, &Event{
 			ID:             uuid7,
 			MessageType:    "Event MessageType 1",
-			EntityID:       uuid8.String(),
+			EntityID:       uuid8,
 			MessageVersion: 8,
 			GlobalPosition: 349,
 			StreamCategory: "test cat",
@@ -169,7 +169,7 @@ func getLotsOfSampleEvents(amount, startingAt int) []*Event {
 		events[index] = &Event{
 			ID:             uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
 			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
-			EntityID:       uuid8.String(),
+			EntityID:       uuid8,
 			StreamCategory: "test cat",
 			MessageVersion: int64(4 + startingAt + index),
 			GlobalPosition: int64(500 + startingAt + index),
@@ -333,7 +333,7 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 		if event.MessageType != msg.MessageType {
 			t.Error("MessageType in message does not match")
 		}
-		if event.EntityID != msg.EntityID {
+		if !reflect.DeepEqual(event.EntityID, msg.EntityID) {
 			t.Error("EntityID in message does not match")
 		}
 		if event.StreamCategory != msg.StreamCategory {
@@ -361,7 +361,7 @@ func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMe
 		if other.MessageType != msg.MessageType {
 			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
 		}
-		if other.EntityID != msg.EntityID {
+		if !reflect.DeepEqual(other.EntityID, msg.EntityID) {
 			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
 		}
 		if other.StreamCategory != msg.StreamCategory {
@@ -445,7 +445,7 @@ func eventsToMessageSlice(events []*Event) []Message {
 // this is all just the same as Event
 type otherMessage struct {
 	ID             uuid.UUID
-	EntityID       string
+	EntityID       uuid.UUID
 	StreamCategory string
 	MessageType    string
 	MessageVersion int64
@@ -484,7 +484,7 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMessageNoID
 	}
 
-	if other.EntityID == "" {
+	if other.EntityID == nil {
 		return nil, ErrMissingMessageCategoryID
 	}
 
@@ -524,12 +524,17 @@ func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) 
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 	}
 
-	category, id := "", ""
+	category := ""
+	var id uuid.UUID
 	cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
 	if len(cats) > 0 {
 		category = cats[0]
 		if len(cats) == 2 {
-			id = cats[1]
+			var err error
+			id, err = uuid.Parse(cats[1])
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	other := &otherMessage{

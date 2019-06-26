@@ -32,7 +32,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		handlers:         []MessageHandler{&msgHandler{}},
 		subscriberID:     "some id",
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", "1234"),
+			SubscribeToEntityStream("some category", uuid1),
 			SubscribeBatchSize(1),
 		},
 	}, {
@@ -60,7 +60,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		handlers:         []MessageHandler{&msgHandler{}},
 		subscriberID:     "some id",
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", "1234"),
+			SubscribeToEntityStream("some category", uuid1),
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{

@@ -2,13 +2,16 @@ package gomessagestore
 
 import (
 	"time"
+
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
 //SubscriberOption allows for various options when creating a subscriber
 type SubscriberOption func(config *SubscriberConfig) error
 
 type SubscriberConfig struct {
-	entityID        string
+	entityID        uuid.UUID
+	stream          bool
 	category        string
 	commandCategory string
 	pollTime        time.Duration
@@ -19,14 +22,15 @@ type SubscriberConfig struct {
 }
 
 //Subscribe to a specific entity stream
-func SubscribeToEntityStream(category, entityID string) SubscriberOption {
+func SubscribeToEntityStream(category string, entityID uuid.UUID) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
-		if sub.entityID != "" {
+		if sub.stream {
 			return ErrSubscriberCannotSubscribeToMultipleStreams
 		}
-		if category != "" && entityID != "" {
+		if category != "" && entityID != nil {
 			sub.entityID = entityID
 			sub.category = category
+			sub.stream = true
 		}
 		return nil
 	}
@@ -35,7 +39,7 @@ func SubscribeToEntityStream(category, entityID string) SubscriberOption {
 //Subscribe to a specific command stream
 func SubscribeToCommandStream(category string) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
-		if sub.entityID != "" {
+		if sub.stream {
 			return ErrSubscriberCannotSubscribeToMultipleStreams
 		}
 		if sub.category != "" {
@@ -43,7 +47,7 @@ func SubscribeToCommandStream(category string) SubscriberOption {
 		}
 		if category != "" {
 			sub.commandCategory = category
-			sub.entityID = "none"
+			sub.stream = true
 		}
 		return nil
 	}
@@ -52,7 +56,7 @@ func SubscribeToCommandStream(category string) SubscriberOption {
 //Subscribe to a category of streams
 func SubscribeToCategory(category string) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
-		if sub.entityID != "" {
+		if sub.stream {
 			return ErrSubscriberCannotUseBothStreamAndCategory
 		}
 		if sub.category != "" {
@@ -115,7 +119,7 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 		}
 	}
 
-	if config.entityID == "" && config.category == "" {
+	if !config.stream && config.category == "" {
 		return nil, ErrSubscriberNeedsCategoryOrStream
 	}
 	if config.pollTime <= 0 {

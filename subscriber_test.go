@@ -85,7 +85,7 @@ func TestCreateSubscriberOptions(t *testing.T) {
 		name:          "both category and stream cannot be set",
 		expectedError: ErrSubscriberCannotUseBothStreamAndCategory,
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some stream", "some id"),
+			SubscribeToEntityStream("some stream", uuid1),
 			SubscribeToCategory("some category"),
 		},
 	}, {
@@ -103,13 +103,13 @@ func TestCreateSubscriberOptions(t *testing.T) {
 		name:          "Subscribe to entity stream category cannot be blank",
 		expectedError: ErrSubscriberNeedsCategoryOrStream,
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("", "some id"),
+			SubscribeToEntityStream("", uuid1),
 		},
 	}, {
 		name:          "Subscribe to entity stream, entityID cannot be blank",
 		expectedError: ErrSubscriberNeedsCategoryOrStream,
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", ""),
+			SubscribeToEntityStream("some category", nil),
 		},
 	}, {
 		name:          "Subscribe to category stream, category cannot be blank",
@@ -122,7 +122,7 @@ func TestCreateSubscriberOptions(t *testing.T) {
 		expectedError: ErrSubscriberCannotSubscribeToMultipleStreams,
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("some category"),
-			SubscribeToEntityStream("some category", "some id"),
+			SubscribeToEntityStream("some category", uuid1),
 		},
 	}, {
 		name:          "Subscribe should only accept one category subscription request, (command and entity)",

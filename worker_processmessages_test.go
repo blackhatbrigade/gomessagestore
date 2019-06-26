@@ -48,7 +48,7 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			"Event MessageType 2",
 		},
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("category", "someid"),
+			SubscribeToEntityStream("category", uuid1),
 		},
 		messages:              eventsToMessageSlice(getSampleEvents()),
 		expectedFinalPosition: 8, // second message, from Version

@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+//Errors
+var (
+	ErrInvalidUUIDLength     = errors.New("length of uuid is incorrect")
+	ErrInvalidUUIDFormatting = errors.New("invalid uuid formatting")
+	ErrInvalidUUIDCharacters = errors.New("invalid uuid characters")
+)
+
 type UUID []byte
 
 func (uuid UUID) String() string {
@@ -38,14 +45,14 @@ func NewRandom() UUID {
 func Parse(s string) (UUID, error) {
 	if len(s) == 36+9 {
 		if strings.ToLower(s[:9]) != "urn:uuid:" {
-			return nil, errors.New("length of uuid is incorrect")
+			return nil, ErrInvalidUUIDLength
 		}
 		s = s[9:]
 	} else if len(s) != 36 {
-		return nil, errors.New("length of uuid is incorrect")
+		return nil, ErrInvalidUUIDLength
 	}
 	if s[8] != '-' || s[13] != '-' || s[18] != '-' || s[23] != '-' {
-		return nil, errors.New("length of uuid is incorrect")
+		return nil, ErrInvalidUUIDFormatting
 	}
 	uuid := make([]byte, 16)
 	for i, x := range []int{
@@ -55,7 +62,7 @@ func Parse(s string) (UUID, error) {
 		19, 21,
 		24, 26, 28, 30, 32, 34} {
 		if v, ok := xtob(s[x:]); !ok {
-			return nil, errors.New("length of uuid is incorrect")
+			return nil, ErrInvalidUUIDCharacters
 		} else {
 			uuid[i] = v
 		}
