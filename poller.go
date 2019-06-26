@@ -37,10 +37,15 @@ func (pol poller) Poll(ctx context.Context) error {
 		return err
 	}
 
-	//numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
+	//	numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
 
 	_, _, err = worker.ProcessMessages(ctx, msgs)
-	//err = worker.SetPosition(ctx, msgs)
+	for _, msg := range msgs {
+		err = worker.SetPosition(ctx, msg)
+		if err != nil {
+			return err
+		}
+	}
 
 	return err
 }
