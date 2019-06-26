@@ -2,6 +2,7 @@ package uuid
 
 import (
 	"crypto/rand"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -41,36 +42,15 @@ func NewRandom() UUID {
 
 func Parse(s string) (UUID, error) {
 	var uuid UUID
-	switch len(s) {
-	// xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-	case 36:
-
-	// urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-	case 36 + 9:
+	if len(s) == 36+9 {
 		if strings.ToLower(s[:9]) != "urn:uuid:" {
-			return uuid, fmt.Errorf("invalid urn prefix: %q", s[:9])
+			return Nil, nil
 		}
 		s = s[9:]
-
-	// {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
-	case 36 + 2:
-		s = s[1:]
-
-	// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-	case 32:
-		var ok bool
-		for i := range uuid {
-			uuid[i], ok = xtob(s[i*2], s[i*2+1])
-			if !ok {
-				return uuid, errors.New("invalid UUID format")
-			}
-		}
-		return uuid, nil
-	default:
-		return uuid, fmt.Errorf("invalid UUID length: %d", len(s))
+	} else if len(s) != 36 {
+		return Nil, nil
 	}
-	// s is now at least 36 bytes long
-	// it must be of the form  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
 	if s[8] != '-' || s[13] != '-' || s[18] != '-' || s[23] != '-' {
 		return uuid, errors.New("invalid UUID format")
 	}
@@ -135,4 +115,28 @@ func (uuid *UUID) UnmarshalJSON(in []byte) error {
 	}
 	*uuid = id
 	return nil
+}
+
+// Scan - Implement the database/sql scanner interface
+func (uuid *UUID) Scan(value interface{}) error {
+	// if value is nil, use zero value
+	if value == nil {
+		*uuid = Nil
+		return nil
+	}
+	if sv, err := driver.String.ConvertValue(value); err == nil {
+		if v, ok := sv.(string); ok {
+			var err error
+			*uuid, err = Parse(v)
+			return err
+		}
+	}
+	// otherwise, return an error
+	return errors.New("failed to scan uuid")
+}
+
+// Value - Implementation of valuer for database/sql
+func (uuid UUID) Value() (driver.Value, error) {
+	// value needs to be a base driver.Value type
+	return uuid.String(), nil
 }
