@@ -31,7 +31,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
-		cancelDelay: 30 * time.Millisecond,
+		cancelDelay: 35 * time.Millisecond,
 	}, {
 		name:                "When there is no error, start continues to call the Poll() function",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -41,7 +41,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 			SubscribeToCategory("category"),
 			PollTime(1),
 		},
-		cancelDelay: 30 * time.Millisecond,
+		cancelDelay: 35 * time.Millisecond,
 	}, {
 		name:                "Waits between Poll() calls",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -51,7 +51,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
-		cancelDelay: 30 * time.Millisecond,
+		cancelDelay: 35 * time.Millisecond,
 	}, {
 		name:                "When Poll() returns an error, start continues to call the Poll() function, after a long delay",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -63,7 +63,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 			PollTime(1),
 			PollErrorDelay(100 * time.Millisecond),
 		},
-		cancelDelay: 30*time.Millisecond + 100*time.Millisecond,
+		cancelDelay: 35*time.Millisecond + 100*time.Millisecond,
 	}}
 
 	for _, test := range tests {
@@ -108,7 +108,9 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				finished <- err
 			}()
 
-			time.AfterFunc(test.cancelDelay, cancel)
+			time.AfterFunc(test.cancelDelay, func() {
+				cancel()
+			})
 
 			done := false
 			for !done {
