@@ -11,36 +11,48 @@ type Poller interface {
 }
 
 type poller struct {
-	opts   *SubscriberConfig
-	ms     MessageStore
-	worker SubscriptionWorker
+	config              *SubscriberConfig
+	ms                  MessageStore
+	worker              SubscriptionWorker
+	position            int64
+	numberOfMsgsHandled int
 }
 
-func CreatePoller(ms MessageStore, worker SubscriptionWorker, opts *SubscriberConfig) (*poller, error) {
+func CreatePoller(ms MessageStore, worker SubscriptionWorker, config *SubscriberConfig) (*poller, error) {
 	return &poller{
-		ms:     ms,
-		opts:   opts,
-		worker: worker,
+		ms:       ms,
+		config:   config,
+		worker:   worker,
+		position: -1,
 	}, nil
 }
 
 //Poll Handles a single tick of the handlers firing
-func (pol poller) Poll(ctx context.Context) error {
+func (pol *poller) Poll(ctx context.Context) error {
 	worker := pol.worker
-	pos, err := worker.GetPosition(ctx)
+	if pol.position < 0 {
+		pos, err := worker.GetPosition(ctx)
+		if err != nil {
+			return err
+		}
+		pol.position = pos
+	}
+
+	msgs, err := worker.GetMessages(ctx, pol.position)
 	if err != nil {
 		return err
 	}
 
-	msgs, err := worker.GetMessages(ctx, pos)
-	if err != nil {
-		return err
+	numberOfMsgsHandled, posOfLastHandled, processErr := worker.ProcessMessages(ctx, msgs)
+	pol.position = posOfLastHandled
+	pol.numberOfMsgsHandled += numberOfMsgsHandled
+
+	if pol.numberOfMsgsHandled >= pol.config.updateInterval {
+		if err = worker.SetPosition(ctx, posOfLastHandled); err != nil {
+			return err
+		}
+		pol.numberOfMsgsHandled = 0
 	}
 
-	//numberOfMsgsHandled, posOfLastHandled, err = worker.ProcessMessages(ctx, msgs)
-
-	_, _, err = worker.ProcessMessages(ctx, msgs)
-	//err = worker.SetPosition(ctx, msgs)
-
-	return err
+	return processErr
 }

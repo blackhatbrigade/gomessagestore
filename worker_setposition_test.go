@@ -22,51 +22,16 @@ func TestSetPosition(t *testing.T) {
 		expectedError    error
 		handlers         []MessageHandler
 		opts             []SubscriberOption
-		message          Message
+		position         int64
 		positionEnvelope *repository.MessageEnvelope
 	}{{
-		name:         "When subscribed to a category it sets the position using global position",
-		subscriberID: "someID",
-		handlers:     []MessageHandler{&msgHandler{}},
-		opts: []SubscriberOption{
-			SubscribeToCategory("some cat"),
-		},
-		message: &Command{
-			GlobalPosition: 3,
-			MessageVersion: 2,
-		},
-		positionEnvelope: &repository.MessageEnvelope{
-			StreamName:  "someID+position",
-			MessageType: "PositionCommitted",
-			Data:        []byte("{\"position\":3}"),
-		},
-	}, {
-		name:         "When subscribed to a command stream it sets the position using version",
-		subscriberID: "someID",
-		handlers:     []MessageHandler{&msgHandler{}},
-		opts: []SubscriberOption{
-			SubscribeToCommandStream("some cat"),
-		},
-		message: &Command{
-			GlobalPosition: 3,
-			MessageVersion: 2,
-		},
-		positionEnvelope: &repository.MessageEnvelope{
-			StreamName:  "someID+position",
-			MessageType: "PositionCommitted",
-			Data:        []byte("{\"position\":2}"),
-		},
-	}, {
-		name:         "When subscribed to an entity stream it sets the position using version",
+		name:         "Runs normally when there are no errors",
 		subscriberID: "someID",
 		handlers:     []MessageHandler{&msgHandler{}},
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("entity stream cat", uuid.NewRandom()),
 		},
-		message: &Command{
-			GlobalPosition: 3,
-			MessageVersion: 2,
-		},
+		position: 2,
 		positionEnvelope: &repository.MessageEnvelope{
 			StreamName:  "someID+position",
 			MessageType: "PositionCommitted",
@@ -80,14 +45,11 @@ func TestSetPosition(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToEntityStream("entity stream cat", uuid.NewRandom()),
 		},
-		message: &Command{
-			GlobalPosition: 3,
-			MessageVersion: 2,
-		},
+		position: 3,
 		positionEnvelope: &repository.MessageEnvelope{
 			StreamName:  "someID+position",
 			MessageType: "PositionCommitted",
-			Data:        []byte("{\"position\":2}"),
+			Data:        []byte("{\"position\":3}"),
 		},
 	}}
 
@@ -121,7 +83,7 @@ func TestSetPosition(t *testing.T) {
 				return
 			}
 
-			err = myWorker.SetPosition(ctx, test.message)
+			err = myWorker.SetPosition(ctx, test.position)
 
 			if err != test.expectedError {
 				t.Errorf("Failed on SetPosition() because of %v\nExpected: %v", err, test.expectedError)
