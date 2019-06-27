@@ -10,7 +10,7 @@ type SubscriptionWorker interface {
 	GetMessages(ctx context.Context, position int64) ([]Message, error)
 	ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error)
 	GetPosition(ctx context.Context) (int64, error)
-	SetPosition(ctx context.Context, msg Message) error
+	SetPosition(ctx context.Context, position int64) error
 }
 
 type subscriptionWorker struct {
