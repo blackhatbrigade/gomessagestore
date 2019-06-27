@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -133,7 +134,7 @@ func CommandStream(category string) GetOption {
 }
 
 //EventStream allows for getting events in a specific stream
-func EventStream(category, entityID string) GetOption {
+func EventStream(category string, entityID uuid.UUID) GetOption {
 	return func(g *getOpts) error {
 		if g.stream != nil {
 			return ErrInvalidOptionCombination

@@ -11,7 +11,7 @@ import (
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
-	"github.com/google/uuid"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,6 +20,18 @@ func panicIf(err error) {
 		panic(err)
 	}
 }
+
+var (
+	uuid1 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000001"))
+	uuid2 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000002"))
+	uuid3 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000003"))
+	uuid4 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000004"))
+	uuid5 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000005"))
+	uuid6 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000006"))
+	uuid7 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000007"))
+	uuid8 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000008"))
+	uuid9 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000009"))
+)
 
 type dummyData struct {
 	Field1 string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
@@ -39,8 +51,8 @@ func getSampleCommand() *Command {
 		MessageType:    "test type",
 		StreamCategory: "test cat",
 		MessageVersion: 10,
-		GlobalPosition: 10,
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		GlobalPosition: 8,
+		ID:             uuid1,
 		Data:           packed,
 		Time:           time.Unix(1, 0),
 		Metadata:       packedMeta,
@@ -53,11 +65,11 @@ func getSampleEvent() *Event {
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &Event{
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		ID:             uuid2,
 		MessageType:    "test type",
-		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		EntityID:       uuid8,
 		MessageVersion: 9,
-		GlobalPosition: 9,
+		GlobalPosition: 7,
 		StreamCategory: "test cat",
 		Data:           packed,
 		Metadata:       packedMeta,
@@ -71,11 +83,11 @@ func getSampleOtherMessage() *otherMessage {
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
 	return &otherMessage{
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		ID:             uuid3,
 		MessageType:    "test type",
-		EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		EntityID:       uuid9,
 		MessageVersion: 9,
-		GlobalPosition: 9,
+		GlobalPosition: 7,
 		StreamCategory: "test cat",
 		Data:           packed,
 		Metadata:       packedMeta,
@@ -94,7 +106,7 @@ func getSampleCommands() []*Command {
 	panicIf(err)
 	return []*Command{
 		&Command{
-			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			ID:             uuid4,
 			MessageType:    "Command MessageType 2",
 			StreamCategory: "test cat",
 			MessageVersion: 1,
@@ -103,7 +115,7 @@ func getSampleCommands() []*Command {
 			Metadata:       packedMeta1,
 			Time:           time.Unix(1, 1),
 		}, &Command{
-			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			ID:             uuid6,
 			MessageType:    "Command MessageType 1",
 			StreamCategory: "test cat",
 			MessageVersion: 2,
@@ -125,9 +137,9 @@ func getSampleEvents() []*Event {
 	panicIf(err)
 	return []*Event{
 		&Event{
-			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			ID:             uuid5,
 			MessageType:    "Event MessageType 2",
-			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			EntityID:       uuid8,
 			StreamCategory: "test cat",
 			MessageVersion: 4,
 			GlobalPosition: 345,
@@ -135,9 +147,9 @@ func getSampleEvents() []*Event {
 			Metadata:       packedMeta1,
 			Time:           time.Unix(1, 3),
 		}, &Event{
-			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			ID:             uuid7,
 			MessageType:    "Event MessageType 1",
-			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			EntityID:       uuid8,
 			MessageVersion: 8,
 			GlobalPosition: 349,
 			StreamCategory: "test cat",
@@ -155,9 +167,9 @@ func getLotsOfSampleEvents(amount, startingAt int) []*Event {
 	events := make([]*Event, amount)
 	for index, _ := range events {
 		events[index] = &Event{
-			ID:             fmt.Sprintf("544477d6-453f-4b48-8460-%012d", startingAt+index),
+			ID:             uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
 			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
-			EntityID:       "544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			EntityID:       uuid8,
 			StreamCategory: "test cat",
 			MessageVersion: int64(4 + startingAt + index),
 			GlobalPosition: int64(500 + startingAt + index),
@@ -172,11 +184,27 @@ func getLotsOfSampleEvents(amount, startingAt int) []*Event {
 
 func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		ID:             uuid2,
 		Version:        9,
-		GlobalPosition: 9,
+		GlobalPosition: 7,
 		MessageType:    "test type",
-		StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+		StreamName:     "test cat-" + uuid8.String(),
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
+		Metadata:       []byte(`{"Field1":"b"}`),
+		Time:           time.Unix(1, 0),
+	}
+
+	return msgEnv
+}
+
+func getSampleOtherMessageAsEnvelope() *repository.MessageEnvelope {
+	msgEnv := &repository.MessageEnvelope{
+		ID:             uuid3,
+		Version:        9,
+		GlobalPosition: 7,
+		MessageType:    "test type",
+		StreamName:     "test cat-" + uuid9.String(),
 		StreamCategory: "test cat",
 		Data:           []byte(`{"Field1":"a"}`),
 		Metadata:       []byte(`{"Field1":"b"}`),
@@ -190,9 +218,9 @@ func getLotsOfSampleEventsAsEnvelopes(amount, startingAt int) []*repository.Mess
 	events := make([]*repository.MessageEnvelope, amount)
 	for index, _ := range events {
 		events[index] = &repository.MessageEnvelope{
-			ID:             fmt.Sprintf("544477d6-453f-4b48-8460-%012d", startingAt+index),
+			ID:             uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
 			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
-			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamName:     "test cat-" + uuid8.String(),
 			StreamCategory: "test cat",
 			Version:        int64(4 + startingAt + index),
 			GlobalPosition: int64(500 + startingAt + index),
@@ -208,9 +236,9 @@ func getLotsOfSampleEventsAsEnvelopes(amount, startingAt int) []*repository.Mess
 func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 	return []*repository.MessageEnvelope{
 		&repository.MessageEnvelope{
-			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			ID:             uuid5,
 			MessageType:    "Event MessageType 2",
-			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamName:     "test cat-" + uuid8.String(),
 			StreamCategory: "test cat",
 			Version:        4,
 			GlobalPosition: 345,
@@ -218,9 +246,9 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			Metadata:       []byte(`{"Field1":"b"}`),
 			Time:           time.Unix(1, 3),
 		}, &repository.MessageEnvelope{
-			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			ID:             uuid7,
 			MessageType:    "Event MessageType 1",
-			StreamName:     "test cat-544477d6-453f-4b48-8460-0a6e4d6f98e5",
+			StreamName:     "test cat-" + uuid8.String(),
 			Version:        8,
 			GlobalPosition: 349,
 			StreamCategory: "test cat",
@@ -232,10 +260,10 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 
 func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
-		ID:             "544477d6-453f-4b48-8460-0a6e4d6f97d5",
+		ID:             uuid1,
 		MessageType:    "test type",
 		Version:        10,
-		GlobalPosition: 10,
+		GlobalPosition: 8,
 		StreamName:     "test cat:command",
 		StreamCategory: "test cat",
 		Data:           []byte(`{"Field1":"a"}`),
@@ -249,7 +277,7 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 	return []*repository.MessageEnvelope{
 		&repository.MessageEnvelope{
-			ID:             "544477d6-453f-4b48-8460-1a6e4d6f97d5",
+			ID:             uuid4,
 			MessageType:    "Command MessageType 2",
 			StreamName:     "test cat:command",
 			StreamCategory: "test cat",
@@ -259,7 +287,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			Metadata:       []byte(`{"Field1":"b"}`),
 			Time:           time.Unix(1, 1),
 		}, &repository.MessageEnvelope{
-			ID:             "544477d6-453f-4b48-8460-3a6e4d6f97d5",
+			ID:             uuid6,
 			MessageType:    "Command MessageType 1",
 			StreamName:     "test cat:command",
 			Version:        2,
@@ -328,16 +356,16 @@ func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMe
 	switch other := msgEnv.(type) {
 	case *otherMessage:
 		if other.ID != msg.ID {
-			t.Error("ID in message does not match")
+			t.Errorf("ID in message does not match\nHave: %s\nWant: %s\n", msg.ID, other.ID)
 		}
 		if other.MessageType != msg.MessageType {
-			t.Error("MessageType in message does not match")
+			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
 		}
 		if other.EntityID != msg.EntityID {
-			t.Error("EntityID in message does not match")
+			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
 		}
 		if other.StreamCategory != msg.StreamCategory {
-			t.Error("StreamCategory in message does not match")
+			t.Errorf("StreamCategory in message does not match\nHave: %s\nWant: %s\n", msg.StreamCategory, other.StreamCategory)
 		}
 		data := new(dummyData)
 		err := Unpack(other.Data, data)
@@ -416,8 +444,8 @@ func eventsToMessageSlice(events []*Event) []Message {
 
 // this is all just the same as Event
 type otherMessage struct {
-	ID             string
-	EntityID       string
+	ID             uuid.UUID
+	EntityID       uuid.UUID
 	StreamCategory string
 	MessageType    string
 	MessageVersion int64
@@ -452,11 +480,11 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if other.ID == "" {
+	if other.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
 
-	if other.EntityID == "" {
+	if other.EntityID == NilUUID {
 		return nil, ErrMissingMessageCategoryID
 	}
 
@@ -487,7 +515,6 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 
-	fmt.Print("I've been called")
 	data := make(map[string]interface{})
 	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
@@ -497,12 +524,17 @@ func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) 
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 	}
 
-	category, id := "", ""
+	category := ""
+	var id uuid.UUID
 	cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
 	if len(cats) > 0 {
 		category = cats[0]
 		if len(cats) == 2 {
-			id = cats[1]
+			var err error
+			id, err = uuid.Parse(cats[1])
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	other := &otherMessage{
@@ -518,9 +550,4 @@ func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) 
 	}
 
 	return other, nil
-}
-
-func isValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	return err == nil
 }

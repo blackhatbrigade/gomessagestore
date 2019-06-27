@@ -8,6 +8,7 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/golang/mock/gomock"
 )
 
@@ -31,7 +32,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		handlers:         []MessageHandler{&msgHandler{}},
 		subscriberID:     "some id",
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", "1234"),
+			SubscribeToEntityStream("some category", uuid1),
 			SubscribeBatchSize(1),
 		},
 	}, {
@@ -44,7 +45,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
-			ID:             "some-id-goes-here",
+			ID:             uuid.NewRandom(),
 			StreamName:     "I_am_subscriber_id+position",
 			StreamCategory: "I_am_subscriber_id+position",
 			MessageType:    "PositionCommitted",
@@ -59,11 +60,11 @@ func TestSubscriberGetsPosition(t *testing.T) {
 		handlers:         []MessageHandler{&msgHandler{}},
 		subscriberID:     "some id",
 		opts: []SubscriberOption{
-			SubscribeToEntityStream("some category", "1234"),
+			SubscribeToEntityStream("some category", uuid1),
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
-			ID:             "some-id-goes-here",
+			ID:             uuid.NewRandom(),
 			StreamName:     "I_am_subscriber_id+position",
 			StreamCategory: "I_am_subscriber_id+position",
 			MessageType:    "PositionCommitted",
@@ -82,7 +83,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 			SubscribeBatchSize(1),
 		},
 		positionEnvelope: &repository.MessageEnvelope{
-			ID:             "some-id-goes-here",
+			ID:             uuid.NewRandom(),
 			StreamName:     "I_am_subscriber_id+position",
 			StreamCategory: "I_am_subscriber_id+position",
 			MessageType:    "PositionCommitted",

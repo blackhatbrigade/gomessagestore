@@ -3,7 +3,6 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
-	"sync"
 	"testing"
 	"time"
 
@@ -32,7 +31,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
-		cancelDelay: 30 * time.Millisecond,
+		cancelDelay: 35 * time.Millisecond,
 	}, {
 		name:                "When there is no error, start continues to call the Poll() function",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -42,7 +41,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 			SubscribeToCategory("category"),
 			PollTime(1),
 		},
-		cancelDelay: 30 * time.Millisecond,
+		cancelDelay: 35 * time.Millisecond,
 	}, {
 		name:                "Waits between Poll() calls",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -52,7 +51,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCategory("category"),
 		},
-		cancelDelay: 30 * time.Millisecond,
+		cancelDelay: 35 * time.Millisecond,
 	}, {
 		name:                "When Poll() returns an error, start continues to call the Poll() function, after a long delay",
 		handlers:            []MessageHandler{&msgHandler{}},
@@ -64,7 +63,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 			PollTime(1),
 			PollErrorDelay(100 * time.Millisecond),
 		},
-		cancelDelay: 30*time.Millisecond + 100*time.Millisecond,
+		cancelDelay: 35*time.Millisecond + 100*time.Millisecond,
 	}}
 
 	for _, test := range tests {
@@ -77,15 +76,14 @@ func TestSubscriberStartWithContext(t *testing.T) {
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 			mockPoller := mock_gomessagestore.NewMockPoller(ctrl)
 
-			var wg sync.WaitGroup
-
-			wg.Add(test.expectedTimesPolled)
+			ranTimes := 0
+			count := make(chan int, 1)
 
 			mockPoller.
 				EXPECT().
 				Poll(ctx).
 				Do(func(ctx context.Context) {
-					wg.Done()
+					count <- 1
 					time.Sleep(test.sleepyTime)
 				}).
 				Return(test.pollError).
@@ -110,37 +108,29 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				finished <- err
 			}()
 
-			time.Sleep(test.cancelDelay)
-			cancel()
+			time.AfterFunc(test.cancelDelay, func() {
+				cancel()
+			})
 
-			test.expectedError = ctx.Err()
-			select {
-			case err := <-finished:
-				if err != test.expectedError {
-					t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+			done := false
+			for !done {
+				select {
+				case err := <-finished:
+					test.expectedError = ctx.Err()
+					if err != test.expectedError {
+						t.Errorf("Failed to get expected error from ProcessMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+					}
+					done = true
+				case <-time.After(1 * time.Second):
+					t.Error("Timed out")
+					done = true
+				case c := <-count:
+					ranTimes += c
 				}
-			case <-time.After(60 * time.Millisecond):
-				t.Error("Timed out")
 			}
-			if waitTimeout(&wg, 500*time.Millisecond) {
-				t.Errorf("Failed to meet expected number of calls to Poll()\nExpected: %d\n", test.expectedTimesPolled)
+			if ranTimes != test.expectedTimesPolled {
+				t.Errorf("Failed to meet expected number of calls to Poll()\nHave: %d\nWant: %d\n", ranTimes, test.expectedTimesPolled)
 			}
 		})
-	}
-}
-
-// waitTimeout waits for the waitgroup for the specified max timeout.
-// Returns true if waiting timed out.
-func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
-	c := make(chan struct{})
-	go func() {
-		defer close(c)
-		wg.Wait()
-	}()
-	select {
-	case <-c:
-		return false // completed normally
-	case <-time.After(timeout):
-		return true // timed out
 	}
 }

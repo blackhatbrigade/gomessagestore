@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -61,7 +62,7 @@ func convertEnvelopeToPositionMessage(messageEnvelope *repository.MessageEnvelop
 }
 
 type positionMessage struct {
-	ID             string
+	ID             uuid.UUID
 	MyPosition     int64
 	SubscriberID   string
 	MessageVersion int64
@@ -91,7 +92,7 @@ func (posMsg *positionMessage) ToEnvelope() (*repository.MessageEnvelope, error)
 		return nil, ErrMissingMessageType
 	}
 
-	if posMsg.ID == "" {
+	if posMsg.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
 

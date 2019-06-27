@@ -301,7 +301,7 @@ func TestGetWithAlternateConverters(t *testing.T) {
 	msg := getSampleOtherMessage()
 	ctx := context.Background()
 
-	msgEnv := getSampleEventAsEnvelope()
+	msgEnv := getSampleOtherMessageAsEnvelope()
 
 	mockRepo.
 		EXPECT().
@@ -337,6 +337,43 @@ func TestGetWithPositionSucceeds(t *testing.T) {
 	ctx := context.Background()
 
 	msgEnv := getSampleEventAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetLastMessageInStream(ctx, fmt.Sprintf("%s+position", subscriberId)).
+		Return(msgEnv, nil)
+
+	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgs, err := msgStore.Get(
+		ctx,
+		PositionStream(subscriberId),
+		Last(),
+	)
+
+	if err != nil {
+		t.Error("An error has ocurred while getting position from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesEvent(t, msgs[0], msg)
+	}
+}
+
+func TestGetWithInvalidUUIDInStreamNameSucceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	subscriberId := "12345"
+
+	msg := getSampleEvent()
+	msg.EntityID = NilUUID // I expect this to be empty because it didn't get parsed out
+	ctx := context.Background()
+
+	msgEnv := getSampleEventAsEnvelope()
+	msgEnv.StreamName = "test cat-I'm not a uuid"
 
 	mockRepo.
 		EXPECT().
@@ -422,8 +459,8 @@ func TestOptionErrors(t *testing.T) {
 		name:          "Event Stream is set twice",
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
-			EventStream("blah", "1234"),
-			EventStream("blah", "1234"),
+			EventStream("blah", uuid1),
+			EventStream("blah", uuid2),
 		},
 	}, {
 		name:          "Position Stream is set twice",
@@ -460,7 +497,7 @@ func TestOptionErrors(t *testing.T) {
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
 			SincePosition(5),
-			EventStream("yayaya", "bababa"),
+			EventStream("yayaya", uuid1),
 		},
 	}, {
 		name:          "SincePosition and CommandStream are both set",
@@ -474,13 +511,13 @@ func TestOptionErrors(t *testing.T) {
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
 			CommandStream("yayaya"),
-			EventStream("blah", "1234"),
+			EventStream("blah", uuid1),
 		},
 	}, {
 		name:          "Event Stream and Position Stream are both set",
 		expectedError: ErrInvalidOptionCombination,
 		opts: []GetOption{
-			EventStream("blah", "1234"),
+			EventStream("blah", uuid1),
 			PositionStream("blah"),
 		},
 	}, {
@@ -506,7 +543,7 @@ func TestOptionErrors(t *testing.T) {
 		name:          "Event Stream cannot contain a hyphen",
 		expectedError: ErrInvalidEventStream,
 		opts: []GetOption{
-			EventStream("hyphen-hyphen", "12355"),
+			EventStream("hyphen-hyphen", uuid1),
 		},
 	}, {
 		name:          "Position Stream cannot contain a hyphen",

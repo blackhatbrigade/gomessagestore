@@ -7,7 +7,7 @@ import (
 //GetMessages phase two
 func (sw *subscriptionWorker) GetMessages(ctx context.Context, position int64) ([]Message, error) {
 	opts := []GetOption{}
-	if sw.config.entityID == "" {
+	if !sw.config.stream {
 		opts = append(opts, SincePosition(position), Category(sw.config.category))
 	} else {
 		opts = append(opts, SinceVersion(position))

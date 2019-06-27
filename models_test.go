@@ -13,11 +13,11 @@ func getSampleEventMissing(key string) *Event {
 
 	switch key {
 	case "ID":
-		event.ID = ""
+		event.ID = NilUUID
 	case "MessageType":
 		event.MessageType = ""
 	case "EntityID":
-		event.EntityID = ""
+		event.EntityID = NilUUID
 	case "StreamCategory":
 		event.StreamCategory = ""
 	case "Data":
@@ -47,7 +47,7 @@ func getSampleCommandMissing(key string) *Command {
 	case "StreamCategory":
 		cmd.StreamCategory = ""
 	case "ID":
-		cmd.ID = ""
+		cmd.ID = NilUUID
 	case "Data":
 		cmd.Data = nil
 	}
@@ -115,7 +115,7 @@ func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
 func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 	cmd := getSampleCommand()
 
-	cmd.ID = ""
+	cmd.ID = NilUUID
 
 	_, err := cmd.ToEnvelope()
 

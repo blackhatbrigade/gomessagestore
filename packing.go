@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -95,12 +96,13 @@ func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Messag
 	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 	}
-	category, id := "", ""
+	category := ""
+	var id uuid.UUID
 	cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
 	if len(cats) > 0 {
 		category = cats[0]
 		if len(cats) == 2 {
-			id = cats[1]
+			id, _ = uuid.Parse(cats[1]) // errors on parsing just leave entityID blank
 		}
 	}
 	event := &Event{

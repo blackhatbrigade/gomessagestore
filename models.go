@@ -7,11 +7,20 @@ import (
 	"time"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
+
+//So users don't have to import gomessagestore/uuid
+var NilUUID = uuid.Nil
+
+//NewID creates a new UUID
+func NewID() uuid.UUID {
+	return uuid.NewRandom()
+}
 
 //Command the model for writing a command to the Message Store
 type Command struct {
-	ID             string
+	ID             uuid.UUID
 	StreamCategory string
 	MessageType    string
 	MessageVersion int64
@@ -50,7 +59,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrInvalidMessageCategory
 	}
 
-	if cmd.ID == "" {
+	if cmd.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
 
@@ -80,8 +89,8 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 //Event the model for writing an event to the Message Store
 type Event struct {
-	ID             string
-	EntityID       string
+	ID             uuid.UUID
+	EntityID       uuid.UUID
 	StreamCategory string
 	MessageType    string
 	MessageVersion int64
@@ -120,11 +129,11 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if event.ID == "" {
+	if event.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
 
-	if event.EntityID == "" {
+	if event.EntityID == NilUUID {
 		return nil, ErrMissingMessageCategoryID
 	}
 
