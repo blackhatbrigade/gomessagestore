@@ -293,13 +293,13 @@ func TestPoller(t *testing.T) {
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
-			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
-			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
+			{eventsToMessageSlice(getLotsOfSampleEvents(3, 103)), nil},
+			{eventsToMessageSlice(getLotsOfSampleEvents(3, 106)), nil},
 		},
 		processMsgsParams: []processMessagesParams{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100))},
-			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100))},
-			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100))},
+			{eventsToMessageSlice(getLotsOfSampleEvents(3, 103))},
+			{eventsToMessageSlice(getLotsOfSampleEvents(3, 106))},
 		},
 		processMsgsReturns: []processMessagesReturns{
 			{5, 1012, nil},
