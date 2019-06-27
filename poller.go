@@ -43,17 +43,16 @@ func (pol *poller) Poll(ctx context.Context) error {
 		return err
 	}
 
-	numberOfMsgsHandled, posOfLastHandled, err := worker.ProcessMessages(ctx, msgs)
-	if err != nil {
-		return err
-	}
+	numberOfMsgsHandled, posOfLastHandled, processErr := worker.ProcessMessages(ctx, msgs)
 	pol.position = posOfLastHandled
 	pol.numberOfMsgsHandled += numberOfMsgsHandled
 
 	if pol.numberOfMsgsHandled >= pol.config.updateInterval {
-		err = worker.SetPosition(ctx, posOfLastHandled)
+		if err = worker.SetPosition(ctx, posOfLastHandled); err != nil {
+			return err
+		}
 		pol.numberOfMsgsHandled = 0
 	}
 
-	return err
+	return processErr
 }

@@ -38,7 +38,7 @@ func TestPoller(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		expectedError      error
+		expectedErrors     []error
 		subOpts            []SubscriberOption
 		handlers           []MessageHandler
 		foundPosition      int64
@@ -61,6 +61,7 @@ func TestPoller(t *testing.T) {
 		getMsgsReturns:     []getMessagesReturns{{commandsToMessageSlice(getSampleCommands()), nil}},
 		processMsgsParams:  []processMessagesParams{{commandsToMessageSlice(getSampleCommands())}},
 		processMsgsReturns: []processMessagesReturns{{2, 1012, nil}},
+		expectedErrors:     []error{nil},
 	}, {
 		name: "GetPosition Errors are returned",
 		subOpts: []SubscriberOption{
@@ -68,7 +69,7 @@ func TestPoller(t *testing.T) {
 		},
 		handlers:           []MessageHandler{},
 		foundPositionError: potato,
-		expectedError:      potato,
+		expectedErrors:     []error{potato},
 		callPollNumTimes:   1,
 	}, {
 		name: "GetMessages Errors are returned",
@@ -76,7 +77,7 @@ func TestPoller(t *testing.T) {
 			SubscribeToCommandStream("some cat"),
 		},
 		handlers:         []MessageHandler{},
-		expectedError:    potato,
+		expectedErrors:   []error{potato},
 		callPollNumTimes: 1,
 		getMsgsParams:    []getMessagesParams{{0}},
 		getMsgsReturns:   []getMessagesReturns{{commandsToMessageSlice(getSampleCommands()), potato}},
@@ -86,7 +87,7 @@ func TestPoller(t *testing.T) {
 			SubscribeToCommandStream("some cat"),
 		},
 		handlers:           []MessageHandler{},
-		expectedError:      potato,
+		expectedErrors:     []error{potato},
 		callPollNumTimes:   1,
 		getMsgsParams:      []getMessagesParams{{0}},
 		getMsgsReturns:     []getMessagesReturns{{commandsToMessageSlice(getSampleCommands()), nil}},
@@ -99,7 +100,7 @@ func TestPoller(t *testing.T) {
 			UpdatePositionEvery(7),
 		},
 		handlers:           []MessageHandler{},
-		expectedError:      potato,
+		expectedErrors:     []error{potato},
 		callPollNumTimes:   1,
 		getMsgsParams:      []getMessagesParams{{0}},
 		getMsgsReturns:     []getMessagesReturns{{commandsToMessageSlice(getSampleCommands()), nil}},
@@ -130,6 +131,7 @@ func TestPoller(t *testing.T) {
 			{5, 1012, nil},
 			{5, 9000, nil},
 		},
+		expectedErrors: []error{nil, nil},
 	}, {
 		name: "SetPosition is called when the correct amount of messages are processed",
 		subOpts: []SubscriberOption{
@@ -154,8 +156,9 @@ func TestPoller(t *testing.T) {
 			{5, 1012, nil},
 			{5, 9000, nil},
 		},
-		setPosParams:  []setPositionParams{{9000}},
-		setPosReturns: []setPositionReturns{{nil}},
+		setPosParams:   []setPositionParams{{9000}},
+		setPosReturns:  []setPositionReturns{{nil}},
+		expectedErrors: []error{nil, nil},
 	}, {
 		name: "SetPosition is called (multiple times) when the correct amount of messages are processed",
 		subOpts: []SubscriberOption{
@@ -192,6 +195,126 @@ func TestPoller(t *testing.T) {
 			{nil},
 			{nil},
 		},
+		expectedErrors: []error{nil, nil, nil},
+	}, {
+		name: "SetPosition is called (multiple, multiple times) when the correct amount of messages are processed",
+		subOpts: []SubscriberOption{
+			SubscribeToCommandStream("some cat"),
+			UpdatePositionEvery(5),
+		},
+		handlers:         []MessageHandler{},
+		callPollNumTimes: 5,
+		getMsgsParams: []getMessagesParams{
+			{0},
+			{1012},
+			{4000},
+			{6000},
+			{9000},
+		},
+		getMsgsReturns: []getMessagesReturns{
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+		},
+		processMsgsParams: []processMessagesParams{
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+		},
+		processMsgsReturns: []processMessagesReturns{
+			{5, 1012, nil},
+			{1, 4000, nil},
+			{7, 6000, nil},
+			{1, 9000, nil},
+			{2, 1000000, nil}, // shouldn't call, because we only have 3 messages here
+		},
+		setPosParams: []setPositionParams{
+			{1012},
+			{6000},
+		},
+		setPosReturns: []setPositionReturns{
+			{nil},
+			{nil},
+		},
+		expectedErrors: []error{nil, nil, nil, nil, nil},
+	}, {
+		name: "SetPosition is called when the correct amount of messages are processed, even if ProcessMessages errors out",
+		subOpts: []SubscriberOption{
+			SubscribeToCommandStream("some cat"),
+			UpdatePositionEvery(5),
+		},
+		handlers:         []MessageHandler{},
+		callPollNumTimes: 3,
+		getMsgsParams: []getMessagesParams{
+			{0},
+			{1012},
+			{9000},
+		},
+		getMsgsReturns: []getMessagesReturns{
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+		},
+		processMsgsParams: []processMessagesParams{
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+		},
+		processMsgsReturns: []processMessagesReturns{
+			{5, 1012, nil},
+			{3, 9000, potato},
+			{2, 1000000, nil},
+		},
+		setPosParams: []setPositionParams{
+			{1012},
+			{1000000},
+		},
+		setPosReturns: []setPositionReturns{
+			{nil},
+			{nil},
+		},
+		expectedErrors: []error{nil, potato, nil},
+	}, {
+		name: "If SetPosition errors out, it doesn't reset the count of the number of messages handled",
+		subOpts: []SubscriberOption{
+			SubscribeToCommandStream("some cat"),
+			UpdatePositionEvery(5),
+		},
+		handlers:         []MessageHandler{},
+		callPollNumTimes: 3,
+		getMsgsParams: []getMessagesParams{
+			{0},
+			{1012},
+			{9000},
+		},
+		getMsgsReturns: []getMessagesReturns{
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+			{commandsToMessageSlice(getSampleCommands()), nil},
+		},
+		processMsgsParams: []processMessagesParams{
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+			{commandsToMessageSlice(getSampleCommands())},
+		},
+		processMsgsReturns: []processMessagesReturns{
+			{5, 1012, nil},
+			{3, 9000, nil},
+			{2, 1000000, nil},
+		},
+		setPosParams: []setPositionParams{
+			{1012},
+			{9000},
+		},
+		setPosReturns: []setPositionReturns{
+			{potato},
+			{nil},
+		},
+		expectedErrors: []error{potato, nil, nil},
 	}}
 
 	for _, test := range tests {
@@ -265,8 +388,8 @@ func TestPoller(t *testing.T) {
 				err = myPoller.Poll(ctx)
 
 				// assertions
-				if err != test.expectedError {
-					t.Errorf("Failed on Poll()\nWant: %s\nHave: %s\n", test.expectedError, err)
+				if err != test.expectedErrors[c] {
+					t.Errorf("Failed on Poll()\nWant: %s\nHave: %s\n", test.expectedErrors[c], err)
 					return
 				}
 			}
