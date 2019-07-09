@@ -221,7 +221,7 @@ func (mh *msgHandler) Type() string {
 	return mh.class
 }
 
-func (mh *msgHandler) Process(ctx context.Context, msg Message) error {
+func (mh *msgHandler) Process(ctx context.Context, ms MessageStore, msg Message) error {
 	mh.called = true
 	if mh.retErr != nil {
 		return mh.retErr
