@@ -2,6 +2,7 @@ module github.com/blackhatbrigade/gomessagestore
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3
+	github.com/Rican7/conjson v0.1.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.3.1
 	github.com/jmoiron/sqlx v1.2.0

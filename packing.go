@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Rican7/conjson"
+	"github.com/Rican7/conjson/transform"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +19,7 @@ func Unpack(source map[string]interface{}, dest interface{}) error {
 		return err
 	}
 
-	return json.Unmarshal(inbetween, dest)
+	return json.Unmarshal(inbetween, conjson.NewUnmarshaler(dest, transform.CamelCaseKeys(true)))
 }
 
 //Pack packs a GO object into JSON-esque objects used in the Command and Event objects
@@ -28,7 +30,7 @@ func Pack(source interface{}) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	err = json.Unmarshal(inbetween, &dest)
+	err = json.Unmarshal(inbetween, conjson.NewUnmarshaler(&dest, transform.CamelCaseKeys(true)))
 	return dest, err
 }
 
@@ -63,11 +65,11 @@ func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converte
 func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
 		data := make(map[string]interface{})
-		if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+		if err := json.Unmarshal(messageEnvelope.Data, conjson.NewUnmarshaler(&data, transform.CamelCaseKeys(true))); err != nil {
 			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
 		}
 		metadata := make(map[string]interface{})
-		if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
+		if err := json.Unmarshal(messageEnvelope.Metadata, conjson.NewUnmarshaler(&metadata, transform.CamelCaseKeys(true))); err != nil {
 			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 		}
 		command := &Command{
@@ -89,11 +91,12 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 
 func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	data := make(map[string]interface{})
-	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+
+	if err := json.Unmarshal(messageEnvelope.Data, conjson.NewUnmarshaler(&data, transform.CamelCaseKeys(true))); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
 	}
 	metadata := make(map[string]interface{})
-	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
+	if err := json.Unmarshal(messageEnvelope.Metadata, conjson.NewUnmarshaler(&metadata, transform.CamelCaseKeys(true))); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 	}
 	category := ""

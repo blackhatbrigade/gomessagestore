@@ -34,7 +34,7 @@ var (
 )
 
 type dummyData struct {
-	Field1 string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
+	SomeField string `json:"someField"` // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
 }
 
 // disable logging during tests
@@ -190,8 +190,8 @@ func getSampleEventAsEnvelope() *repository.MessageEnvelope {
 		MessageType:    "test type",
 		StreamName:     "test cat-" + uuid8.String(),
 		StreamCategory: "test cat",
-		Data:           []byte(`{"Field1":"a"}`),
-		Metadata:       []byte(`{"Field1":"b"}`),
+		Data:           []byte(`{"someField":"a"}`),
+		Metadata:       []byte(`{"someField":"b"}`),
 		Time:           time.Unix(1, 0),
 	}
 
@@ -206,8 +206,8 @@ func getSampleOtherMessageAsEnvelope() *repository.MessageEnvelope {
 		MessageType:    "test type",
 		StreamName:     "test cat-" + uuid9.String(),
 		StreamCategory: "test cat",
-		Data:           []byte(`{"Field1":"a"}`),
-		Metadata:       []byte(`{"Field1":"b"}`),
+		Data:           []byte(`{"someField":"a"}`),
+		Metadata:       []byte(`{"someField":"b"}`),
 		Time:           time.Unix(1, 0),
 	}
 
@@ -224,8 +224,8 @@ func getLotsOfSampleEventsAsEnvelopes(amount, startingAt int) []*repository.Mess
 			StreamCategory: "test cat",
 			Version:        int64(4 + startingAt + index),
 			GlobalPosition: int64(500 + startingAt + index),
-			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"b"}`),
+			Data:           []byte(`{"someField":"a"}`),
+			Metadata:       []byte(`{"someField":"b"}`),
 			Time:           time.Unix(1, 3),
 		}
 	}
@@ -242,8 +242,8 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			StreamCategory: "test cat",
 			Version:        4,
 			GlobalPosition: 345,
-			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"b"}`),
+			Data:           []byte(`{"someField":"a"}`),
+			Metadata:       []byte(`{"someField":"b"}`),
 			Time:           time.Unix(1, 3),
 		}, &repository.MessageEnvelope{
 			ID:             uuid7,
@@ -252,8 +252,8 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 			Version:        8,
 			GlobalPosition: 349,
 			StreamCategory: "test cat",
-			Data:           []byte(`{"Field1":"c"}`),
-			Metadata:       []byte(`{"Field1":"d"}`),
+			Data:           []byte(`{"someField":"c"}`),
+			Metadata:       []byte(`{"someField":"d"}`),
 			Time:           time.Unix(1, 4),
 		}}
 }
@@ -266,8 +266,8 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 		GlobalPosition: 8,
 		StreamName:     "test cat:command",
 		StreamCategory: "test cat",
-		Data:           []byte(`{"Field1":"a"}`),
-		Metadata:       []byte(`{"Field1":"b"}`),
+		Data:           []byte(`{"someField":"a"}`),
+		Metadata:       []byte(`{"someField":"b"}`),
 		Time:           time.Unix(1, 0),
 	}
 
@@ -283,8 +283,8 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			StreamCategory: "test cat",
 			Version:        1,
 			GlobalPosition: 1011,
-			Data:           []byte(`{"Field1":"a"}`),
-			Metadata:       []byte(`{"Field1":"b"}`),
+			Data:           []byte(`{"someField":"a"}`),
+			Metadata:       []byte(`{"someField":"b"}`),
 			Time:           time.Unix(1, 1),
 		}, &repository.MessageEnvelope{
 			ID:             uuid6,
@@ -293,8 +293,33 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			Version:        2,
 			GlobalPosition: 1012,
 			StreamCategory: "test cat",
-			Data:           []byte(`{"Field1":"c"}`),
-			Metadata:       []byte(`{"Field1":"d"}`),
+			Data:           []byte(`{"someField":"c"}`),
+			Metadata:       []byte(`{"someField":"d"}`),
+			Time:           time.Unix(1, 2),
+		}}
+}
+
+func getSampleSnakeCaseCommandsAsEnvelopes() []*repository.MessageEnvelope {
+	return []*repository.MessageEnvelope{
+		&repository.MessageEnvelope{
+			ID:             uuid4,
+			MessageType:    "Command MessageType 2",
+			StreamName:     "test cat:command",
+			StreamCategory: "test cat",
+			Version:        1,
+			GlobalPosition: 1011,
+			Data:           []byte(`{"some_field":"a"}`),
+			Metadata:       []byte(`{"some_field":"b"}`),
+			Time:           time.Unix(1, 1),
+		}, &repository.MessageEnvelope{
+			ID:             uuid6,
+			MessageType:    "Command MessageType 1",
+			StreamName:     "test cat:command",
+			Version:        2,
+			GlobalPosition: 1012,
+			StreamCategory: "test cat",
+			Data:           []byte(`{"some_field":"c"}`),
+			Metadata:       []byte(`{"some_field":"d"}`),
 			Time:           time.Unix(1, 2),
 		}}
 }
