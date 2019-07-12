@@ -10,7 +10,7 @@ func (sw *subscriptionWorker) ProcessMessages(ctx context.Context, msgs []Messag
 	for _, msg := range msgs {
 		for _, handler := range sw.handlers {
 			if handler.Type() == msg.Type() {
-				if err = handler.Process(ctx, sw.ms, msg); err != nil {
+				if err = handler.Process(ctx, msg); err != nil {
 					return
 				}
 				messagesHandled++

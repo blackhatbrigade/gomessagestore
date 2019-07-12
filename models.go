@@ -98,7 +98,6 @@ type Event struct {
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
-	ProcessTime    time.Time
 }
 
 //Type returns the type of this message (business action taking place)
@@ -161,9 +160,4 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	return msgEnv, nil
-}
-
-type Metadata struct {
-	CorrelationID uuid.UUID
-	CausedByID    uuid.UUID
 }
