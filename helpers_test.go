@@ -34,7 +34,7 @@ var (
 )
 
 type dummyData struct {
-	SomeField string `json:"someField"` // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
+	SomeField string // more than 1 field here breaks idempotency of tests because of json marshalling from a map[string]interface{} type
 }
 
 // disable logging during tests
@@ -43,10 +43,12 @@ func init() {
 }
 
 func getSampleCommand() *Command {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
+	packed := map[string]interface{}{
+		"SomeField": "a",
+	}
+	packedMeta := map[string]interface{}{
+		"SomeField": "b",
+	}
 	return &Command{
 		MessageType:    "test type",
 		StreamCategory: "test cat",
@@ -60,10 +62,12 @@ func getSampleCommand() *Command {
 }
 
 func getSampleEvent() *Event {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
+	packed := map[string]interface{}{
+		"SomeField": "a",
+	}
+	packedMeta := map[string]interface{}{
+		"SomeField": "b",
+	}
 	return &Event{
 		ID:             uuid2,
 		MessageType:    "test type",
@@ -78,10 +82,12 @@ func getSampleEvent() *Event {
 }
 
 func getSampleOtherMessage() *otherMessage {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
+	packed := map[string]interface{}{
+		"someField": "a", // don't test that these get marshalled correctly
+	}
+	packedMeta := map[string]interface{}{
+		"someField": "b",
+	}
 	return &otherMessage{
 		ID:             uuid3,
 		MessageType:    "test type",
@@ -96,14 +102,54 @@ func getSampleOtherMessage() *otherMessage {
 }
 
 func getSampleCommands() []*Command {
-	packed1, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packed2, err := Pack(dummyData{"c"})
-	panicIf(err)
-	packedMeta1, err := Pack(dummyData{"b"})
-	panicIf(err)
-	packedMeta2, err := Pack(dummyData{"d"})
-	panicIf(err)
+	packed1 := map[string]interface{}{
+		"SomeField": "a",
+	}
+	packed2 := map[string]interface{}{
+		"SomeField": "c",
+	}
+	packedMeta1 := map[string]interface{}{
+		"SomeField": "b",
+	}
+	packedMeta2 := map[string]interface{}{
+		"SomeField": "d",
+	}
+	return []*Command{
+		&Command{
+			ID:             uuid4,
+			MessageType:    "Command MessageType 2",
+			StreamCategory: "test cat",
+			MessageVersion: 1,
+			GlobalPosition: 1011,
+			Data:           packed1,
+			Metadata:       packedMeta1,
+			Time:           time.Unix(1, 1),
+		}, &Command{
+			ID:             uuid6,
+			MessageType:    "Command MessageType 1",
+			StreamCategory: "test cat",
+			MessageVersion: 2,
+			GlobalPosition: 1012,
+			Data:           packed2,
+			Metadata:       packedMeta2,
+			Time:           time.Unix(1, 2),
+		}}
+}
+
+// for when we want to test the MsgEnvelopsToMessages rather than ToEnvelope or Pack
+func getSampleCommandsLowerCaseValues() []*Command {
+	packed1 := map[string]interface{}{
+		"someField": "a",
+	}
+	packed2 := map[string]interface{}{
+		"someField": "c",
+	}
+	packedMeta1 := map[string]interface{}{
+		"someField": "b",
+	}
+	packedMeta2 := map[string]interface{}{
+		"someField": "d",
+	}
 	return []*Command{
 		&Command{
 			ID:             uuid4,
@@ -127,14 +173,56 @@ func getSampleCommands() []*Command {
 }
 
 func getSampleEvents() []*Event {
-	packed1, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packed2, err := Pack(dummyData{"c"})
-	panicIf(err)
-	packedMeta1, err := Pack(dummyData{"b"})
-	panicIf(err)
-	packedMeta2, err := Pack(dummyData{"d"})
-	panicIf(err)
+	packed1 := map[string]interface{}{
+		"SomeField": "a",
+	}
+	packed2 := map[string]interface{}{
+		"SomeField": "c",
+	}
+	packedMeta1 := map[string]interface{}{
+		"SomeField": "b",
+	}
+	packedMeta2 := map[string]interface{}{
+		"SomeField": "d",
+	}
+	return []*Event{
+		&Event{
+			ID:             uuid5,
+			MessageType:    "Event MessageType 2",
+			EntityID:       uuid8,
+			StreamCategory: "test cat",
+			MessageVersion: 4,
+			GlobalPosition: 345,
+			Data:           packed1,
+			Metadata:       packedMeta1,
+			Time:           time.Unix(1, 3),
+		}, &Event{
+			ID:             uuid7,
+			MessageType:    "Event MessageType 1",
+			EntityID:       uuid8,
+			MessageVersion: 8,
+			GlobalPosition: 349,
+			StreamCategory: "test cat",
+			Data:           packed2,
+			Metadata:       packedMeta2,
+			Time:           time.Unix(1, 4),
+		}}
+}
+
+// for when we want to test the MsgEnvelopsToMessages rather than ToEnvelope or Pack
+func getSampleEventsLowerCaseValues() []*Event {
+	packed1 := map[string]interface{}{
+		"someField": "a",
+	}
+	packed2 := map[string]interface{}{
+		"someField": "c",
+	}
+	packedMeta1 := map[string]interface{}{
+		"someField": "b",
+	}
+	packedMeta2 := map[string]interface{}{
+		"someField": "d",
+	}
 	return []*Event{
 		&Event{
 			ID:             uuid5,
@@ -160,10 +248,12 @@ func getSampleEvents() []*Event {
 }
 
 func getLotsOfSampleEvents(amount, startingAt int) []*Event {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
+	packed := map[string]interface{}{
+		"SomeField": "a",
+	}
+	packedMeta := map[string]interface{}{
+		"SomeField": "b",
+	}
 	events := make([]*Event, amount)
 	for index, _ := range events {
 		events[index] = &Event{

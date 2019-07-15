@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rican7/conjson"
+	"github.com/Rican7/conjson/transform"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
@@ -67,8 +69,8 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	data, err := json.Marshal(cmd.Data)
-	metadata, errm := json.Marshal(cmd.Metadata)
+	data, err := json.Marshal(conjson.NewMarshaler(cmd.Data, transform.CamelCaseKeys(true)))
+	metadata, errm := json.Marshal(conjson.NewMarshaler(cmd.Metadata, transform.CamelCaseKeys(true)))
 	if err != nil || errm != nil {
 		return nil, ErrUnserializableData
 	}
@@ -141,8 +143,8 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageCategory
 	}
 
-	data, err := json.Marshal(event.Data)
-	metadata, errm := json.Marshal(event.Metadata)
+	data, err := json.Marshal(conjson.NewMarshaler(event.Data, transform.CamelCaseKeys(true)))
+	metadata, errm := json.Marshal(conjson.NewMarshaler(event.Metadata, transform.CamelCaseKeys(true)))
 	if err != nil || errm != nil {
 		return nil, ErrUnserializableData
 	}

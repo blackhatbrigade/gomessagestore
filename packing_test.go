@@ -230,15 +230,15 @@ func TestMsgEnvelopesToMessages(t *testing.T) {
 	}{{
 		name:           "converts message envelopes to events",
 		input:          getSampleEventsAsEnvelopes(),
-		expectedOutput: eventsToMessageSlice(getSampleEvents()),
+		expectedOutput: eventsToMessageSlice(getSampleEventsLowerCaseValues()),
 	}, {
 		name:           "converts message envelopes to commands",
 		input:          getSampleCommandsAsEnvelopes(),
-		expectedOutput: commandsToMessageSlice(getSampleCommands()),
+		expectedOutput: commandsToMessageSlice(getSampleCommandsLowerCaseValues()),
 	}, {
 		name:           "converts message envelopes with snake_case to commands with camelCase",
 		input:          getSampleSnakeCaseCommandsAsEnvelopes(),
-		expectedOutput: commandsToMessageSlice(getSampleCommands()),
+		expectedOutput: commandsToMessageSlice(getSampleCommandsLowerCaseValues()),
 	}}
 
 	for _, test := range tests {
