@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Subscriber > mocks/subscriber.go"
+
 //Subscriber allows for reaching out to the message service on a continual basis
 type Subscriber interface {
 	Start(context.Context) error

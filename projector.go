@@ -7,6 +7,8 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
+//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Projector > mocks/projector.go"
+
 //CreateProjector creates a projector for use with MessageReducers to get projections
 func (ms *msgStore) CreateProjector(opts ...ProjectorOption) (Projector, error) {
 	projector := &projector{
