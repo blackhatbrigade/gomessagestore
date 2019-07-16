@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/blackhatbrigade/gomessagestore/inmem_repository"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
@@ -39,4 +40,17 @@ func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageSt
 	}
 
 	return msgstr
+}
+
+//NewMockMessageStoreWithMessages
+func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
+	msgEnvs := make([]repository.MessageEnvelope, len(msgs))
+
+	for i, msg := range msgs {
+		msgEnv, _ := msg.ToEnvelope()
+		msgEnvs[i] = *msgEnv
+	}
+
+	r := inmem_repository.NewInMemoryRepository(msgEnvs)
+	return NewMessageStoreFromRepository(r)
 }

@@ -79,6 +79,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 			db, mockDb, _ := sqlmock.New()
 			repo := NewPostgresRepository(db)
 			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel() // free all resources
 
 			expectedQuery := mockDb.
 				ExpectQuery("SELECT \\* FROM get_category_messages\\(\\$1, \\$2, \\$3\\)").
