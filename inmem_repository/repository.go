@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	. "github.com/blackhatbrigade/gomessagestore/repository"
 )
@@ -105,7 +106,7 @@ func (repo *inmemrepo) GetAllMessagesInCategory(ctx context.Context, category st
 	msgs := make([]*MessageEnvelope, 0, batchSize)
 
 	for _, msg := range repo.msgs {
-		if msg.StreamCategory == category {
+		if categoryMatches(msg.StreamName, category) {
 			newMessage := msg // make a copy so we don't just reassign based on the next item in the loop
 			msgs = append(msgs, &newMessage)
 		}
@@ -128,7 +129,7 @@ func (repo *inmemrepo) GetAllMessagesInCategorySince(ctx context.Context, catego
 		}
 
 		if atPos {
-			if msg.StreamCategory == category {
+			if categoryMatches(msg.StreamName, category) {
 				newMessage := msg // make a copy so we don't just reassign based on the next item in the loop
 				msgs = append(msgs, &newMessage)
 			}
@@ -159,4 +160,13 @@ func (repo *inmemrepo) findLastPosition() int64 {
 	}
 
 	return -1
+}
+
+func categoryMatches(streamName string, category string) bool {
+	streamPieces := strings.Split(streamName, "-")
+	if len(streamPieces) == 0 {
+		return false
+	}
+
+	return streamPieces[0] == category
 }
