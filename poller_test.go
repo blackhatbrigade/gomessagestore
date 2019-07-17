@@ -82,12 +82,12 @@ func TestPoller(t *testing.T) {
 		getMsgsParams:    []getMessagesParams{{0}},
 		getMsgsReturns:   []getMessagesReturns{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), potato}},
 	}, {
-		name: "ProcessMessages Errors are returned",
+		name: "ProcessMessages Errors are ignored",
 		subOpts: []SubscriberOption{
 			SubscribeToCommandStream("some cat"),
 		},
 		handlers:           []MessageHandler{},
-		expectedErrors:     []error{potato},
+		expectedErrors:     []error{nil},
 		callPollNumTimes:   1,
 		getMsgsParams:      []getMessagesParams{{0}},
 		getMsgsReturns:     []getMessagesReturns{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil}},
@@ -106,7 +106,7 @@ func TestPoller(t *testing.T) {
 		getMsgsReturns:     []getMessagesReturns{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil}},
 		processMsgsParams:  []processMessagesParams{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100))}},
 		processMsgsReturns: []processMessagesReturns{{10, 1012, nil}},
-		setPosParams:       []setPositionParams{{1012}},
+		setPosParams:       []setPositionParams{{1013}},
 		setPosReturns:      []setPositionReturns{{potato}},
 	}, {
 		name: "When called twice, Poll uses a changed value for starting position",
@@ -117,7 +117,7 @@ func TestPoller(t *testing.T) {
 		callPollNumTimes: 2,
 		getMsgsParams: []getMessagesParams{
 			{0},
-			{1012},
+			{1013},
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -142,7 +142,7 @@ func TestPoller(t *testing.T) {
 		callPollNumTimes: 2,
 		getMsgsParams: []getMessagesParams{
 			{0},
-			{1012},
+			{1013},
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -156,7 +156,7 @@ func TestPoller(t *testing.T) {
 			{5, 1012, nil},
 			{5, 9000, nil},
 		},
-		setPosParams:   []setPositionParams{{9000}},
+		setPosParams:   []setPositionParams{{9001}},
 		setPosReturns:  []setPositionReturns{{nil}},
 		expectedErrors: []error{nil, nil},
 	}, {
@@ -169,8 +169,8 @@ func TestPoller(t *testing.T) {
 		callPollNumTimes: 3,
 		getMsgsParams: []getMessagesParams{
 			{0},
-			{1012},
-			{9000},
+			{1013},
+			{9001},
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -188,8 +188,8 @@ func TestPoller(t *testing.T) {
 			{2, 1000000, nil},
 		},
 		setPosParams: []setPositionParams{
-			{1012},
-			{1000000},
+			{1013},
+			{1000001},
 		},
 		setPosReturns: []setPositionReturns{
 			{nil},
@@ -206,10 +206,10 @@ func TestPoller(t *testing.T) {
 		callPollNumTimes: 5,
 		getMsgsParams: []getMessagesParams{
 			{0},
-			{1012},
-			{4000},
-			{6000},
-			{9000},
+			{1013},
+			{4001},
+			{6001},
+			{9001},
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -233,8 +233,8 @@ func TestPoller(t *testing.T) {
 			{2, 1000000, nil}, // shouldn't call, because we only have 3 messages here
 		},
 		setPosParams: []setPositionParams{
-			{1012},
-			{6000},
+			{1013},
+			{6001},
 		},
 		setPosReturns: []setPositionReturns{
 			{nil},
@@ -251,8 +251,8 @@ func TestPoller(t *testing.T) {
 		callPollNumTimes: 3,
 		getMsgsParams: []getMessagesParams{
 			{0},
-			{1012},
-			{9000},
+			{1013},
+			{9001},
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -270,14 +270,14 @@ func TestPoller(t *testing.T) {
 			{2, 1000000, nil},
 		},
 		setPosParams: []setPositionParams{
-			{1012},
-			{1000000},
+			{1013},
+			{1000001},
 		},
 		setPosReturns: []setPositionReturns{
 			{nil},
 			{nil},
 		},
-		expectedErrors: []error{nil, potato, nil},
+		expectedErrors: []error{nil, nil, nil},
 	}, {
 		name: "If SetPosition errors out, it doesn't reset the count of the number of messages handled",
 		subOpts: []SubscriberOption{
@@ -288,8 +288,8 @@ func TestPoller(t *testing.T) {
 		callPollNumTimes: 3,
 		getMsgsParams: []getMessagesParams{
 			{0},
-			{1012},
-			{9000},
+			{1013},
+			{9001},
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -307,8 +307,8 @@ func TestPoller(t *testing.T) {
 			{2, 1000000, nil},
 		},
 		setPosParams: []setPositionParams{
-			{1012},
-			{9000},
+			{1013},
+			{9001},
 		},
 		setPosReturns: []setPositionReturns{
 			{potato},
