@@ -115,6 +115,21 @@ func TestInMemRepository(t *testing.T) {
 	assert.Equal(streamA[:1], msgs)
 	assert.Nil(err)
 
+	//get some more from stream a
+	msgs, err = repo.GetAllMessagesInStreamSince(ctx, "A-123", 6, 1)
+	assert.Equal(streamA[1:], msgs)
+	assert.Nil(err)
+
+	//get all from stream a
+	msgs, err = repo.GetAllMessagesInStream(ctx, "A-123", 100)
+	assert.Equal(streamA, msgs)
+	assert.Nil(err)
+
+	//get all from stream a the other way
+	msgs, err = repo.GetAllMessagesInStreamSince(ctx, "A-123", 0, 100)
+	assert.Equal(streamA, msgs)
+	assert.Nil(err)
+
 	//get last from stream b
 	msg, err := repo.GetLastMessageInStream(ctx, "B-123")
 	assert.Equal(streamB[2], msg)
@@ -122,11 +137,11 @@ func TestInMemRepository(t *testing.T) {
 
 	//write an event to stream a at wrong position fails
 	newID := uuid.NewRandom()
-	err = repo.WriteMessageWithExpectedPosition(ctx, copyMessageWithNewID(streamA[0], newID), 1)
+	err = repo.WriteMessageWithExpectedPosition(ctx, copyMessageWithNewID(streamA[0], newID), 0)
 	assert.NotNil(err)
 
 	//write an event to stream a at position
-	err = repo.WriteMessageWithExpectedPosition(ctx, copyMessageWithNewID(streamA[0], newID), 7)
+	err = repo.WriteMessageWithExpectedPosition(ctx, copyMessageWithNewID(streamA[0], newID), 6)
 	assert.Nil(err)
 
 	//get last from stream a
@@ -144,6 +159,21 @@ func TestInMemRepository(t *testing.T) {
 	//get some from category
 	msgs, err = repo.GetAllMessagesInCategory(ctx, "C", 3)
 	assert.Equal(catMsgs[:3], msgs)
+	assert.Nil(err)
+
+	//get some more from category
+	msgs, err = repo.GetAllMessagesInCategorySince(ctx, "C", 108, 1)
+	assert.Equal(catMsgs[3:], msgs)
+	assert.Nil(err)
+
+	//get all from category
+	msgs, err = repo.GetAllMessagesInCategory(ctx, "C", 100)
+	assert.Equal(catMsgs, msgs)
+	assert.Nil(err)
+
+	//get all from category, the other way
+	msgs, err = repo.GetAllMessagesInCategorySince(ctx, "C", 0, 100)
+	assert.Equal(catMsgs, msgs)
 	assert.Nil(err)
 
 	//write an event to a new stream in the same category
@@ -169,11 +199,15 @@ func TestInMemRepository(t *testing.T) {
 		StreamCategory: "R",
 		MessageType:    "do it",
 	}
-	err = repo.WriteMessageWithExpectedPosition(ctx, cmd, 0)
+	err = repo.WriteMessageWithExpectedPosition(ctx, cmd, -1)
 	assert.Nil(err)
 
+	//write it again, but at any position should fail because it is a duplicate ID
+	err = repo.WriteMessage(ctx, cmd)
+	assert.NotNil(err)
+
 	//write a command at wrong position fails
-	err = repo.WriteMessageWithExpectedPosition(ctx, cmd, 0)
+	err = repo.WriteMessageWithExpectedPosition(ctx, cmd, -1)
 	assert.NotNil(err)
 }
 
@@ -182,4 +216,23 @@ func copyMessageWithNewID(msg *MessageEnvelope, id uuid.UUID) *MessageEnvelope {
 	newMessage.ID = id
 
 	return &newMessage
+}
+
+func TestInMemRepositoryWriteFirstMessageAtPosition(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+
+	//init with a few messages
+	repo := NewInMemoryRepository([]MessageEnvelope{})
+
+	//write a command at position
+	newID := uuid.NewRandom()
+	cmd := &MessageEnvelope{
+		ID:             newID,
+		StreamName:     "R:command",
+		StreamCategory: "R",
+		MessageType:    "do it",
+	}
+	err := repo.WriteMessageWithExpectedPosition(ctx, cmd, -1)
+	assert.Nil(err)
 }

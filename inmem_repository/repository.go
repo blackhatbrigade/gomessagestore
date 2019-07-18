@@ -41,8 +41,8 @@ func (repo *inmemrepo) WriteMessage(ctx context.Context, message *MessageEnvelop
 //WriteMessageWithExpectedPosition writes a message with a position
 func (repo *inmemrepo) WriteMessageWithExpectedPosition(ctx context.Context, message *MessageEnvelope, position int64) error {
 	version := repo.findLastVersionForStream(message.StreamName)
-	if version+1 != position {
-		return errors.New(fmt.Sprintf("position incorrect. should be %d", version+1))
+	if version != position {
+		return errors.New(fmt.Sprintf("position incorrect. should be %d", version))
 	}
 
 	return repo.WriteMessage(ctx, message)
@@ -66,12 +66,12 @@ func (repo *inmemrepo) GetAllMessagesInStream(ctx context.Context, streamName st
 }
 
 //GetAllMessagesInStreamSince gets all messages in a streams since position
-func (repo *inmemrepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error) {
+func (repo *inmemrepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, version int64, batchSize int) ([]*MessageEnvelope, error) {
 	msgs := make([]*MessageEnvelope, 0, batchSize)
 
 	atPos := false
 	for _, msg := range repo.msgs {
-		if msg.GlobalPosition >= globalPosition {
+		if msg.Version >= version {
 			atPos = true
 		}
 
