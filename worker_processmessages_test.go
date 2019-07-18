@@ -70,7 +70,7 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 		expectedFinalPosition: 349, // second message, from Position
 		expectedNumHandled:    2,   // both messages
 	}, {
-		name: "Subscriber processes a message in the registered handler with category, up until it receives an error",
+		name: "Subscriber processes a message in the registered handler with category, even after it receives an error",
 		handlers: []MessageHandler{
 			&msgHandler{class: "Event MessageType 2"},
 			&msgHandler{class: "Event MessageType 1", retErr: potato}, // 1 comes after 2 in getSampleEvents
@@ -82,9 +82,8 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			SubscribeToCategory("category"),
 		},
 		messages:              eventsToMessageSlice(getSampleEvents()),
-		expectedError:         potato,
-		expectedFinalPosition: 345, // first message, from Position
-		expectedNumHandled:    1,   // first message only
+		expectedFinalPosition: 349, // second message, from Position
+		expectedNumHandled:    2,   // both messages
 	}}
 
 	for _, test := range tests {

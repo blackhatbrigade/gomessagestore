@@ -5,10 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
-	//_ "github.com/go-sql-driver/mysql"
-	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
 )
 

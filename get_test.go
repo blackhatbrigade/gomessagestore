@@ -8,7 +8,6 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/mock/gomock"
 )
 
