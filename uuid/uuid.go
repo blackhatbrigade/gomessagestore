@@ -126,9 +126,14 @@ func (uuid *UUID) Scan(value interface{}) error {
 		return nil
 	}
 	if sv, err := driver.String.ConvertValue(value); err == nil {
-		if v, ok := sv.(string); ok {
+		switch v := sv.(type) {
+		case string:
 			var err error
 			*uuid, err = Parse(v)
+			return err
+		case []byte:
+			var err error
+			*uuid, err = Parse(string(v))
 			return err
 		}
 	}
