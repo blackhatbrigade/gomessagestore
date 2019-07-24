@@ -10,19 +10,19 @@ import (
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore MessageStore > mocks/messagestore.go"
 
-//MessageStore Establishes the interface for Eventide.
+// MessageStore establishes the interface for Eventide
 type MessageStore interface {
-	Write(ctx context.Context, message Message, opts ...WriteOption) error
-	Get(ctx context.Context, opts ...GetOption) ([]Message, error)
-	CreateProjector(opts ...ProjectorOption) (Projector, error)
-	CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error)
+	Write(ctx context.Context, message Message, opts ...WriteOption) error                                         // writes a message to the message store
+	Get(ctx context.Context, opts ...GetOption) ([]Message, error)                                                 // retrieves messages from the message store
+	CreateProjector(opts ...ProjectorOption) (Projector, error)                                                    // creates a new projector
+	CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error) // creates a new subscriber
 }
 
 type msgStore struct {
 	repo repository.Repository
 }
 
-//NewMessageStore Grabs a MessageStore instance.
+// NewMessageStore creates a new MessageStore instance using an injected DB.
 func NewMessageStore(injectedDB *sql.DB) MessageStore {
 	pgRepo := repository.NewPostgresRepository(injectedDB)
 
@@ -33,7 +33,7 @@ func NewMessageStore(injectedDB *sql.DB) MessageStore {
 	return msgstr
 }
 
-//NewMessageStoreFromRepository Grabs a MessageStore instance.
+// NewMessageStoreFromRepository creates a new MessageStore instance using an injected repository.
 func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
@@ -42,7 +42,7 @@ func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageSt
 	return msgstr
 }
 
-//NewMockMessageStoreWithMessages
+// NewMockMessageStoreWithMessages
 func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 	msgEnvs := make([]repository.MessageEnvelope, len(msgs))
 

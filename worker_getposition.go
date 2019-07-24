@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//GetPosition starts phase one of the polling loop
+// GetPosition retrieves the current position that messages should be retrieved from; first process of the polling loop
 func (sw *subscriptionWorker) GetPosition(ctx context.Context) (int64, error) {
 	log := logrus.
 		WithFields(logrus.Fields{
@@ -40,6 +40,7 @@ func (sw *subscriptionWorker) GetPosition(ctx context.Context) (int64, error) {
 	}
 }
 
+// convertEnvelopeToPositionMessage takes a messageEnvelope and converts it into a PositionMessage that is used to keep track of position changes
 func convertEnvelopeToPositionMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	data := positionData{}
 	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
@@ -61,6 +62,7 @@ func convertEnvelopeToPositionMessage(messageEnvelope *repository.MessageEnvelop
 	return positionMsg, nil
 }
 
+// positionMessage is a message type used to keep track of changes in position so that messages are not read multiple times or skipped
 type positionMessage struct {
 	ID             uuid.UUID
 	MyPosition     int64

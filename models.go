@@ -10,43 +10,42 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
-//So users don't have to import gomessagestore/uuid
 var NilUUID = uuid.Nil
 
-//NewID creates a new UUID
+// NewID creates a new UUID.
 func NewID() uuid.UUID {
 	return uuid.NewRandom()
 }
 
-//Command the model for writing a command to the Message Store
 type Command struct {
-	ID             uuid.UUID
-	StreamCategory string
-	MessageType    string
-	MessageVersion int64
-	GlobalPosition int64
+	ID             uuid.UUID // ID for the command
+	StreamCategory string    // Name of the stream category
+	MessageType    string    // Name of the message type
+	MessageVersion int64     // version number of the message
+	GlobalPosition int64     // global position of the command
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
 }
 
-//Type returns the type of this message (business action taking place)
+//Type returns the type of the command
 func (cmd *Command) Type() string {
 	return cmd.MessageType
 }
 
-//Version gets the command's Version field
+//Version returns the version of the command
 func (cmd *Command) Version() int64 {
 	return cmd.MessageVersion
 }
 
-//Position gets the command's Position field
+//Position returns the global position of the command
 func (cmd *Command) Position() int64 {
 	return cmd.GlobalPosition
 }
 
-//ToEnvelope Allows for exporting to a MessageEnvelope type.
+//ToEnvelope converts the command to a Message Envelope that is returned
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
+	// check to ensure all needed fields on the command are valid
 	if cmd.MessageType == "" {
 		return nil, ErrMissingMessageType
 	}
@@ -73,6 +72,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrUnserializableData
 	}
 
+	// create a new MessageEnvelope based on the command
 	msgEnv := &repository.MessageEnvelope{
 		ID:             cmd.ID,
 		MessageType:    cmd.MessageType,
@@ -87,36 +87,36 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	return msgEnv, nil
 }
 
-//Event the model for writing an event to the Message Store
 type Event struct {
-	ID             uuid.UUID
-	EntityID       uuid.UUID
-	StreamCategory string
-	MessageType    string
-	MessageVersion int64
-	GlobalPosition int64
+	ID             uuid.UUID // ID of the event
+	EntityID       uuid.UUID // ID of the entity the event is associated with
+	StreamCategory string    // the name of the category of the stream
+	MessageType    string    // the message type of the event
+	MessageVersion int64     // the version number of the message
+	GlobalPosition int64     // the global position of the event
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
 }
 
-//Type returns the type of this message (business action taking place)
+//Type returns the type of the event
 func (event *Event) Type() string {
 	return event.MessageType
 }
 
-//Version gets the event's Version field
+//Version returns the version of the event
 func (event *Event) Version() int64 {
 	return event.MessageVersion
 }
 
-//Position gets the events's Position field
+//Position returns the global position of the event
 func (event *Event) Position() int64 {
 	return event.GlobalPosition
 }
 
-//ToEnvelope Allows for exporting to a MessageEnvelope type.
+//ToEnvelope converts the event to a MessageEnvelope which is then returned
 func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
+	// check to ensure that all required fields of the event are valid
 	if event.MessageType == "" {
 		return nil, ErrMissingMessageType
 	}
@@ -147,6 +147,7 @@ func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrUnserializableData
 	}
 
+	// create a new MessageEnvelope based on the event
 	msgEnv := &repository.MessageEnvelope{
 		ID:             event.ID,
 		MessageType:    event.MessageType,

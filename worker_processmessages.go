@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//ProcessMessages phase three
+//ProcessMessages uses the handlers of the subscriptionWorker to process the messages retrieved from the message store; third process of the polling loop
 func (sw *subscriptionWorker) ProcessMessages(ctx context.Context, msgs []Message) (messagesHandled int, positionOfLastHandled int64, err error) {
 	log := logrus.WithFields(logrus.Fields{
 		"subscriberID": sw.subscriberID,

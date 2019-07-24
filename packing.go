@@ -60,6 +60,7 @@ func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converte
 	return messages
 }
 
+// convertEnvelopeToCommand strips out data from a MessageEnvelope to form a Message of type command
 func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
 		data := make(map[string]interface{})
@@ -87,6 +88,7 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 	}
 }
 
+// convertEnvelopeToEvent strips out data from a MessageEnvelope to form a Message of type event
 func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	data := make(map[string]interface{})
 	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {

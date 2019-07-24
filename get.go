@@ -10,22 +10,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// getOpts allows additional specification of what messages are retrieved.
 type getOpts struct {
-	stream        *string
-	category      *string
-	sincePosition bool
-	sinceVersion  bool
-	since         *int64
-	converters    []MessageConverter
-	batchsize     int
-	last          bool
+	stream        *string            // when set, only messages from the specified stream are retrieved
+	category      *string            // when set, only messages from the specified category are retrieved
+	sincePosition bool               // when set to true, only messages that occured after the specified position (since) for the category are retrieved; invalid for use with streams
+	sinceVersion  bool               // when set to true, only messages that occured since teh specified version (since) for the stream are retrieved; invalid for use with categories
+	since         *int64             // the position or version after which messages will be retrieved
+	converters    []MessageConverter // convert non-command/event messages
+	batchsize     int                // the number of messages to retrieve each round
+	last          bool               // when set to true, retrieves the last message in the specified stream; invalid if stream is unspecified or since is not nil
 }
 
-//GetOption provide optional arguments to the Get function
+// GetOption provide optional arguments to the Get function
 type GetOption func(g *getOpts) error
 
+// checkGetOptions returns the supplied options
 func checkGetOptions(opts ...GetOption) (*getOpts, error) {
-	g := &getOpts{batchsize: 1000}
+	g := &getOpts{batchsize: 1000} // sets batchsize to a default of 1000 if it is not set in the supplied options
 	for _, option := range opts {
 		if err := option(g); err != nil {
 			return nil, err
@@ -34,7 +36,7 @@ func checkGetOptions(opts ...GetOption) (*getOpts, error) {
 	return g, nil
 }
 
-//Get Gets one or more Messages from the message store.
+// Get retrieves messages from the message store that meet the criteria specified in GetOption.
 func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, error) {
 
 	if len(opts) == 0 {
@@ -51,7 +53,7 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 		return nil, err
 	}
 
-	// choose a path
+	// Uses getOptions to determine what call to issue to retrieve correct messages
 	msgEnvelopes, err := ms.callCorrectRepositoryGetFunction(ctx, getOptions)
 
 	if err != nil {
@@ -63,15 +65,21 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 	return MsgEnvelopesToMessages(msgEnvelopes, getOptions.converters...), nil
 }
 
+// Ensure that only proper combinations of getOpts are provided.
+// See getOpts for more info regarding these checks
+// Invalid combinations:
+// stream and category both defined
+// stream and category both nil
+// last set to true and stream is nil
+// last set to true and since is not nil
+// sincePosition defined and stream is not nil
+// sinceVersion defined and category is not nil
 func validateGetParams(getOptions *getOpts) error {
-	// one, and only one of stream or category
 	if getOptions.stream != nil && getOptions.category != nil {
 		return ErrGetMessagesCannotUseBothStreamAndCategory
 	} else if getOptions.stream == nil && getOptions.category == nil {
 		return ErrGetMessagesRequiresEitherStreamOrCategory
 	}
-
-	// potentially bad combinations
 	if getOptions.last && getOptions.stream == nil {
 		return ErrGetLastRequiresStream
 	}
@@ -88,6 +96,7 @@ func validateGetParams(getOptions *getOpts) error {
 	return nil
 }
 
+// callCorrectRepositoryGetFunction uses the getOptions to determine which function should be called to retrieve the correct messages.
 func (ms *msgStore) callCorrectRepositoryGetFunction(ctx context.Context, getOptions *getOpts) (msgEnvelopes []*repository.MessageEnvelope, err error) {
 	if getOptions.since != nil {
 		if getOptions.stream != nil {

@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-//go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Subscriber > mocks/subscriber.go"
+// go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Subscriber > mocks/subscriber.go"
 
-//Subscriber allows for reaching out to the message service on a continual basis
+// Subscriber allows for reaching out to the message service on a continual basis
 type Subscriber interface {
 	Start(context.Context) error
 }
@@ -20,7 +20,7 @@ type subscriber struct {
 	subscriberID string
 }
 
-//CreateSubscriber
+// CreateSubscriber creates a new Subscriber
 func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error) {
 	subscriber, err := createSubscriberWithPoller(
 		ms,
@@ -50,7 +50,7 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 	return subscriber, nil
 }
 
-//CreateSubscriberWithPoller is used for testing with dependency injection
+// CreateSubscriberWithPoller is used for testing with dependency injection
 func CreateSubscriberWithPoller(ms MessageStore, subscriberID string, handlers []MessageHandler, poller Poller, opts ...SubscriberOption) (Subscriber, error) {
 	return createSubscriberWithPoller(
 		ms,
@@ -61,6 +61,7 @@ func CreateSubscriberWithPoller(ms MessageStore, subscriberID string, handlers [
 	)
 }
 
+// createSubscriberWithPoller creates a new subscriber with a provided Poller
 func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers []MessageHandler, poller Poller, opts ...SubscriberOption) (*subscriber, error) {
 
 	subscriber := &subscriber{

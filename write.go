@@ -11,7 +11,7 @@ type writer struct {
 	atPosition *int64
 }
 
-//WriteOption provide optional arguments to the Write function
+// WriteOption provides optional arguments to the Write function
 type WriteOption func(w *writer)
 
 func checkWriteOptions(opts ...WriteOption) *writer {
@@ -22,7 +22,7 @@ func checkWriteOptions(opts ...WriteOption) *writer {
 	return w
 }
 
-//Write Writes a Message to the message store.
+// Write writes a Message to the message store.
 func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOption) error {
 	envelope, err := Message.ToEnvelope(message)
 	if err != nil {
@@ -45,7 +45,7 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 	return nil
 }
 
-//AtPosition allows for writing messages using an expected position
+// AtPosition allows for writing messages using an expected position
 func AtPosition(position int64) WriteOption {
 	return func(w *writer) {
 		w.atPosition = &position

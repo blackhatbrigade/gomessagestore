@@ -7,7 +7,7 @@ import (
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Poller > mocks/poller.go"
 
 type Poller interface {
-	Poll(context.Context) error
+	Poll(context.Context) error // should handle a cycle of polling the message store
 }
 
 type poller struct {
@@ -18,9 +18,9 @@ type poller struct {
 	numberOfMsgsHandled int
 }
 
+// CreatePoller returns a new instnace of a Poller
 func CreatePoller(ms MessageStore, worker SubscriptionWorker, config *SubscriberConfig) (*poller, error) {
 	return &poller{
-		ms:       ms,
 		config:   config,
 		worker:   worker,
 		position: -1,
@@ -30,6 +30,7 @@ func CreatePoller(ms MessageStore, worker SubscriptionWorker, config *Subscriber
 //Poll Handles a single tick of the handlers firing
 func (pol *poller) Poll(ctx context.Context) error {
 	worker := pol.worker
+	// use the position of the worker if the poller position is still its default value or an invalid <0 value
 	if pol.position < 0 {
 		pos, err := worker.GetPosition(ctx)
 		if err != nil {
@@ -43,9 +44,9 @@ func (pol *poller) Poll(ctx context.Context) error {
 		return err
 	}
 
-	numberOfMsgsHandled, posOfLastHandled, _ := worker.ProcessMessages(ctx, msgs) // ProcessMessages logs errors as it goes, so I'm not looking at the error (nor does ProcessMessage ever return any error)
+	numberOfMsgsHandled, posOfLastHandled, _ := worker.ProcessMessages(ctx, msgs) // ProcessMessages logs errors but does not return them as the process should continue despite an error occuring
 	if numberOfMsgsHandled > 0 {
-		pol.position = posOfLastHandled + 1
+		pol.position = posOfLastHandled + 1 // update poller with the new position
 	}
 	pol.numberOfMsgsHandled += numberOfMsgsHandled
 

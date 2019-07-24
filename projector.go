@@ -9,7 +9,7 @@ import (
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Projector > mocks/projector.go"
 
-//CreateProjector creates a projector for use with MessageReducers to get projections
+//CreateProjector creates a new Projector based on the provided ProjectorOption
 func (ms *msgStore) CreateProjector(opts ...ProjectorOption) (Projector, error) {
 	projector := &projector{
 		ms: ms,
@@ -35,21 +35,22 @@ func (ms *msgStore) CreateProjector(opts ...ProjectorOption) (Projector, error) 
 	return projector, nil
 }
 
-//ReducerOption Variadic parameter support for reducers.
+// ReducerOption Variadic parameter support for reducers.
 type ProjectorOption func(proj *projector)
 
-//Projector A base level interface that defines the projection functionality of gomessagestore.
+// Projector A base level interface that defines the projection functionality of gomessagestore.
 type Projector interface {
 	Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error)
 }
 
-//projector The base supported projector struct.
+// projector The base projector struct.
 type projector struct {
 	ms           MessageStore
 	reducers     []MessageReducer
 	defaultState interface{}
 }
 
+// Run calls getMessages on the projector and runs each messagae through a matching reducer to derive the state, and returns the state after all messages are processed
 func (proj *projector) Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error) {
 	msgs, err := proj.getMessages(ctx, category, entityID)
 
@@ -83,6 +84,7 @@ func DefaultState(defaultState interface{}) ProjectorOption {
 	}
 }
 
+// getMessages retrieves messages from the message store
 func (proj *projector) getMessages(ctx context.Context, category string, entityID uuid.UUID) ([]Message, error) {
 	batchsize := 1000
 	msgs, err := proj.ms.Get(ctx,

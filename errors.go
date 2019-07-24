@@ -2,7 +2,52 @@ package gomessagestore
 
 import "errors"
 
-//Errors
+// The following are the different error messages that can be potentially returned.
+//
+// The following table shows which files the specific errors are used for easier troubleshooting:
+//
+//	Error											| 	File Path
+//	------------------------------------------------------------------------------------------------------
+//	ErrInvalidOptionCombination                     |	./get.go
+//	ErrSubscriberCannotUseBothStreamAndCategory     |	./subscriber_options.go
+//	ErrInvalidPollTime                              |	./subscriber_options.go
+//	ErrInvalidPollErrorDelay                        |	./subscriber_options.go
+//	ErrInvalidBatchSize                             |	./subscriber_options.go
+//	ErrInvalidMsgInterval                           |	./subscriber_options.go
+//	ErrSubscriberNeedsCategoryOrStream              |	./subscriber_options.go
+//	ErrSubscriberIDCannotBeEmpty                    |	./subscriber.go | ./worker_getpostion.go
+//	ErrSubscriberIDCannotContainPlus                |	no uses
+//	ErrSubscriberIDCannotContainHyphen              |	no uses
+//	ErrPositionVersionMissing                       |	./worker_getposition.go
+//	ErrSubscriberNeedsAtLeastOneMessageHandler      |	./subscriber.go
+//	ErrSubscriberCannotSubscribeToMultipleStreams   |	./subscriber_options.go
+//	ErrSubscriberCannotSubscribeToMultipleCategories|	./subscriber_options.go
+//	ErrProjectorNeedsAtLeastOneReducer              |	./projector.go
+//	ErrSubscriberMessageHandlerEqualToNil           |	./subscriber.go
+//	ErrSubscriberMessageHandlersEqualToNil          |	./subscriber.go
+//	ErrSubscriberNilOption                          |	./subscriber_options.go
+//	ErrDefaultStateNotSet                           |	./projector.go
+//	ErrDefaultStateCannotBePointer                  |	./projector.go
+//	ErrGetMessagesCannotUseBothStreamAndCategory    |	./get.go
+//	ErrMessageNoID                                  |	./models.go | ./worker_getposition.go
+//	ErrGetMessagesRequiresEitherStreamOrCategory    |	./get.go
+//	ErrGetLastRequiresStream                        |	./get.go
+//	ErrIncorrectNumberOfPositionsFound              |	no uses
+//	ErrInvalidHandler                               |	no uses
+//	ErrIncorrectMessageInPositionStream             |	./worker_getposition
+//	ErrHandlerError                                 |	no uses
+//	ErrMissingMessageType                           |	./models.go | ./worker_getposition.go
+//	ErrMissingMessageCategory                       |	./models.go
+//	ErrInvalidMessageCategory                       |	./get.go | ./models.go
+//	ErrInvalidCommandStream                         |	./get.go
+//	ErrInvalidEventStream                           |	./get.go
+//	ErrInvalidSubscriberID                          |	./subscriber.go
+//	ErrInvalidPositionStream                        |	./get.go | ./worker_getposition.go
+//	ErrMissingMessageCategoryID                     |	./models.go
+//	ErrMissingMessageData                           |	./models.go
+//	ErrUnserializableData                           |	./models.go | ./worker_getposition.go
+//	ErrDataIsNilPointer                             |	no uses
+//	ErrMissingGetOptions                            |	./get.go
 var (
 	ErrInvalidOptionCombination                      = errors.New("Cannot have the current combination of options for Get()")
 	ErrSubscriberCannotUseBothStreamAndCategory      = errors.New("Subscriber function cannot use both Stream and Category")

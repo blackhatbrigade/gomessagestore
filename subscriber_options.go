@@ -14,14 +14,14 @@ type SubscriberConfig struct {
 	stream          bool
 	category        string
 	commandCategory string
-	pollTime        time.Duration
-	pollErrorDelay  time.Duration
-	updateInterval  int
-	batchSize       int
-	position        int64
+	pollTime        time.Duration // the time interval between polling operations
+	pollErrorDelay  time.Duration // the time interval to wait after an error occurs during a poll operation
+	updateInterval  int           //
+	batchSize       int           // the maximum amount of messages to be retrieved at a time
+	position        int64         // the position from which to retrieve messages
 }
 
-//Subscribe to a specific entity stream
+//SubscribeToEntityStream subscribes to a specific entity stream and ensures that multiple streams are not subscribed to
 func SubscribeToEntityStream(category string, entityID uuid.UUID) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		if sub.stream {
@@ -36,7 +36,7 @@ func SubscribeToEntityStream(category string, entityID uuid.UUID) SubscriberOpti
 	}
 }
 
-//Subscribe to a specific command stream
+//SubscribeToCommandStream subscribes to a specific command stream and ensures that multiple streams are not subscribed to
 func SubscribeToCommandStream(category string) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		if sub.stream {
@@ -53,7 +53,7 @@ func SubscribeToCommandStream(category string) SubscriberOption {
 	}
 }
 
-//Subscribe to a category of streams
+//SubscribeToCategory subscribes to a category of streams and ensures that it is not also subscribed to a stream
 func SubscribeToCategory(category string) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		if sub.stream {
@@ -67,7 +67,7 @@ func SubscribeToCategory(category string) SubscriberOption {
 	}
 }
 
-//PollTime sets the interval between handling operations
+// PollTime sets the interval between handling operations
 func PollTime(pollTime time.Duration) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		sub.pollTime = pollTime
@@ -75,7 +75,7 @@ func PollTime(pollTime time.Duration) SubscriberOption {
 	}
 }
 
-//PollErrorDelay sets the interval between handling operations when Poll() errors
+// PollErrorDelay sets the interval between handling operations when Poll() errors
 func PollErrorDelay(pollErrorDelay time.Duration) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		sub.pollErrorDelay = pollErrorDelay
@@ -83,8 +83,7 @@ func PollErrorDelay(pollErrorDelay time.Duration) SubscriberOption {
 	}
 }
 
-//UpdatePostionEvery updates position of subscriber based on a msgInterval (cannot be < 2)
-//An interval of 1 would create an event on every message, and possibly be picked up by itself, creating another event, and so on
+// UpdatePositionEvery determines how often a positionMessage is written to the message store to save the position of the worker; must be >= 2
 func UpdatePositionEvery(msgInterval int) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		sub.updateInterval = msgInterval
@@ -92,7 +91,7 @@ func UpdatePositionEvery(msgInterval int) SubscriberOption {
 	}
 }
 
-//SubscribeBatchSize sets the amount of messages to retrieve in a single handling operation
+// SubscribeBatchSize sets the amount of messages to retrieve in a single handling operation
 func SubscribeBatchSize(batchSize int) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		if batchSize < 1 {

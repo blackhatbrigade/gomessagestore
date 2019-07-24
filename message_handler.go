@@ -5,6 +5,6 @@ import "context"
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore MessageHandler > mocks/message_handler.go"
 
 type MessageHandler interface {
-	Type() string
-	Process(ctx context.Context, msg Message) error
+	Type() string                                   // returns the message type
+	Process(ctx context.Context, msg Message) error // called for each message being handled
 }
