@@ -6,6 +6,7 @@ import (
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Poller > mocks/poller.go"
 
+// Poller interface requires a Poll function
 type Poller interface {
 	Poll(context.Context) error // should handle a cycle of polling the message store
 }
@@ -18,7 +19,7 @@ type poller struct {
 	numberOfMsgsHandled int
 }
 
-// CreatePoller returns a new instnace of a Poller
+// CreatePoller returns a new instance of a Poller
 func CreatePoller(ms MessageStore, worker SubscriptionWorker, config *SubscriberConfig) (*poller, error) {
 	return &poller{
 		config:   config,

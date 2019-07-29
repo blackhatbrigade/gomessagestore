@@ -10,6 +10,7 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 )
 
+// NilUUID is a helper for tests
 var NilUUID = uuid.Nil
 
 // NewID creates a new UUID.
@@ -17,6 +18,7 @@ func NewID() uuid.UUID {
 	return uuid.NewRandom()
 }
 
+// Command implements the Message interface; returned by get function
 type Command struct {
 	ID             uuid.UUID // ID for the command
 	StreamCategory string    // Name of the stream category
@@ -28,22 +30,22 @@ type Command struct {
 	Time           time.Time
 }
 
-//Type returns the type of the command
+// Type returns the type of the command
 func (cmd *Command) Type() string {
 	return cmd.MessageType
 }
 
-//Version returns the version of the command
+// Version returns the version of the command
 func (cmd *Command) Version() int64 {
 	return cmd.MessageVersion
 }
 
-//Position returns the global position of the command
+// Position returns the global position of the command
 func (cmd *Command) Position() int64 {
 	return cmd.GlobalPosition
 }
 
-//ToEnvelope converts the command to a Message Envelope that is returned
+// ToEnvelope converts the command to a Message Envelope that is returned
 func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	// check to ensure all needed fields on the command are valid
 	if cmd.MessageType == "" {
@@ -87,6 +89,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	return msgEnv, nil
 }
 
+// Event implements the Message interface; returned by get function
 type Event struct {
 	ID             uuid.UUID // ID of the event
 	EntityID       uuid.UUID // ID of the entity the event is associated with
@@ -99,22 +102,22 @@ type Event struct {
 	Time           time.Time
 }
 
-//Type returns the type of the event
+// Type returns the type of the event
 func (event *Event) Type() string {
 	return event.MessageType
 }
 
-//Version returns the version of the event
+// Version returns the version of the event
 func (event *Event) Version() int64 {
 	return event.MessageVersion
 }
 
-//Position returns the global position of the event
+// Position returns the global position of the event
 func (event *Event) Position() int64 {
 	return event.GlobalPosition
 }
 
-//ToEnvelope converts the event to a MessageEnvelope which is then returned
+// ToEnvelope converts the event to a MessageEnvelope which is then returned
 func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	// check to ensure that all required fields of the event are valid
 	if event.MessageType == "" {

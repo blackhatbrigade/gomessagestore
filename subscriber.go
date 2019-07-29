@@ -93,11 +93,13 @@ func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers [
 		return nil, ErrInvalidSubscriberID
 	}
 
-	if config, err := GetSubscriberConfig(opts...); err != nil {
+	config, err := GetSubscriberConfig(opts...)
+
+	if err != nil {
 		return nil, err
-	} else {
-		subscriber.config = config
 	}
+
+	subscriber.config = config
 
 	return subscriber, nil
 }

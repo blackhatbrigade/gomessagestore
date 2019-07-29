@@ -32,11 +32,10 @@ func Pack(source interface{}) (map[string]interface{}, error) {
 	return dest, err
 }
 
-//MessageConverter allows the MsgEnvelopesToMessages to convert to structs that aren't defined in this library
-// if the message isn't the correct type, returning nil or an error will cause the default converters to run
+// MessageConverter is a function that takes in a MessageEnvelope and returns a Message; can be used to create custom messages
 type MessageConverter func(*repository.MessageEnvelope) (Message, error)
 
-//MsgEnvelopesToMessages converts envelopes to any number of different structs that impliment the Message interface
+// MsgEnvelopesToMessages converts envelopes to any number of different structs that impliment the Message interface
 func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converters ...MessageConverter) []Message {
 	myConverters := append(converters, defaultConverters()...)
 
@@ -83,9 +82,8 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 		}
 
 		return command, nil
-	} else {
-		return nil, errors.New("Failed converting Envelope to Command, moving on to next converter")
 	}
+	return nil, errors.New("Failed converting Envelope to Command, moving on to next converter")
 }
 
 // convertEnvelopeToEvent strips out data from a MessageEnvelope to form a Message of type event

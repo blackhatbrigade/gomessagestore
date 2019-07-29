@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// getOpts allows additional specification of what messages are retrieved.
 type getOpts struct {
 	stream        *string            // when set, only messages from the specified stream are retrieved
 	category      *string            // when set, only messages from the specified category are retrieved
@@ -23,6 +22,14 @@ type getOpts struct {
 }
 
 // GetOption provide optional arguments to the Get function
+// Invalid combinations:
+// EventStream() and/or CommandStream() are called more than once
+// EventStream()/CommandStream() and Category() are both called
+// EventStream()/CommandStream() and Category() are both not called
+// Last() is called and EventStream()/CommandStream is not called
+// Last() and SincePosition()/SinceVersion() are both called
+// SincePosition() and eventStream()/CommandStream() are both called
+// SinceVersion() and eventStream()/CommandStream() are both called
 type GetOption func(g *getOpts) error
 
 // checkGetOptions returns the supplied options
@@ -67,13 +74,6 @@ func (ms *msgStore) Get(ctx context.Context, opts ...GetOption) ([]Message, erro
 
 // Ensure that only proper combinations of getOpts are provided.
 // See getOpts for more info regarding these checks
-// Invalid combinations:
-// stream and category both defined
-// stream and category both nil
-// last set to true and stream is nil
-// last set to true and since is not nil
-// sincePosition defined and stream is not nil
-// sinceVersion defined and category is not nil
 func validateGetParams(getOptions *getOpts) error {
 	if getOptions.stream != nil && getOptions.category != nil {
 		return ErrGetMessagesCannotUseBothStreamAndCategory
@@ -142,7 +142,7 @@ func CommandStream(category string) GetOption {
 	}
 }
 
-//EventStream allows for getting events in a specific stream
+// EventStream allows for getting events in a specific stream
 func EventStream(category string, entityID uuid.UUID) GetOption {
 	return func(g *getOpts) error {
 		if g.stream != nil {
@@ -157,7 +157,7 @@ func EventStream(category string, entityID uuid.UUID) GetOption {
 	}
 }
 
-//Category allows for getting messages by category
+// Category allows for getting messages by category
 func Category(category string) GetOption {
 	return func(g *getOpts) error {
 		if g.category != nil {
@@ -171,7 +171,7 @@ func Category(category string) GetOption {
 	}
 }
 
-//Position allows for getting messages by position subscriber
+// PositionStream allows for getting messages by position subscriber
 func PositionStream(subscriberID string) GetOption {
 	return func(g *getOpts) error {
 		if g.stream != nil {
@@ -186,7 +186,7 @@ func PositionStream(subscriberID string) GetOption {
 	}
 }
 
-//Last allows for getting only the most recent message (still returns an array)
+// Last allows for getting only the most recent message (still returns an array)
 func Last() GetOption {
 	return func(g *getOpts) error {
 		if g.last {
@@ -197,7 +197,7 @@ func Last() GetOption {
 	}
 }
 
-//SincePosition allows for getting only more recent messages
+// SincePosition allows for getting only more recent messages
 func SincePosition(position int64) GetOption {
 	return func(g *getOpts) error {
 		if g.since != nil {

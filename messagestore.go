@@ -42,7 +42,7 @@ func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageSt
 	return msgstr
 }
 
-// NewMockMessageStoreWithMessages
+// NewMockMessageStoreWithMessages is used for testing purposes
 func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 	msgEnvs := make([]repository.MessageEnvelope, len(msgs))
 

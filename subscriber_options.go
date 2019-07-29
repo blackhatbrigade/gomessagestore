@@ -9,6 +9,7 @@ import (
 //SubscriberOption allows for various options when creating a subscriber
 type SubscriberOption func(config *SubscriberConfig) error
 
+// SubscriberConfig contains configuration information for a subscriber
 type SubscriberConfig struct {
 	entityID        uuid.UUID
 	stream          bool

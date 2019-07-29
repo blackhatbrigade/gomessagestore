@@ -35,7 +35,7 @@ func (ms *msgStore) CreateProjector(opts ...ProjectorOption) (Projector, error) 
 	return projector, nil
 }
 
-// ReducerOption Variadic parameter support for reducers.
+// ProjectorOption is used for creating projectors with reducers
 type ProjectorOption func(proj *projector)
 
 // Projector A base level interface that defines the projection functionality of gomessagestore.
