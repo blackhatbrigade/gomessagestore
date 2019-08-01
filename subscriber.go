@@ -51,6 +51,7 @@ func (ms *msgStore) CreateSubscriber(subscriberID string, handlers []MessageHand
 }
 
 // CreateSubscriberWithPoller is used for testing with dependency injection
+// FOR TESTING ONLY
 func CreateSubscriberWithPoller(ms MessageStore, subscriberID string, handlers []MessageHandler, poller Poller, opts ...SubscriberOption) (Subscriber, error) {
 	return createSubscriberWithPoller(
 		ms,

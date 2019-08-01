@@ -34,6 +34,7 @@ func NewMessageStore(injectedDB *sql.DB) MessageStore {
 }
 
 // NewMessageStoreFromRepository creates a new MessageStore instance using an injected repository.
+// FOR TESTING ONLY
 func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
