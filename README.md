@@ -1,5 +1,6 @@
 # Go Message Store Connector
-eventide interface for go
+For GoDoc documentation, click [here](https://godoc.org/github.com/blackhatbrigade/gomessagestore)
+postgres eventide interface for go
 
 ## Writing to a message store
 
@@ -58,7 +59,7 @@ Use the CreateSubscriber() function on a messageStore instance.
 
 Some things to note:
 
-subscriberOptions are set by injecting any of the following functions into the params of the CreateSubscriber function:
+[subscriberOptions](https://godoc.org/github.com/blackhatbrigade/gomessagestore#SubscriberOption) are set by injecting any of the following functions into the params of the CreateSubscriber function:
     SubscribeToEntityStream
     SubscribeToCommandStream
     SubscribeToCategory
@@ -118,7 +119,7 @@ Use the CreateProjector() function on a messageStore instance.
 
 Some things to note:
 
-ProjectorOptions are set by injecting the following functions into the params of the CreateProjector function:
+[ProjectorOptions](https://godoc.org/github.com/blackhatbrigade/gomessagestore#ProjectorOption) are set by injecting the following functions into the params of the CreateProjector function:
     WithReducer
     DefaultState
 
