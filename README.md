@@ -9,20 +9,6 @@ A writer is a function on a message store instance that can write messages as co
 
 ### Creating a writer
 
-#### Instantiate a MessageStore instance:
-```
-// NewMessageStore creates a new MessageStore instance using an injected DB.
-func NewMessageStore(injectedDB *sql.DB) MessageStore {
-	pgRepo := repository.NewPostgresRepository(injectedDB)
-
-	msgstr := &msgStore{
-		repo: pgRepo,
-	}
-
-	return msgstr
-}
-``` 
-
 #### Example
 
 ```
@@ -32,10 +18,6 @@ import (
     "context"
 )
 
-func NewEvent() *gms.Event {
-    return &gms.Event{}
-}
-
 func Process(ctx context.Context, ms gms.MessageStore, msg gms.Message) error {
     data := {}
 
@@ -43,6 +25,7 @@ func Process(ctx context.Context, ms gms.MessageStore, msg gms.Message) error {
 
     newEvent := NewEvent()
 
+    // attempt to write the message to the message store. If an error occurs, return the error.
     err = ms.Write(ctx, newEvent, gms.AtPosition(-1))
 
     if err != nil {
@@ -51,6 +34,14 @@ func Process(ctx context.Context, ms gms.MessageStore, msg gms.Message) error {
 
     return nil
 }
+
+messageStore = gms.NewMessageStore(postgresDBInstance)
+
+ctx, cancel := context.WithCancel(context.Background())
+
+msg = someMessage
+
+err := Process(ctx, messageStore, msg)
 ```
 
 ### Tips and tricks
@@ -155,10 +146,10 @@ projector, err := messageStore.CreateProjector(
 
 ### Tips and tricks
 
-projectors are typically passed into handlers. Here is an example of a generic handler function that ingests a projector as one of its parameters:
+projectors are typically passed into handlers. Here is a good example of an aggregator handler that ingests a projector as one of its parameters:
 
 ```
-func genericHandler(ctx context.Context, repo Repository, projector gms.Projector, msg gms.Message, expectedType string) error {
+func genericHandler(ctx context.Context, repo ReadModelDatabase, projector gms.Projector, msg gms.Message, expectedType string) error {
 	event, ok := msg.(*gms.Event)
 	if !ok || event.Type() != expectedType {
 		return ErrInvalidEventTypeInHandler
@@ -169,24 +160,29 @@ func genericHandler(ctx context.Context, repo Repository, projector gms.Projecto
 		return err
 	}
 
-	property, ok := projection.(PropertyDetail)
+	entity, ok := projection.(EntityDetail)
 	if !ok {
 		return ErrInvalidTypeFromProjection
 	}
 
 	// the projector already set everything up for us, so just store it
-	if err := repo.Store(ctx, &property); err != nil {
-		var eventMetadata messageMetadata
-		err := gms.Unpack(event.Metadata, &eventMetadata)
-		if err != nil {
-			Log.WithError(err).Error("While unpacking event metadata an error occurred")
-		}
-
-		Log.WithMeta(eventMetadata).WithError(err).Errorf("Couldn't store projection for %s", expectedType)
-
-		return err
-	}
+	error := ReadModelDatabase.store(entity)
+    if error != nil {
+        return databaseWriteError
+    }
 
 	return nil
 }
+```
+
+## UUID package
+
+GO MESSAGE STORE includes a built in package for generating UUID's that you can use for message IDs.
+
+### Example
+```
+import ( uuid "github.com/blackhatbrigade/gomessagestore/uuid" )
+
+// returns a random V4 UUID
+uuid := uuid.NewRandom()
 ```
