@@ -1,5 +1,5 @@
 # Go Message Store Connector
-For GoDoc documentation, click [here](https://godoc.org/github.com/blackhatbrigade/gomessagestore)
+For GoDoc documentation, click [here](https://godoc.org/github.com/blackhatbrigade/gomessagestore)\n \n
 postgres eventide interface for go
 
 ## Writing to a message store
