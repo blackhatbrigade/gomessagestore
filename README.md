@@ -176,6 +176,21 @@ func genericHandler(ctx context.Context, repo ReadModelDatabase, projector gms.P
 }
 ```
 
+## Reducers
+
+A reducer should take in a message and the previous state, and update the previous state based on the information contained in the message to derive the current state.
+
+### Example
+
+```
+import ( gms  "github.com/blackhatbrigade/gomessagestore" )
+func AddMessageReduce(msg gms.Message, previousState interface{}) interface{} {
+    tempState := previousState
+    tempState.value += previousState.value + msg.data.addValue
+    return tempState
+}
+```
+
 ## UUID package
 
 GO MESSAGE STORE includes a built in package for generating UUID's that you can use for message IDs.
