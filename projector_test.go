@@ -43,6 +43,38 @@ func TestProjectorAcceptsAReducer(t *testing.T) {
 	}
 }
 
+func TestProjectorAcceptsAReducerFunc(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+
+	mockred := func(msg Message, previousState interface{}) interface{} {
+		switch state := previousState.(type) {
+		case mockDataStructure:
+			state.MockReducer1Called = true
+			state.MockReducer1CallCount++
+			return state
+		}
+		return nil
+	}
+
+	myprojector, err := myMessageStore.CreateProjector(
+		DefaultState("default state"),
+		WithReducerFunc("some type", mockred),
+	)
+
+	if myprojector == nil {
+		t.Errorf("Failed to create projector: %s", myprojector)
+	}
+
+	if err != nil {
+		t.Errorf("Error creating projector: %s", err)
+	}
+}
+
 func TestProjectorAcceptsADefaultState(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -77,12 +109,22 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo)
 
+	mockReducerFunc := func(msg Message, previousState interface{}) interface{} {
+		switch state := previousState.(type) {
+		case mockDataStructure:
+			state.MockReducer2Called = true
+			state.MockReducer2CallCount++
+			return state
+		}
+		return nil
+	}
+
 	defstate := mockDataStructure{}
 
 	myprojector, err := myMessageStore.CreateProjector(
 		DefaultState(defstate),
 		WithReducer(new(mockReducer1)),
-		WithReducer(new(mockReducer2)),
+		WithReducerFunc("Event MessageType 2", mockReducerFunc),
 	)
 
 	if err != nil {

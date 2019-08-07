@@ -76,6 +76,14 @@ func WithReducer(reducer MessageReducer) ProjectorOption {
 	}
 }
 
+//WithReducerFunc registers a message type and a ruducer function with the new projector
+func WithReducerFunc(msgType string, reducerFunc MessageReducerFunc) ProjectorOption {
+	return func(proj *projector) {
+		reducer := &genericReducer{msgType, reducerFunc}
+		proj.reducers = append(proj.reducers, reducer)
+	}
+}
+
 //DefaultState registers a default state for use with a projector
 func DefaultState(defaultState interface{}) ProjectorOption {
 	return func(proj *projector) {
