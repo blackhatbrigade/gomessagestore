@@ -13,3 +13,19 @@ type MessageReducerConfig struct {
 	Reducer MessageReducer
 	Type    string
 }
+
+//MessageReducerFunc is a functional way to create a reducer (for use with WithReducerFunc)
+type MessageReducerFunc func(msg Message, previousState interface{}) interface{}
+
+type genericReducer struct {
+	msgType string
+	msgFunc MessageReducerFunc
+}
+
+func (g *genericReducer) Type() string {
+	return g.msgType
+}
+
+func (g *genericReducer) Reduce(msg Message, previousState interface{}) interface{} {
+	return g.msgFunc(msg, previousState)
+}
