@@ -1,6 +1,8 @@
 # Go Message Store Connector
-For GoDoc documentation, click [here](https://godoc.org/github.com/blackhatbrigade/gomessagestore)\n \n
-postgres eventide interface for go
+Postgres Eventide interface for go. Designed for use directly with the [Postgres DB](https://github.com/eventide-project/message-store-postgres-database/tree/master/database), not through Eventide.
+
+For GoDoc documentation, click [here](https://godoc.org/github.com/blackhatbrigade/gomessagestore)
+
 
 ## Writing to a message store
 
