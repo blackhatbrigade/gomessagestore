@@ -41,6 +41,7 @@ type ProjectorOption func(proj *projector)
 // Projector A base level interface that defines the projection functionality of gomessagestore.
 type Projector interface {
 	Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error)
+	Step(msg Message, previousState interface{}) (interface{}, bool)
 }
 
 // projector The base projector struct.
@@ -60,14 +61,22 @@ func (proj *projector) Run(ctx context.Context, category string, entityID uuid.U
 
 	state := proj.defaultState
 	for _, message := range msgs {
-		for _, reducer := range proj.reducers {
-			if reducer.Type() == message.Type() {
-				state = reducer.Reduce(message, state)
-			}
+		if newState, ok := proj.Step(message, state); ok {
+			state = newState
 		}
 	}
 
 	return state, nil
+}
+
+// Step is ran for each message, iterating the state for the reducer mapped to that message
+func (proj *projector) Step(msg Message, previousState interface{}) (interface{}, bool) {
+	for _, reducer := range proj.reducers {
+		if reducer.Type() == msg.Type() {
+			return reducer.Reduce(msg, previousState), true
+		}
+	}
+	return nil, false
 }
 
 //WithReducer registers a ruducer with the new projector
