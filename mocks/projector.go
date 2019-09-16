@@ -6,6 +6,7 @@ package mock_gomessagestore
 
 import (
 	context "context"
+	gomessagestore "github.com/blackhatbrigade/gomessagestore"
 	uuid "github.com/blackhatbrigade/gomessagestore/uuid"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -47,4 +48,19 @@ func (m *MockProjector) Run(arg0 context.Context, arg1 string, arg2 uuid.UUID) (
 func (mr *MockProjectorMockRecorder) Run(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockProjector)(nil).Run), arg0, arg1, arg2)
+}
+
+// Step mocks base method
+func (m *MockProjector) Step(arg0 gomessagestore.Message, arg1 interface{}) (interface{}, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Step", arg0, arg1)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// Step indicates an expected call of Step
+func (mr *MockProjectorMockRecorder) Step(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Step", reflect.TypeOf((*MockProjector)(nil).Step), arg0, arg1)
 }
