@@ -89,4 +89,5 @@ var (
 	ErrUnserializableData                            = errors.New("Message data could not be encoded as json")
 	ErrDataIsNilPointer                              = errors.New("Message data is a nil pointer")
 	ErrMissingGetOptions                             = errors.New("Options are required for the Get command")
+	ErrExpectedVersionFailed                         = errors.New("Provided version does not match the expected version")
 )

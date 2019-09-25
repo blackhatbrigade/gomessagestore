@@ -2,6 +2,7 @@ package gomessagestore
 
 import (
 	"context"
+	"regexp"
 
 	//	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
@@ -31,9 +32,13 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 		return err
 	}
 
+	errMsg := `ERROR: Wrong expected version: .* \(SQLSTATE P0001\)`
 	writeOptions := checkWriteOptions(opts...)
 	if writeOptions.atPosition != nil {
 		err = ms.repo.WriteMessageWithExpectedPosition(ctx, envelope, *writeOptions.atPosition)
+		if matched, _ := regexp.Match(errMsg, []byte(err.Error())); matched {
+			err = ErrExpectedVersionFailed
+		}
 	} else {
 		err = ms.repo.WriteMessage(ctx, envelope)
 	}
