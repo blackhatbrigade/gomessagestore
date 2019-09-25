@@ -36,8 +36,10 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 	writeOptions := checkWriteOptions(opts...)
 	if writeOptions.atPosition != nil {
 		err = ms.repo.WriteMessageWithExpectedPosition(ctx, envelope, *writeOptions.atPosition)
-		if matched, _ := regexp.Match(errMsg, []byte(err.Error())); matched {
-			err = ErrExpectedVersionFailed
+		if err != nil {
+			if matched, _ := regexp.Match(errMsg, []byte(err.Error())); matched {
+				err = ErrExpectedVersionFailed
+			}
 		}
 	} else {
 		err = ms.repo.WriteMessage(ctx, envelope)
