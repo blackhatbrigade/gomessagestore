@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+// swagger:strfmt uuid4
+// UUID can hold any valid UUID, regardless of version
 type UUID [16]byte
 
 var Nil UUID
