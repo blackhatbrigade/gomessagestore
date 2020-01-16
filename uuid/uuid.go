@@ -12,12 +12,15 @@ import (
 
 // swagger:strfmt uuid4
 // UUID can hold any valid UUID, regardless of version
-type UUID [16]byte
+type UUID struct {
+	internal [16]byte
+}
 
+// A zeroed out UUID
 var Nil UUID
 
 func (uuid UUID) String() string {
-	b := [16]byte(uuid)
+	b := [16]byte(uuid.internal)
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
 		b[:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
@@ -40,7 +43,7 @@ func NewRandom() UUID {
 	randomBits(uuid[:])
 	uuid[6] = (uuid[6] & 0x0f) | 0x40 // Version 4
 	uuid[8] = (uuid[8] & 0x3f) | 0x80 // Variant is 10
-	return uuid
+	return UUID{uuid}
 }
 
 func Parse(s string) (UUID, error) {
@@ -67,7 +70,7 @@ func Parse(s string) (UUID, error) {
 		if v, ok := xtob(s[x], s[x+1]); !ok {
 			return Nil, errors.New("Error occurred in hex to byte conversion")
 		} else {
-			uuid[i] = v
+			uuid.internal[i] = v
 		}
 	}
 	return uuid, nil
