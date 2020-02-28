@@ -2,6 +2,7 @@ package gomessagestore
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	//	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -57,4 +58,30 @@ func AtPosition(position int64) WriteOption {
 	return func(w *writer) {
 		w.atPosition = &position
 	}
+}
+
+// AtPositionMatcher is a gomock.Matcher interface that matches an AtPosition function
+type AtPositionMatcher struct {
+	Position int64
+}
+
+// String gives us a representation of our AtPositionMatcher
+func (a AtPositionMatcher) String() string {
+	return fmt.Sprintf("%d", a.Position)
+}
+
+// Matches checks agains a AtPosition/gms.WriteOption function
+func (a AtPositionMatcher) Matches(unknown interface{}) bool {
+	if writeOption, ok := unknown.(WriteOption); ok {
+		w := &writer{} // nil atPosition to start
+		writeOption(w)
+
+		if w.atPosition == nil {
+			return false
+		}
+
+		return *w.atPosition == a.Position
+	}
+
+	return false
 }

@@ -49,3 +49,12 @@ func TestWriteWithAtPosition(t *testing.T) {
 	msgStore := NewMessageStoreFromRepository(mockRepo)
 	msgStore.Write(ctx, msg, AtPosition(42))
 }
+
+func TestAtPositionMatcher(t *testing.T) {
+	atPosition := AtPosition(42)
+	matcher := AtPositionMatcher{42}
+
+	if !matcher.Matches(atPosition) {
+		t.Errorf("Incorrect AtPosition")
+	}
+}
