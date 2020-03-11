@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 func TestNewMessageStore(t *testing.T) {
@@ -17,7 +19,14 @@ func TestNewMessageStore(t *testing.T) {
 
 	mockDB, _, _ := sqlmock.New()
 
-	msgStore := NewMessageStore(mockDB)
+	var logrusLogger = logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	msgStore := NewMessageStore(mockDB, logrusLogger)
 
 	if msgStore == nil {
 		t.Error("Failed to create message store")

@@ -6,7 +6,30 @@ import (
 
 	"github.com/blackhatbrigade/gomessagestore/inmem_repository"
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/sirupsen/logrus"
 )
+
+// legend for messages
+// * = application levev
+// *ms = messagestore connector level
+// ? = should it go anywhere?
+
+// Go message store Logger
+//{
+// * "level": 30,
+// * "time": 1583434429270,
+// * "pid": 15909,
+// * "hostname": "UTMIDNBELLMB",
+// * "name": "@berkadia/example-digitization-component",
+// *ms "connectorVersion": "1.0.0", <- go message store connection version
+// * "traceId": "165060e3-5fa3-48c5-b46f-e507d35b21bf",  <- this is currently correaltionId
+// ? "whereDisAt": "messageStoreConnector.write.writeMessageData",
+// ? "tag": "profile",
+// *ms "startTimeMs": 1583434429263,
+// *ms "endTimeMs": 1583434429270,
+// *ms "elapsedTimeMs": 7,
+// * "v": 1
+//}
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore MessageStore > mocks/messagestore.go"
 
@@ -20,14 +43,15 @@ type MessageStore interface {
 
 type msgStore struct {
 	repo repository.Repository
+	log  logrus.Logger
 }
 
 // NewMessageStore creates a new MessageStore instance using an injected DB.
-func NewMessageStore(injectedDB *sql.DB) MessageStore {
+func NewMessageStore(injectedDB *sql.DB, log logrus.Logger) MessageStore {
 	pgRepo := repository.NewPostgresRepository(injectedDB)
-
 	msgstr := &msgStore{
 		repo: pgRepo,
+		log:  log,
 	}
 
 	return msgstr
