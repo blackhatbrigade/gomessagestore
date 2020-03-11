@@ -7,6 +7,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//type localLogger struct {
+//	log logrus.Logger
+//}
+
 func (r postgresRepo) WriteMessage(ctx context.Context, msg *MessageEnvelope) error {
 	return r.writeMessageEitherWay(ctx, msg)
 }

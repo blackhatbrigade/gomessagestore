@@ -10,7 +10,7 @@ import (
 )
 
 // legend for messages
-// * = application levev
+// * = application level
 // *ms = messagestore connector level
 // ? = should it go anywhere?
 
@@ -43,15 +43,15 @@ type MessageStore interface {
 
 type msgStore struct {
 	repo repository.Repository
-	log  logrus.Logger
+	log  logrus.FieldLogger
 }
 
 // NewMessageStore creates a new MessageStore instance using an injected DB.
-func NewMessageStore(injectedDB *sql.DB, log logrus.Logger) MessageStore {
-	pgRepo := repository.NewPostgresRepository(injectedDB)
+func NewMessageStore(injectedDB *sql.DB, logger logrus.FieldLogger) MessageStore {
+	pgRepo := repository.NewPostgresRepository(injectedDB, logger)
 	msgstr := &msgStore{
 		repo: pgRepo,
-		log:  log,
+		log:  logger,
 	}
 
 	return msgstr
@@ -59,9 +59,10 @@ func NewMessageStore(injectedDB *sql.DB, log logrus.Logger) MessageStore {
 
 // NewMessageStoreFromRepository creates a new MessageStore instance using an injected repository.
 // FOR TESTING ONLY
-func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageStore {
+func NewMessageStoreFromRepository(injectedRepo repository.Repository, logger logrus.FieldLogger) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
+		log:  logger,
 	}
 
 	return msgstr
@@ -77,5 +78,5 @@ func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 	}
 
 	r := inmem_repository.NewInMemoryRepository(msgEnvs)
-	return NewMessageStoreFromRepository(r)
+	return NewMessageStoreFromRepository(r, logrus.New()) // passing in a log from the outside doesn't make sense here as we're just doing testing
 }

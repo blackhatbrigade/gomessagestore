@@ -39,7 +39,7 @@ func TestNewMessageStoreFromRepository(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo, loggerLogger)
 
 	if msgStore == nil {
 		t.Error("Failed to create message store from repository")
@@ -52,7 +52,7 @@ func TestMessageStoreCanCreateAProjector(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msgStore := NewMessageStoreFromRepository(mockRepo)
+	msgStore := NewMessageStoreFromRepository(mockRepo, loggerLogger)
 
 	msgStore.CreateProjector()
 }
