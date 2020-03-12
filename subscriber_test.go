@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	. "github.com/blackhatbrigade/gomessagestore"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
 )
@@ -207,6 +209,71 @@ func TestCreateSubscriberOptions(t *testing.T) {
 				t.Errorf("Failed to get expected error from CreateSubscriber()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}
 		})
+	}
+}
+
+func TestOnError(t *testing.T) {
+	// arrange
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	messageHandler := &msgHandler{
+		retErr: errors.New("I am the new error message"),
+		class:  "type-",
+	}
+	called := false
+	messageEnvelopes := []*repository.MessageEnvelope{
+		&repository.MessageEnvelope{
+			ID:             NewID(),
+			StreamName:     "some category-" + NewID().String(),
+			StreamCategory: "stream_category-",
+			MessageType:    "type-",
+			Version:        84,
+			GlobalPosition: 28,
+			Data:           []byte("type-"),
+			Metadata:       []byte("type-"),
+			Time:           time.Now(),
+		},
+	}
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	subscriber, err := myMessageStore.CreateSubscriber(
+		"someid",
+		[]MessageHandler{messageHandler},
+		OnError(func(error) {
+			called = true
+			cancel()
+		}),
+		SubscribeToCategory("some category"),
+	)
+
+	mockRepo.EXPECT().
+		GetLastMessageInStream(
+			gomock.Not(nil),
+			"someid+position",
+		)
+	mockRepo.EXPECT().
+		GetAllMessagesInCategorySince(
+			gomock.Not(nil),
+			"some category",
+			int64(0),
+			1000,
+		).Return(messageEnvelopes, nil)
+
+	// act
+	go subscriber.Start(ctx)
+	time.Sleep(20 * time.Second)
+
+	// assert
+	if err != nil {
+		t.Errorf("Failed to get expected error from CreateSubscriber()\nExpected: nil\n and got: %s\n", err)
+	}
+	if !called {
+		t.Errorf("Failed to call on error function")
 	}
 }
 

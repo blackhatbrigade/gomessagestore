@@ -20,6 +20,7 @@ type SubscriberConfig struct {
 	updateInterval  int           //
 	batchSize       int           // the maximum amount of messages to be retrieved at a time
 	position        int64         // the position from which to retrieve messages
+	errorFunc       func(error)
 }
 
 //SubscribeToEntityStream subscribes to a specific entity stream and ensures that multiple streams are not subscribed to
@@ -133,4 +134,12 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	}
 
 	return config, nil
+}
+
+// OnError when the subscriber reaches an error, it will call this func instead of panicking
+func OnError(errorFunc func(error)) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		sub.errorFunc = errorFunc
+		return nil
+	}
 }

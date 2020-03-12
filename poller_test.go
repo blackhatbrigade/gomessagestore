@@ -35,6 +35,10 @@ type setPositionReturns struct {
 }
 
 func TestPoller(t *testing.T) {
+	errorCalled := false
+	errorHandler := func(error) {
+		errorCalled = true
+	}
 
 	tests := []struct {
 		name               string
@@ -50,6 +54,7 @@ func TestPoller(t *testing.T) {
 		setPosReturns      []setPositionReturns
 		foundPositionError error
 		callPollNumTimes   int
+		onError            bool
 	}{{
 		name: "It ran",
 		subOpts: []SubscriberOption{
@@ -82,9 +87,24 @@ func TestPoller(t *testing.T) {
 		getMsgsParams:    []getMessagesParams{{0}},
 		getMsgsReturns:   []getMessagesReturns{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), potato}},
 	}, {
-		name: "ProcessMessages Errors are ignored",
+		name: "ProcessMessages Errors cause the onError func to be called",
 		subOpts: []SubscriberOption{
 			SubscribeToCommandStream("some cat"),
+			OnError(errorHandler),
+		},
+		handlers:           []MessageHandler{},
+		expectedErrors:     []error{potato},
+		callPollNumTimes:   1,
+		getMsgsParams:      []getMessagesParams{{0}},
+		getMsgsReturns:     []getMessagesReturns{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil}},
+		processMsgsParams:  []processMessagesParams{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100))}},
+		processMsgsReturns: []processMessagesReturns{{2, 1012, potato}},
+		onError:            true,
+	}, {
+		name: "ProcessMessages Without Errors doesn't cause the onError func to be called",
+		subOpts: []SubscriberOption{
+			SubscribeToCommandStream("some cat"),
+			OnError(errorHandler),
 		},
 		handlers:           []MessageHandler{},
 		expectedErrors:     []error{nil},
@@ -92,7 +112,7 @@ func TestPoller(t *testing.T) {
 		getMsgsParams:      []getMessagesParams{{0}},
 		getMsgsReturns:     []getMessagesReturns{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil}},
 		processMsgsParams:  []processMessagesParams{{eventsToMessageSlice(getLotsOfSampleEvents(3, 100))}},
-		processMsgsReturns: []processMessagesReturns{{2, 1012, potato}},
+		processMsgsReturns: []processMessagesReturns{{2, 1012, nil}},
 	}, {
 		name: "SetPosition Errors are returned",
 		subOpts: []SubscriberOption{
@@ -242,7 +262,7 @@ func TestPoller(t *testing.T) {
 		},
 		expectedErrors: []error{nil, nil, nil, nil, nil},
 	}, {
-		name: "SetPosition is called when the correct amount of messages are processed, even if ProcessMessages errors out",
+		name: "SetPosition is called when the correct amount of messages are processed, unless ProcessMessages errors out",
 		subOpts: []SubscriberOption{
 			SubscribeToCommandStream("some cat"),
 			UpdatePositionEvery(5),
@@ -252,7 +272,7 @@ func TestPoller(t *testing.T) {
 		getMsgsParams: []getMessagesParams{
 			{0},
 			{1013},
-			{9001},
+			{1013}, // won't advance; will check the same message over and over and over until it passes
 		},
 		getMsgsReturns: []getMessagesReturns{
 			{eventsToMessageSlice(getLotsOfSampleEvents(3, 100)), nil},
@@ -271,13 +291,11 @@ func TestPoller(t *testing.T) {
 		},
 		setPosParams: []setPositionParams{
 			{1013},
-			{1000001},
 		},
 		setPosReturns: []setPositionReturns{
 			{nil},
-			{nil},
 		},
-		expectedErrors: []error{nil, nil, nil},
+		expectedErrors: []error{nil, potato, nil},
 	}, {
 		name: "If SetPosition errors out, it doesn't reset the count of the number of messages handled",
 		subOpts: []SubscriberOption{
@@ -385,12 +403,17 @@ func TestPoller(t *testing.T) {
 
 			// call
 			for c := 0; c < test.callPollNumTimes; c++ {
+				errorCalled = false // always reset our check
 				err = myPoller.Poll(ctx)
 
 				// assertions
 				if err != test.expectedErrors[c] {
 					t.Errorf("Failed on Poll()\nWant: %s\nHave: %s\n", test.expectedErrors[c], err)
 					return
+				}
+
+				if test.onError != errorCalled {
+					t.Errorf("Poll failed to call onError \nWant: %t\nHave: %t\n", test.onError, errorCalled)
 				}
 			}
 		})
