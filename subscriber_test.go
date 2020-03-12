@@ -217,7 +217,7 @@ func TestOnError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	messageHandler := &msgHandler{
@@ -266,7 +266,7 @@ func TestOnError(t *testing.T) {
 
 	// act
 	go subscriber.Start(ctx)
-	time.Sleep(20 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	// assert
 	if err != nil {
