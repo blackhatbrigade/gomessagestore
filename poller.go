@@ -45,7 +45,13 @@ func (pol *poller) Poll(ctx context.Context) error {
 		return err
 	}
 
-	numberOfMsgsHandled, posOfLastHandled, _ := worker.ProcessMessages(ctx, msgs) // ProcessMessages logs errors but does not return them as the process should continue despite an error occuring
+	numberOfMsgsHandled, posOfLastHandled, err := worker.ProcessMessages(ctx, msgs) // ProcessMessages logs errors but does not return them as the process should continue despite an error occuring
+	if err != nil {
+		if pol.config.errorFunc != nil {
+			pol.config.errorFunc(err)
+		}
+		return err
+	}
 	if numberOfMsgsHandled > 0 {
 		pol.position = posOfLastHandled + 1 // update poller with the new position
 	}
