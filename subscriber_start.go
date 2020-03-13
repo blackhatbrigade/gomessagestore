@@ -2,7 +2,6 @@ package gomessagestore
 
 import (
 	"context"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -10,9 +9,6 @@ import (
 //Start Handles polling at specified intervals
 func (sub *subscriber) Start(ctx context.Context) error {
 
-	if sub.config.log == nil {
-		fmt.Println("Fire, Fire, Fire:")
-	}
 	log :=
 		sub.config.log.WithFields(logrus.Fields{
 			"subscriberID": sub.subscriberID,

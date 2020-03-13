@@ -42,6 +42,7 @@ type MessageStore interface {
 	Get(ctx context.Context, opts ...GetOption) ([]Message, error)                                                 // retrieves messages from the message store
 	CreateProjector(opts ...ProjectorOption) (Projector, error)                                                    // creates a new projector
 	CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error) // creates a new subscriber
+	getLogger() (logger logrus.FieldLogger)                                                                        // gets the logger
 }
 
 type msgStore struct {
@@ -82,4 +83,14 @@ func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 
 	r := inmem_repository.NewInMemoryRepository(msgEnvs)
 	return NewMessageStoreFromRepository(r, logrus.New()) // passing in a log from the outside doesn't make sense here as we're just doing testing
+}
+
+// This function gets the logger we need for other pieces
+func (ms *msgStore) getLogger() logrus.FieldLogger {
+	if ms.log == nil {
+		var logger = logrus.New()
+		return logger
+	} else {
+		return ms.log
+	}
 }

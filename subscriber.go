@@ -72,6 +72,10 @@ func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers [
 		poller:       poller,
 	}
 
+	defaultOptions := []SubscriberOption{
+		SubscribeLogger(ms.getLogger()),
+	}
+
 	//Validate the params
 	if handlers == nil {
 		return nil, ErrSubscriberMessageHandlersEqualToNil
@@ -94,7 +98,7 @@ func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers [
 		return nil, ErrInvalidSubscriberID
 	}
 
-	config, err := GetSubscriberConfig(opts...)
+	config, err := GetSubscriberConfig(append(defaultOptions, opts...)...)
 
 	if err != nil {
 		return nil, err
