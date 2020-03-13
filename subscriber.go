@@ -3,6 +3,8 @@ package gomessagestore
 import (
 	"context"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore Subscriber > mocks/subscriber.go"
@@ -105,6 +107,11 @@ func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers [
 	}
 
 	subscriber.config = config
+
+	subscriber.config.log =
+		subscriber.config.log.WithFields(logrus.Fields{
+			"subscriberID": subscriber.subscriberID,
+		})
 
 	return subscriber, nil
 }

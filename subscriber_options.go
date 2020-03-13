@@ -112,6 +112,7 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 		pollErrorDelay: 5 * time.Second,
 		updateInterval: 100,
 	}
+
 	for _, option := range opts {
 		if option == nil {
 			return nil, ErrSubscriberNilOption
