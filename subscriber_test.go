@@ -3,11 +3,13 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 func TestCreateSubscriber(t *testing.T) {
@@ -56,7 +58,14 @@ func TestCreateSubscriber(t *testing.T) {
 
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
-			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+			var logrusLogger = &logrus.Logger{
+				Out:       os.Stderr,
+				Formatter: new(logrus.JSONFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			}
+
+			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			_, err := myMessageStore.CreateSubscriber(
 				test.subscriberID,
@@ -186,6 +195,15 @@ func TestCreateSubscriberOptions(t *testing.T) {
 			SubscribeBatchSize(-1),
 			SubscribeToCategory("some category"),
 		},
+	}, {
+		name: "Logger doesn't Error",
+		opts: []SubscriberOption{
+			SubscribeLogger(logrus.WithFields(logrus.Fields{
+				"subscriberID": "someSubcriberId123",
+			}),
+			),
+			SubscribeToCategory("some category"),
+		},
 	}}
 
 	for _, test := range tests {
@@ -195,7 +213,14 @@ func TestCreateSubscriberOptions(t *testing.T) {
 
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
-			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+			var logrusLogger = &logrus.Logger{
+				Out:       os.Stderr,
+				Formatter: new(logrus.JSONFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			}
+
+			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			_, err := myMessageStore.CreateSubscriber(
 				"someid",

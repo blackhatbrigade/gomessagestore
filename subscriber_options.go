@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/blackhatbrigade/gomessagestore/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 //SubscriberOption allows for various options when creating a subscriber
@@ -20,6 +21,7 @@ type SubscriberConfig struct {
 	updateInterval  int           //
 	batchSize       int           // the maximum amount of messages to be retrieved at a time
 	position        int64         // the position from which to retrieve messages
+	log             logrus.FieldLogger
 }
 
 //SubscribeToEntityStream subscribes to a specific entity stream and ensures that multiple streams are not subscribed to
@@ -109,6 +111,7 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 		pollTime:       200 * time.Millisecond,
 		pollErrorDelay: 5 * time.Second,
 		updateInterval: 100,
+		log:            logrus.New(),
 	}
 	for _, option := range opts {
 		if option == nil {
@@ -133,4 +136,11 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	}
 
 	return config, nil
+}
+
+func SubscribeLogger(logger logrus.FieldLogger) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		sub.log = logger
+		return nil
+	}
 }

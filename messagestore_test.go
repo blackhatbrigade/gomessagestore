@@ -19,7 +19,7 @@ func TestNewMessageStore(t *testing.T) {
 
 	mockDB, _, _ := sqlmock.New()
 
-	var logrusLogger = logrus.Logger{
+	var logrusLogger = &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
@@ -39,7 +39,14 @@ func TestNewMessageStoreFromRepository(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msgStore := NewMessageStoreFromRepository(mockRepo, loggerLogger)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	if msgStore == nil {
 		t.Error("Failed to create message store from repository")
@@ -50,9 +57,16 @@ func TestMessageStoreCanCreateAProjector(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	msgStore := NewMessageStoreFromRepository(mockRepo, loggerLogger)
+	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	msgStore.CreateProjector()
 }

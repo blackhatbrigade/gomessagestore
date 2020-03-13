@@ -35,6 +35,9 @@ import (
 
 // MessageStore establishes the interface for Eventide
 type MessageStore interface {
+
+	//a receive log as an option
+	//b there is a function on CreateSub func that receives a log
 	Write(ctx context.Context, message Message, opts ...WriteOption) error                                         // writes a message to the message store
 	Get(ctx context.Context, opts ...GetOption) ([]Message, error)                                                 // retrieves messages from the message store
 	CreateProjector(opts ...ProjectorOption) (Projector, error)                                                    // creates a new projector

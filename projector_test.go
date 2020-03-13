@@ -2,11 +2,13 @@ package gomessagestore_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 /*
@@ -25,7 +27,14 @@ func TestProjectorAcceptsAReducer(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	mockred := new(mockReducer1)
 
@@ -49,7 +58,14 @@ func TestProjectorAcceptsAReducerFunc(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	mockred := func(msg Message, previousState interface{}) interface{} {
 		switch state := previousState.(type) {
@@ -81,7 +97,14 @@ func TestProjectorAcceptsADefaultState(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := mockDataStructure{}
 
@@ -107,7 +130,14 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	mockReducerFunc := func(msg Message, previousState interface{}) interface{} {
 		switch state := previousState.(type) {
@@ -180,7 +210,14 @@ func TestProjectorPicksUpAfterFullBatch(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := mockDataStructure{}
 
@@ -249,7 +286,14 @@ func TestCreateProjectorFailsIfGivenPointerForDefaultState(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := new(mockDataStructure)
 
@@ -270,7 +314,14 @@ func TestCreateProjectorFailsIfDefaultStateIsNotSet(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	_, err := myMessageStore.CreateProjector(
 		WithReducer(new(mockReducer1)),
@@ -289,7 +340,14 @@ func TestCreateProjectorFailsWithoutAtLeastOneReducer(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	var logrusLogger = &logrus.Logger{
+		Out:       os.Stderr,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
+
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := mockDataStructure{}
 

@@ -3,12 +3,14 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 var potato = errors.New("I'm a potato")
@@ -90,7 +92,14 @@ func TestSubscriberGetsMessages(t *testing.T) {
 					Return(test.messageEnvelopes, test.repoReturnError)
 			}
 
-			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+			var logrusLogger = &logrus.Logger{
+				Out:       os.Stderr,
+				Formatter: new(logrus.JSONFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			}
+
+			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			opts, err := GetSubscriberConfig(test.opts...)
 			panicIf(err)

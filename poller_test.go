@@ -2,12 +2,14 @@ package gomessagestore_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	mock_gomessagestore "github.com/blackhatbrigade/gomessagestore/mocks"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 type getMessagesParams struct {
@@ -371,10 +373,17 @@ func TestPoller(t *testing.T) {
 			lastCall = nil
 
 			// setup
-			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+			var logrusLogger = &logrus.Logger{
+				Out:       os.Stderr,
+				Formatter: new(logrus.JSONFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			}
+
+			msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 			opts, err := GetSubscriberConfig(test.subOpts...)
 			myPoller, err := CreatePoller(
-				myMessageStore,
+				msgStore,
 				myWorker,
 				opts,
 			)

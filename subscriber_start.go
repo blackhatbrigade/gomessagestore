@@ -2,16 +2,22 @@ package gomessagestore
 
 import (
 	"context"
-	"time"
-
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 //Start Handles polling at specified intervals
 func (sub *subscriber) Start(ctx context.Context) error {
-	log := logrus.WithFields(logrus.Fields{
-		"subscriberID": sub.subscriberID,
-	})
+
+	if sub.config.log == nil {
+		fmt.Println("Fire, Fire, Fire:")
+	}
+	log :=
+		sub.config.log.WithFields(logrus.Fields{
+			"subscriberID": sub.subscriberID,
+		})
+
 	// make a channel to handle cancel signal from context in order to stop the infinite loop
 	cancelled := make(chan error, 1)
 	go func() {
