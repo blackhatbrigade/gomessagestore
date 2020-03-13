@@ -3,11 +3,13 @@ package repository_test
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,6 +23,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		streamCategory   string
 		callCancel       bool
 		batchSize        int
+		logrusLogger     *logrus.Logger
 	}{{
 		name:             "when there are existing messages it should return them",
 		existingMessages: mockMessages,
@@ -77,7 +80,14 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			repo := NewPostgresRepository(db)
+			logrusLogger := &logrus.Logger{
+				Out:       os.Stderr,
+				Formatter: new(logrus.JSONFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			}
+
+			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel() // free all resources
 
@@ -203,7 +213,13 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			repo := NewPostgresRepository(db)
+			logrusLogger := &logrus.Logger{
+				Out:       os.Stderr,
+				Formatter: new(logrus.JSONFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			}
+			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 
 			expectedQuery := mockDb.
