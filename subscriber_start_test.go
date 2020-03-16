@@ -10,6 +10,7 @@ import (
 	mock_gomessagestore "github.com/blackhatbrigade/gomessagestore/mocks"
 	mock_repository "github.com/blackhatbrigade/gomessagestore/repository/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 func TestSubscriberStartWithContext(t *testing.T) {
@@ -89,7 +90,8 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				Return(test.pollError).
 				AnyTimes()
 
-			myMessageStore := NewMessageStoreFromRepository(mockRepo)
+			var logrusLogger = logrus.New()
+			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			mySubscriber, err := CreateSubscriberWithPoller(
 				myMessageStore,

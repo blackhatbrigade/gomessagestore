@@ -6,6 +6,7 @@ import (
 
 	"github.com/blackhatbrigade/gomessagestore/inmem_repository"
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/sirupsen/logrus"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore MessageStore > mocks/messagestore.go"
@@ -16,18 +17,20 @@ type MessageStore interface {
 	Get(ctx context.Context, opts ...GetOption) ([]Message, error)                                                 // retrieves messages from the message store
 	CreateProjector(opts ...ProjectorOption) (Projector, error)                                                    // creates a new projector
 	CreateSubscriber(subscriberID string, handlers []MessageHandler, opts ...SubscriberOption) (Subscriber, error) // creates a new subscriber
+	GetLogger() (logger logrus.FieldLogger)                                                                        // gets the logger
 }
 
 type msgStore struct {
 	repo repository.Repository
+	log  logrus.FieldLogger
 }
 
 // NewMessageStore creates a new MessageStore instance using an injected DB.
-func NewMessageStore(injectedDB *sql.DB) MessageStore {
-	pgRepo := repository.NewPostgresRepository(injectedDB)
-
+func NewMessageStore(injectedDB *sql.DB, logger logrus.FieldLogger) MessageStore {
+	pgRepo := repository.NewPostgresRepository(injectedDB, logger)
 	msgstr := &msgStore{
 		repo: pgRepo,
+		log:  logger,
 	}
 
 	return msgstr
@@ -35,9 +38,10 @@ func NewMessageStore(injectedDB *sql.DB) MessageStore {
 
 // NewMessageStoreFromRepository creates a new MessageStore instance using an injected repository.
 // FOR TESTING ONLY
-func NewMessageStoreFromRepository(injectedRepo repository.Repository) MessageStore {
+func NewMessageStoreFromRepository(injectedRepo repository.Repository, logger logrus.FieldLogger) MessageStore {
 	msgstr := &msgStore{
 		repo: injectedRepo,
+		log:  logger,
 	}
 
 	return msgstr
@@ -53,5 +57,15 @@ func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 	}
 
 	r := inmem_repository.NewInMemoryRepository(msgEnvs)
-	return NewMessageStoreFromRepository(r)
+	return NewMessageStoreFromRepository(r, logrus.New()) // passing in a log from the outside doesn't make sense here as we're just doing testing
+}
+
+// GetLogger gets the logger we need for other pieces
+func (ms *msgStore) GetLogger() logrus.FieldLogger {
+	if ms.log == nil {
+		var logger = logrus.New()
+		return logger
+	} else {
+		return ms.log
+	}
 }

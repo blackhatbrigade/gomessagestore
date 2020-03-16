@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-
-	//	"github.com/blackhatbrigade/gomessagestore/repository"
-	"github.com/sirupsen/logrus"
 )
 
 type writer struct {
@@ -28,7 +25,11 @@ func checkWriteOptions(opts ...WriteOption) *writer {
 func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOption) error {
 	envelope, err := Message.ToEnvelope(message)
 	if err != nil {
-		logrus.WithError(err).Error("Write: Validation Error")
+
+		ms.
+			log.
+			WithError(err).
+			Error("Write: Validation Error")
 
 		return err
 	}
@@ -46,7 +47,11 @@ func (ms *msgStore) Write(ctx context.Context, message Message, opts ...WriteOpt
 		err = ms.repo.WriteMessage(ctx, envelope)
 	}
 	if err != nil {
-		logrus.WithError(err).Error("Write: Error writing message")
+
+		ms.
+			log.
+			WithError(err).
+			Error("Write: Error writing message")
 
 		return err
 	}

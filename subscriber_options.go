@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/blackhatbrigade/gomessagestore/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 //SubscriberOption allows for various options when creating a subscriber
@@ -20,6 +21,7 @@ type SubscriberConfig struct {
 	updateInterval  int           //
 	batchSize       int           // the maximum amount of messages to be retrieved at a time
 	position        int64         // the position from which to retrieve messages
+	log             logrus.FieldLogger
 	errorFunc       func(error)
 }
 
@@ -111,6 +113,7 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 		pollErrorDelay: 5 * time.Second,
 		updateInterval: 100,
 	}
+
 	for _, option := range opts {
 		if option == nil {
 			return nil, ErrSubscriberNilOption
@@ -132,8 +135,19 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	if config.updateInterval < 2 {
 		return nil, ErrInvalidMsgInterval
 	}
+	if config.log == nil {
+		config.log = logrus.New()
+	}
 
 	return config, nil
+}
+
+// SubscribeLogger allows to configure the logger used inside the Subscriber
+func SubscribeLogger(logger logrus.FieldLogger) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		sub.log = logger
+		return nil
+	}
 }
 
 // OnError when the subscriber reaches an error, it will call this func instead of panicking

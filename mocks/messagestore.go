@@ -8,6 +8,7 @@ import (
 	context "context"
 	gomessagestore "github.com/blackhatbrigade/gomessagestore"
 	gomock "github.com/golang/mock/gomock"
+	logrus "github.com/sirupsen/logrus"
 	reflect "reflect"
 )
 
@@ -91,6 +92,20 @@ func (mr *MockMessageStoreMockRecorder) Get(arg0 interface{}, arg1 ...interface{
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessageStore)(nil).Get), varargs...)
+}
+
+// GetLogger mocks base method
+func (m *MockMessageStore) GetLogger() logrus.FieldLogger {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLogger")
+	ret0, _ := ret[0].(logrus.FieldLogger)
+	return ret0
+}
+
+// GetLogger indicates an expected call of GetLogger
+func (mr *MockMessageStoreMockRecorder) GetLogger() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogger", reflect.TypeOf((*MockMessageStore)(nil).GetLogger))
 }
 
 // Write mocks base method

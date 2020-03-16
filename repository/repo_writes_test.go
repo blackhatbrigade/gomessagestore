@@ -8,16 +8,18 @@ import (
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresRepoWriteMessage(t *testing.T) {
 	tests := []struct {
-		name        string
-		msg         *MessageEnvelope
-		dbError     error
-		expectedErr error
-		callCancel  bool
+		name         string
+		msg          *MessageEnvelope
+		dbError      error
+		expectedErr  error
+		callCancel   bool
+		logrusLogger *logrus.Logger
 	}{{
 		name:        "when there is a db error, return it",
 		msg:         mockMessages[0],
@@ -48,7 +50,8 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			repo := NewPostgresRepository(db)
+			logrusLogger := logrus.New()
+			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 
 			if test.msg != nil {
@@ -137,7 +140,8 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			repo := NewPostgresRepository(db)
+			logrusLogger := logrus.New()
+			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 
 			if test.msg != nil {
