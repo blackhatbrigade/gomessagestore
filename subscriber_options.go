@@ -22,6 +22,7 @@ type SubscriberConfig struct {
 	batchSize       int           // the maximum amount of messages to be retrieved at a time
 	position        int64         // the position from which to retrieve messages
 	log             logrus.FieldLogger
+	errorFunc       func(error)
 }
 
 //SubscribeToEntityStream subscribes to a specific entity stream and ensures that multiple streams are not subscribed to
@@ -141,9 +142,18 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	return config, nil
 }
 
+// SubscribeLogger allows to configure the logger used inside the Subscriber
 func SubscribeLogger(logger logrus.FieldLogger) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		sub.log = logger
+		return nil
+	}
+}
+
+// OnError when the subscriber reaches an error, it will call this func instead of panicking
+func OnError(errorFunc func(error)) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		sub.errorFunc = errorFunc
 		return nil
 	}
 }

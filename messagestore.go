@@ -60,7 +60,7 @@ func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 	return NewMessageStoreFromRepository(r, logrus.New()) // passing in a log from the outside doesn't make sense here as we're just doing testing
 }
 
-// This function gets the logger we need for other pieces
+// GetLogger gets the logger we need for other pieces
 func (ms *msgStore) GetLogger() logrus.FieldLogger {
 	if ms.log == nil {
 		var logger = logrus.New()

@@ -10,9 +10,10 @@ func (sw *subscriptionWorker) ProcessMessages(ctx context.Context, msgs []Messag
 	for _, msg := range msgs {
 		for _, handler := range sw.handlers {
 			if handler.Type() == msg.Type() {
-				processErr := handler.Process(ctx, msg)
-				if processErr != nil {
+				err = handler.Process(ctx, msg)
+				if err != nil {
 					sw.config.log.WithError(err).Error("A handler failed to process a message not moving on")
+					return
 				}
 
 				if !sw.config.stream {
