@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	//	"github.com/blackhatbrigade/gomessagestore/repository"
-	// 	"github.com/sirupsen/logrus"
 )
 
 type writer struct {
