@@ -79,7 +79,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
@@ -207,7 +207,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
@@ -296,7 +296,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())

@@ -84,7 +84,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 
 			repo := NewPostgresRepository(db, logrusLogger)
@@ -217,7 +217,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())

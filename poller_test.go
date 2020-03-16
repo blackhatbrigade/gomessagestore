@@ -377,7 +377,7 @@ func TestPoller(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 
 			msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)

@@ -23,7 +23,7 @@ func TestNewMessageStore(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStore(mockDB, logrusLogger)
@@ -43,7 +43,7 @@ func TestNewMessageStoreFromRepository(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -61,7 +61,7 @@ func TestMessageStoreCanCreateAProjector(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)

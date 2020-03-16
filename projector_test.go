@@ -31,7 +31,7 @@ func TestProjectorAcceptsAReducer(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -62,7 +62,7 @@ func TestProjectorAcceptsAReducerFunc(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -101,7 +101,7 @@ func TestProjectorAcceptsADefaultState(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -134,7 +134,7 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -214,7 +214,7 @@ func TestProjectorPicksUpAfterFullBatch(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -290,7 +290,7 @@ func TestCreateProjectorFailsIfGivenPointerForDefaultState(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -318,7 +318,7 @@ func TestCreateProjectorFailsIfDefaultStateIsNotSet(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -344,7 +344,7 @@ func TestCreateProjectorFailsWithoutAtLeastOneReducer(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)

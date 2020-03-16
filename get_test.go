@@ -28,7 +28,7 @@ func TestGetWithCommandStream(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	mockRepo.
@@ -69,7 +69,7 @@ func TestGetWithBatchSize(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -98,7 +98,7 @@ func TestGetWithoutOptionsReturnsError(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
@@ -133,7 +133,7 @@ func TestGetWithEventStream(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -169,7 +169,7 @@ func TestGetWithCategory(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -199,7 +199,7 @@ func TestGetWithCategoryAndSince(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgEnv := getSampleEventAsEnvelope()
@@ -239,7 +239,7 @@ func TestGetMessagesCannotUseBothStreamAndCategory(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -258,7 +258,7 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
@@ -307,7 +307,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -349,7 +349,7 @@ func TestGetMessagesRequiresEitherStreamOrCategory(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -383,7 +383,7 @@ func TestGetWithAlternateConverters(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -425,7 +425,7 @@ func TestGetWithPositionSucceeds(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -469,7 +469,7 @@ func TestGetWithInvalidUUIDInStreamNameSucceeds(t *testing.T) {
 		Out:       os.Stderr,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Level:     logrus.InfoLevel,
 	}
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
@@ -657,7 +657,7 @@ func TestOptionErrors(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 
 			msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)

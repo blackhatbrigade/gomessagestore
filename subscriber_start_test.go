@@ -95,7 +95,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				Out:       os.Stderr,
 				Formatter: new(logrus.JSONFormatter),
 				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.DebugLevel,
+				Level:     logrus.InfoLevel,
 			}
 
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
