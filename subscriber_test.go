@@ -252,7 +252,8 @@ func TestOnError(t *testing.T) {
 	}
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
-	myMessageStore := NewMessageStoreFromRepository(mockRepo)
+	logger := logrus.New()
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logger)
 	subscriber, err := myMessageStore.CreateSubscriber(
 		"someid",
 		[]MessageHandler{messageHandler},
