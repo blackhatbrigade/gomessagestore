@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -27,13 +26,7 @@ func TestProjectorAcceptsAReducer(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	mockred := new(mockReducer1)
@@ -58,13 +51,7 @@ func TestProjectorAcceptsAReducerFunc(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	mockred := func(msg Message, previousState interface{}) interface{} {
@@ -97,13 +84,7 @@ func TestProjectorAcceptsADefaultState(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := mockDataStructure{}
@@ -130,13 +111,7 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	mockReducerFunc := func(msg Message, previousState interface{}) interface{} {
@@ -210,13 +185,7 @@ func TestProjectorPicksUpAfterFullBatch(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := mockDataStructure{}
@@ -286,13 +255,7 @@ func TestCreateProjectorFailsIfGivenPointerForDefaultState(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := new(mockDataStructure)
@@ -314,13 +277,7 @@ func TestCreateProjectorFailsIfDefaultStateIsNotSet(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	_, err := myMessageStore.CreateProjector(
@@ -340,13 +297,7 @@ func TestCreateProjectorFailsWithoutAtLeastOneReducer(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	defstate := mockDataStructure{}

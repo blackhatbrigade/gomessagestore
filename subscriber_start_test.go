@@ -3,7 +3,6 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
-	"os"
 	"testing"
 	"time"
 
@@ -91,13 +90,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				Return(test.pollError).
 				AnyTimes()
 
-			var logrusLogger = &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
-
+			var logrusLogger = logrus.New()
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			mySubscriber, err := CreateSubscriberWithPoller(

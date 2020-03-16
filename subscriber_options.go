@@ -134,6 +134,9 @@ func GetSubscriberConfig(opts ...SubscriberOption) (*SubscriberConfig, error) {
 	if config.updateInterval < 2 {
 		return nil, ErrInvalidMsgInterval
 	}
+	if config.log == nil {
+		config.log = logrus.New()
+	}
 
 	return config, nil
 }

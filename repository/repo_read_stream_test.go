@@ -3,7 +3,6 @@ package repository_test
 import (
 	"context"
 	"errors"
-	"os"
 	"testing"
 	"time"
 
@@ -75,12 +74,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			logrusLogger := &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
+			logrusLogger := logrus.New()
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 
@@ -203,12 +197,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			logrusLogger := &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
+			logrusLogger := logrus.New()
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 
@@ -292,12 +281,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
 			db, mockDb, _ := sqlmock.New()
-			logrusLogger := &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
+			logrusLogger := logrus.New()
 			repo := NewPostgresRepository(db, logrusLogger)
 			ctx, cancel := context.WithCancel(context.Background())
 

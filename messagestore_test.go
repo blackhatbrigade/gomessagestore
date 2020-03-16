@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"testing"
 
@@ -19,13 +18,7 @@ func TestNewMessageStore(t *testing.T) {
 
 	mockDB, _, _ := sqlmock.New()
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	msgStore := NewMessageStore(mockDB, logrusLogger)
 
 	if msgStore == nil {
@@ -39,13 +32,7 @@ func TestNewMessageStoreFromRepository(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	if msgStore == nil {
@@ -57,13 +44,7 @@ func TestMessageStoreCanCreateAProjector(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)

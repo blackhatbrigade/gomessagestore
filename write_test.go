@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -26,13 +25,7 @@ func TestWriteMessage(t *testing.T) {
 		EXPECT().
 		WriteMessage(ctx, msgEnv)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	myMessageStore.Write(ctx, msg)
 }
@@ -55,13 +48,7 @@ func TestWriteWithAtPosition(t *testing.T) {
 		EXPECT().
 		WriteMessageWithExpectedPosition(ctx, msgEnv, expectedPosition)
 
-	var logrusLogger = &logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.InfoLevel,
-	}
-
+	var logrusLogger = logrus.New()
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	myMessageStore.Write(ctx, msg, AtPosition(42))
 }

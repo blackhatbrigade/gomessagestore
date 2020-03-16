@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -373,13 +372,7 @@ func TestPoller(t *testing.T) {
 			lastCall = nil
 
 			// setup
-			var logrusLogger = &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
-
+			var logrusLogger = logrus.New()
 			msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 			opts, err := GetSubscriberConfig(test.subOpts...)
 			myPoller, err := CreatePoller(

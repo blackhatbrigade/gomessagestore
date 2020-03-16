@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"testing"
 
@@ -96,13 +95,7 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			ctx := context.Background()
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
-			var logrusLogger = &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
-
+			var logrusLogger = logrus.New()
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			opts, err := GetSubscriberConfig(test.opts...)

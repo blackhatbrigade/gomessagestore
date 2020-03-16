@@ -2,7 +2,6 @@ package gomessagestore
 
 import (
 	"context"
-	"time"
 )
 
 // GetMessages retrieves messages from the message store; Second process in the polling loop

@@ -2,7 +2,6 @@ package gomessagestore_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -109,13 +108,7 @@ func TestSubscriberGetsPosition(t *testing.T) {
 				GetLastMessageInStream(ctx, "some id+position").
 				Return(test.positionEnvelope, nil)
 
-			var logrusLogger = &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
-
+			var logrusLogger = logrus.New()
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			opts, err := GetSubscriberConfig(test.opts...)

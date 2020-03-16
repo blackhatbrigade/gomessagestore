@@ -3,7 +3,6 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
-	"os"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -92,13 +91,7 @@ func TestSubscriberGetsMessages(t *testing.T) {
 					Return(test.messageEnvelopes, test.repoReturnError)
 			}
 
-			var logrusLogger = &logrus.Logger{
-				Out:       os.Stderr,
-				Formatter: new(logrus.JSONFormatter),
-				Hooks:     make(logrus.LevelHooks),
-				Level:     logrus.InfoLevel,
-			}
-
+			var logrusLogger = logrus.New()
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			opts, err := GetSubscriberConfig(test.opts...)
