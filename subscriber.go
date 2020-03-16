@@ -75,7 +75,7 @@ func createSubscriberWithPoller(ms MessageStore, subscriberID string, handlers [
 	}
 
 	defaultOptions := []SubscriberOption{
-		SubscribeLogger(ms.getLogger()),
+		SubscribeLogger(ms.GetLogger()),
 	}
 
 	//Validate the params
