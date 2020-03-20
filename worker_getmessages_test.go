@@ -62,6 +62,11 @@ func TestSubscriberGetsMessages(t *testing.T) {
 			WithConverter(testConverter(&calledConverter)),
 		},
 		expectCallConverter: true,
+		messageEnvelopes: []*repository.MessageEnvelope{
+			&repository.MessageEnvelope{
+				ID: NewID(),
+			},
+		},
 	}, {
 		name:            "repository errors are passed on down",
 		repoReturnError: potato,
@@ -84,6 +89,7 @@ func TestSubscriberGetsMessages(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			calledConverter = false // always reset on each loop
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -126,6 +132,10 @@ func TestSubscriberGetsMessages(t *testing.T) {
 			_, err = myWorker.GetMessages(ctx, test.expectedPosition)
 			if err != test.expectedError {
 				t.Errorf("Failed to get expected error from GetMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
+			}
+
+			if calledConverter != test.expectCallConverter {
+				t.Errorf("Failed to call MessageConverter func() correctly\nExpected: %t\n and got: %t\n", test.expectCallConverter, calledConverter)
 			}
 		})
 	}
