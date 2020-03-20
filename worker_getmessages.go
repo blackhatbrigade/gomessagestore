@@ -7,10 +7,8 @@ import (
 // GetMessages retrieves messages from the message store; Second process in the polling loop
 func (sw *subscriptionWorker) GetMessages(ctx context.Context, position int64) ([]Message, error) {
 	opts := []GetOption{}
-	if len(sw.config.converters) > 0 {
-		for _, conv := range sw.config.converters {
-			opts = append(opts, Converter(conv))
-		}
+	for _, conv := range sw.config.converters {
+		opts = append(opts, Converter(conv))
 	}
 	if !sw.config.stream { // for stream subscription
 		opts = append(opts, SincePosition(position), Category(sw.config.category))
