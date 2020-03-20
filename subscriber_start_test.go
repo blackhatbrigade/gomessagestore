@@ -3,6 +3,7 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -91,6 +92,7 @@ func TestSubscriberStartWithContext(t *testing.T) {
 				AnyTimes()
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			mySubscriber, err := CreateSubscriberWithPoller(

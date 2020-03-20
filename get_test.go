@@ -3,6 +3,7 @@ package gomessagestore_test
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -24,6 +25,7 @@ func TestGetWithCommandStream(t *testing.T) {
 	msgEnv := getSampleCommandAsEnvelope()
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 
 	mockRepo.
 		EXPECT().
@@ -60,6 +62,7 @@ func TestGetWithBatchSize(t *testing.T) {
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(
 		ctx,
@@ -83,6 +86,7 @@ func TestGetWithoutOptionsReturnsError(t *testing.T) {
 	defer ctrl.Finish()
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
@@ -113,6 +117,7 @@ func TestGetWithEventStream(t *testing.T) {
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(ctx, EventStream(msg.StreamCategory, msg.EntityID))
 
@@ -143,6 +148,7 @@ func TestGetWithCategory(t *testing.T) {
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(ctx, Category(msg.StreamCategory))
 
@@ -167,6 +173,7 @@ func TestGetWithCategoryAndSince(t *testing.T) {
 	ctx := context.Background()
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgEnv := getSampleEventAsEnvelope()
 
 	mockRepo.
@@ -201,6 +208,7 @@ func TestGetMessagesCannotUseBothStreamAndCategory(t *testing.T) {
 	ctx := context.Background()
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	_, err := msgStore.Get(ctx, Category(msg.StreamCategory), CommandStream(msg.StreamCategory))
 
@@ -214,6 +222,7 @@ func TestGetWithEventStreamAndSince(t *testing.T) {
 	defer ctrl.Finish()
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
 	msg := getSampleEvent()
@@ -257,6 +266,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 	var localPosition int64
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	msgEnv := getSampleCommandAsEnvelope()
@@ -293,6 +303,7 @@ func TestGetMessagesRequiresEitherStreamOrCategory(t *testing.T) {
 	ctx := context.Background()
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	_, err := msgStore.Get(
 		ctx,
@@ -321,6 +332,7 @@ func TestGetWithAlternateConverters(t *testing.T) {
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(
@@ -358,6 +370,7 @@ func TestGetWithPositionSucceeds(t *testing.T) {
 		Return(msgEnv, nil)
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(
@@ -397,6 +410,7 @@ func TestGetWithInvalidUUIDInStreamNameSucceeds(t *testing.T) {
 		Return(msgEnv, nil)
 
 	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(
 		ctx,
@@ -579,6 +593,7 @@ func TestOptionErrors(t *testing.T) {
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			_, err := msgStore.Get(

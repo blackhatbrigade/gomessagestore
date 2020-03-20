@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -109,9 +110,11 @@ func TestSubscriberGetsPosition(t *testing.T) {
 				Return(test.positionEnvelope, nil)
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-			opts, err := GetSubscriberConfig(test.opts...)
+			defaultOptions := []SubscriberOption{SubscribeLogger(logrusLogger)}
+			opts, err := GetSubscriberConfig(append(defaultOptions, test.opts...)...)
 			panicIf(err)
 
 			myWorker, err := CreateWorker(

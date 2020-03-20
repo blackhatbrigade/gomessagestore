@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -19,6 +20,7 @@ func TestNewMessageStore(t *testing.T) {
 	mockDB, _, _ := sqlmock.New()
 
 	var logrusLogger = logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStore(mockDB, logrusLogger)
 
 	if msgStore == nil {
@@ -33,6 +35,7 @@ func TestNewMessageStoreFromRepository(t *testing.T) {
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
 	var logrusLogger = logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 	if msgStore == nil {
@@ -45,6 +48,7 @@ func TestMessageStoreCanCreateAProjector(t *testing.T) {
 	defer ctrl.Finish()
 
 	var logrusLogger = logrus.New()
+	logrusLogger.Out = ioutil.Discard
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)

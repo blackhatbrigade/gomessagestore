@@ -3,6 +3,7 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -16,17 +17,19 @@ var potato = errors.New("I'm a potato")
 
 func TestSubscriberGetsMessages(t *testing.T) {
 	messageHandler := &msgHandler{}
+	calledConverter := false
 
 	tests := []struct {
-		name             string
-		expectedError    error
-		handlers         []MessageHandler
-		expectedPosition int64
-		expectedStream   string
-		expectedCategory string
-		opts             []SubscriberOption
-		messageEnvelopes []*repository.MessageEnvelope
-		repoReturnError  error
+		name                string
+		expectedError       error
+		handlers            []MessageHandler
+		expectedPosition    int64
+		expectedStream      string
+		expectedCategory    string
+		opts                []SubscriberOption
+		messageEnvelopes    []*repository.MessageEnvelope
+		repoReturnError     error
+		expectCallConverter bool
 	}{{
 		name:             "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
 		expectedStream:   "some category-10000000-0000-0000-0000-000000000001",
@@ -50,6 +53,15 @@ func TestSubscriberGetsMessages(t *testing.T) {
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("some category"),
 		},
+	}, {
+		name:           "When subscriber is called with WithConverter() option, repository is called correctly",
+		handlers:       []MessageHandler{messageHandler},
+		expectedStream: "some category:command",
+		opts: []SubscriberOption{
+			SubscribeToCommandStream("some category"),
+			WithConverter(testConverter(&calledConverter)),
+		},
+		expectCallConverter: true,
 	}, {
 		name:            "repository errors are passed on down",
 		repoReturnError: potato,
@@ -92,9 +104,11 @@ func TestSubscriberGetsMessages(t *testing.T) {
 			}
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-			opts, err := GetSubscriberConfig(test.opts...)
+			defaultOptions := []SubscriberOption{SubscribeLogger(logrusLogger)}
+			opts, err := GetSubscriberConfig(append(defaultOptions, test.opts...)...)
 			panicIf(err)
 
 			myWorker, err := CreateWorker(
@@ -114,5 +128,14 @@ func TestSubscriberGetsMessages(t *testing.T) {
 				t.Errorf("Failed to get expected error from GetMessages()\nExpected: %s\n and got: %s\n", test.expectedError, err)
 			}
 		})
+	}
+}
+
+var conversionError = errors.New("not a real error")
+
+func testConverter(called *bool) MessageConverter {
+	return func(messageEnvelope *repository.MessageEnvelope) (Message, error) {
+		*called = true
+		return nil, conversionError
 	}
 }
