@@ -41,6 +41,7 @@ type ProjectorOption func(proj *projector)
 // Projector A base level interface that defines the projection functionality of gomessagestore.
 type Projector interface {
 	Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error)
+	RunOnStream(ctx context.Context, stream string) (interface{}, error)
 	Step(msg Message, previousState interface{}) (interface{}, bool)
 }
 
@@ -51,9 +52,19 @@ type projector struct {
 	defaultState interface{}
 }
 
-// Run calls getMessages on the projector and runs each messagae through a matching reducer to derive the state, and returns the state after all messages are processed
+// RunOnStream retrieves all messages for a given stream, and runs the projector on each message found
+func (proj *projector) RunOnStream(ctx context.Context, stream string) (interface{}, error) {
+	return proj.run(ctx, stream)
+}
+
+// Run retrieves all messages for a given category and entity, and runs the projector on each message found
 func (proj *projector) Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error) {
-	msgs, err := proj.getMessages(ctx, category, entityID)
+	return proj.run(ctx, category+"-"+entityID.String())
+}
+
+// run calls getMessages, for a given category and id, on the projector and runs each message through a matching reducer to derive the state, and returns the state after all messages are processed
+func (proj *projector) run(ctx context.Context, stream string) (interface{}, error) {
+	msgs, err := proj.getMessages(ctx, stream)
 
 	if err != nil {
 		return nil, err
@@ -102,10 +113,10 @@ func DefaultState(defaultState interface{}) ProjectorOption {
 }
 
 // getMessages retrieves messages from the message store
-func (proj *projector) getMessages(ctx context.Context, category string, entityID uuid.UUID) ([]Message, error) {
+func (proj *projector) getMessages(ctx context.Context, stream string) ([]Message, error) {
 	batchsize := 1000
 	msgs, err := proj.ms.Get(ctx,
-		EventStream(category, entityID),
+		GenericStream(stream),
 		BatchSize(batchsize),
 	)
 	if err != nil {
@@ -117,7 +128,7 @@ func (proj *projector) getMessages(ctx context.Context, category string, entityI
 		allMsgs = append(allMsgs, msgs...)
 		for len(msgs) == batchsize {
 			msgs, err = proj.ms.Get(ctx,
-				EventStream(category, entityID),
+				GenericStream(stream),
 				BatchSize(batchsize),
 				SinceVersion(msgs[batchsize-1].Version()+1), // Since grabs an inclusive list, so grab 1 after the latest version
 			)

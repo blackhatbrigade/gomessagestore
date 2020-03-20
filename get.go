@@ -142,6 +142,17 @@ func CommandStream(category string) GetOption {
 	}
 }
 
+// GenericStream allows for getting events in a specific stream
+func GenericStream(stream string) GetOption {
+	return func(g *getOpts) error {
+		if g.stream != nil {
+			return ErrInvalidOptionCombination
+		}
+		g.stream = &stream
+		return nil
+	}
+}
+
 // EventStream allows for getting events in a specific stream
 func EventStream(category string, entityID uuid.UUID) GetOption {
 	return func(g *getOpts) error {
