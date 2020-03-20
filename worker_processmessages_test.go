@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -98,9 +99,11 @@ func TestSubscriberProcessesMessages(t *testing.T) {
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-			opts, err := GetSubscriberConfig(test.opts...)
+			defaultOptions := []SubscriberOption{SubscribeLogger(logrusLogger)}
+			opts, err := GetSubscriberConfig(append(defaultOptions, test.opts...)...)
 			panicIf(err)
 
 			myWorker, err := CreateWorker(

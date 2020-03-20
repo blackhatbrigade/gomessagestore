@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"io/ioutil"
 	"testing"
 
 	. "github.com/blackhatbrigade/gomessagestore"
@@ -391,8 +392,10 @@ func TestPoller(t *testing.T) {
 
 			// setup
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
-			opts, err := GetSubscriberConfig(test.subOpts...)
+			defaultOptions := []SubscriberOption{SubscribeLogger(logrusLogger)}
+			opts, err := GetSubscriberConfig(append(defaultOptions, test.subOpts...)...)
 			myPoller, err := CreatePoller(
 				msgStore,
 				myWorker,

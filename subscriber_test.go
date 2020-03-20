@@ -3,6 +3,7 @@ package gomessagestore_test
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -60,6 +61,7 @@ func TestCreateSubscriber(t *testing.T) {
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			_, err := myMessageStore.CreateSubscriber(
@@ -209,6 +211,7 @@ func TestCreateSubscriberOptions(t *testing.T) {
 			mockRepo := mock_repository.NewMockRepository(ctrl)
 
 			var logrusLogger = logrus.New()
+			logrusLogger.Out = ioutil.Discard
 			myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
 			_, err := myMessageStore.CreateSubscriber(
@@ -253,6 +256,7 @@ func TestOnError(t *testing.T) {
 
 	mockRepo := mock_repository.NewMockRepository(ctrl)
 	logger := logrus.New()
+	logger.Out = ioutil.Discard
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logger)
 	subscriber, err := myMessageStore.CreateSubscriber(
 		"someid",

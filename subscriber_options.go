@@ -22,6 +22,7 @@ type SubscriberConfig struct {
 	batchSize       int           // the maximum amount of messages to be retrieved at a time
 	position        int64         // the position from which to retrieve messages
 	log             logrus.FieldLogger
+	converters      []MessageConverter // convert non-command/event messages
 	errorFunc       func(error)
 }
 
@@ -154,6 +155,14 @@ func SubscribeLogger(logger logrus.FieldLogger) SubscriberOption {
 func OnError(errorFunc func(error)) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
 		sub.errorFunc = errorFunc
+		return nil
+	}
+}
+
+//WithConverter allows for automatic converting of non-Command/Event type messages
+func WithConverter(converter MessageConverter) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		sub.converters = append(sub.converters, converter)
 		return nil
 	}
 }
