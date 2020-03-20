@@ -50,6 +50,21 @@ func (mr *MockProjectorMockRecorder) Run(arg0, arg1, arg2 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockProjector)(nil).Run), arg0, arg1, arg2)
 }
 
+// RunOnStream mocks base method
+func (m *MockProjector) RunOnStream(arg0 context.Context, arg1 string) (interface{}, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunOnStream", arg0, arg1)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RunOnStream indicates an expected call of RunOnStream
+func (mr *MockProjectorMockRecorder) RunOnStream(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunOnStream", reflect.TypeOf((*MockProjector)(nil).RunOnStream), arg0, arg1)
+}
+
 // Step mocks base method
 func (m *MockProjector) Step(arg0 gomessagestore.Message, arg1 interface{}) (interface{}, bool) {
 	m.ctrl.T.Helper()
