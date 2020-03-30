@@ -50,6 +50,7 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 		}
 		command := &Command{
 			ID:             messageEnvelope.ID,
+			EntityID:       messageEnvelope.EntityID,
 			MessageType:    messageEnvelope.MessageType,
 			StreamCategory: strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
 			MessageVersion: messageEnvelope.Version,

@@ -50,6 +50,8 @@ func getSampleCommandMissing(key string) *Command {
 		cmd.ID = NilUUID
 	case "Data":
 		cmd.Data = nil
+	case "EntityID":
+		cmd.EntityID = NilUUID
 	}
 
 	return cmd
@@ -153,6 +155,11 @@ func TestCommandToEnvelope(t *testing.T) {
 		inputCommand:   getSampleCommandMissing("ID"),
 		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
+	}, {
+		name:           "Errors if no EntityID is present",
+		inputCommand:   getSampleCommandMissing("EntityID"),
+		expectedError:  ErrMessageNoEntityID,
+		failErrMessage: "Expected ErrMessageNoEntityID from ToEnvelope",
 	}}
 
 	for _, test := range tests {
@@ -160,11 +167,11 @@ func TestCommandToEnvelope(t *testing.T) {
 			msgEnv, err := test.inputCommand.ToEnvelope()
 
 			if err != test.expectedError {
-				t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failErrMessage, test.expectedError, err)
+				t.Errorf("Err: %s\nExpectedErr: %v\nActualErr: %v\n", test.failErrMessage, test.expectedError, err)
 			}
 
 			if !reflect.DeepEqual(msgEnv, test.expectedEnvelope) {
-				t.Errorf("Err: %s\nExpected: %v\nActual: %v\n", test.failEnvMessage, test.expectedEnvelope, msgEnv)
+				t.Errorf("Err: %s\nExpectedEnvelope: %v\nActualEnvelope: %v\n", test.failEnvMessage, test.expectedEnvelope, msgEnv)
 			}
 		})
 	}

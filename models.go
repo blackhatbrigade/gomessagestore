@@ -21,10 +21,11 @@ func NewID() uuid.UUID {
 // Command implements the Message interface; returned by get function
 type Command struct {
 	ID             uuid.UUID // ID for the command
-	StreamCategory string    // Name of the stream category
-	MessageType    string    // Name of the message type
-	MessageVersion int64     // version number of the message
-	GlobalPosition int64     // global position of the command
+	EntityID       uuid.UUID
+	StreamCategory string // Name of the stream category
+	MessageType    string // Name of the message type
+	MessageVersion int64  // version number of the message
+	GlobalPosition int64  // global position of the command
 	Data           map[string]interface{}
 	Metadata       map[string]interface{}
 	Time           time.Time
@@ -68,6 +69,10 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
+	if cmd.EntityID == NilUUID {
+		return nil, ErrMessageNoEntityID
+	}
+
 	data, err := json.Marshal(cmd.Data)
 	metadata, errm := json.Marshal(cmd.Metadata)
 	if err != nil || errm != nil {
@@ -77,6 +82,7 @@ func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	// create a new MessageEnvelope based on the command
 	msgEnv := &repository.MessageEnvelope{
 		ID:             cmd.ID,
+		EntityID:       cmd.EntityID,
 		MessageType:    cmd.MessageType,
 		StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
 		StreamCategory: cmd.StreamCategory,

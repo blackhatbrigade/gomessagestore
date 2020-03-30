@@ -22,15 +22,16 @@ func panicIf(err error) {
 }
 
 var (
-	uuid1 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000001"))
-	uuid2 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000002"))
-	uuid3 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000003"))
-	uuid4 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000004"))
-	uuid5 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000005"))
-	uuid6 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000006"))
-	uuid7 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000007"))
-	uuid8 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000008"))
-	uuid9 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000009"))
+	uuid1  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000001"))
+	uuid2  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000002"))
+	uuid3  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000003"))
+	uuid4  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000004"))
+	uuid5  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000005"))
+	uuid6  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000006"))
+	uuid7  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000007"))
+	uuid8  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000008"))
+	uuid9  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000009"))
+	uuid10 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000010"))
 )
 
 type dummyData struct {
@@ -53,6 +54,7 @@ func getSampleCommand() *Command {
 		MessageVersion: 10,
 		GlobalPosition: 8,
 		ID:             uuid1,
+		EntityID:       uuid10,
 		Data:           packed,
 		Time:           time.Unix(1, 0),
 		Metadata:       packedMeta,
@@ -107,6 +109,7 @@ func getSampleCommands() []*Command {
 	return []*Command{
 		&Command{
 			ID:             uuid4,
+			EntityID:       uuid10,
 			MessageType:    "Command MessageType 2",
 			StreamCategory: "test cat",
 			MessageVersion: 1,
@@ -116,6 +119,7 @@ func getSampleCommands() []*Command {
 			Time:           time.Unix(1, 1),
 		}, &Command{
 			ID:             uuid6,
+			EntityID:       uuid10,
 			MessageType:    "Command MessageType 1",
 			StreamCategory: "test cat",
 			MessageVersion: 2,
@@ -261,6 +265,7 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
 		ID:             uuid1,
+		EntityID:       uuid10,
 		MessageType:    "test type",
 		Version:        10,
 		GlobalPosition: 8,
@@ -278,6 +283,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 	return []*repository.MessageEnvelope{
 		&repository.MessageEnvelope{
 			ID:             uuid4,
+			EntityID:       uuid10,
 			MessageType:    "Command MessageType 2",
 			StreamName:     "test cat:command",
 			StreamCategory: "test cat",
@@ -288,6 +294,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			Time:           time.Unix(1, 1),
 		}, &repository.MessageEnvelope{
 			ID:             uuid6,
+			EntityID:       uuid10,
 			MessageType:    "Command MessageType 1",
 			StreamName:     "test cat:command",
 			Version:        2,
@@ -304,6 +311,9 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 	case *Command:
 		if command.ID != msg.ID {
 			t.Error("ID in message does not match")
+		}
+		if command.EntityID != msg.EntityID {
+			t.Error("EntityID in message does not match")
 		}
 		if command.MessageType != msg.MessageType {
 			t.Error("MessageType in message does not match")

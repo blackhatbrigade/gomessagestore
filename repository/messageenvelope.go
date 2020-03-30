@@ -10,6 +10,7 @@ import (
 //Actual values that come out of the database
 type MessageEnvelope struct {
 	ID             uuid.UUID `db:"id"`
+	EntityID       uuid.UUID `db:"entityId"`
 	StreamName     string    `db:"stream_name"`
 	StreamCategory string    `db:"stream_category"`
 	MessageType    string    `db:"type"`
