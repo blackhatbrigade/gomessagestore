@@ -43,12 +43,12 @@ func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
-func getSampleCommand() *Command {
+func getSampleCommand() Command {
 	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
-	return &Command{
+	return Command{
 		MessageType:    "test type",
 		StreamCategory: "test cat",
 		MessageVersion: 10,
@@ -61,12 +61,12 @@ func getSampleCommand() *Command {
 	}
 }
 
-func getSampleEvent() *Event {
+func getSampleEvent() Event {
 	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
-	return &Event{
+	return Event{
 		ID:             uuid2,
 		MessageType:    "test type",
 		EntityID:       uuid8,
@@ -97,7 +97,7 @@ func getSampleOtherMessage() *otherMessage {
 	}
 }
 
-func getSampleCommands() []*Command {
+func getSampleCommands() []Command {
 	packed1, err := Pack(dummyData{"a"})
 	panicIf(err)
 	packed2, err := Pack(dummyData{"c"})
@@ -106,8 +106,8 @@ func getSampleCommands() []*Command {
 	panicIf(err)
 	packedMeta2, err := Pack(dummyData{"d"})
 	panicIf(err)
-	return []*Command{
-		&Command{
+	return []Command{
+		Command{
 			ID:             uuid4,
 			EntityID:       uuid10,
 			MessageType:    "Command MessageType 2",
@@ -117,7 +117,7 @@ func getSampleCommands() []*Command {
 			Data:           packed1,
 			Metadata:       packedMeta1,
 			Time:           time.Unix(1, 1),
-		}, &Command{
+		}, Command{
 			ID:             uuid6,
 			EntityID:       uuid10,
 			MessageType:    "Command MessageType 1",
@@ -130,7 +130,7 @@ func getSampleCommands() []*Command {
 		}}
 }
 
-func getSampleEvents() []*Event {
+func getSampleEvents() []Event {
 	packed1, err := Pack(dummyData{"a"})
 	panicIf(err)
 	packed2, err := Pack(dummyData{"c"})
@@ -139,8 +139,8 @@ func getSampleEvents() []*Event {
 	panicIf(err)
 	packedMeta2, err := Pack(dummyData{"d"})
 	panicIf(err)
-	return []*Event{
-		&Event{
+	return []Event{
+		Event{
 			ID:             uuid5,
 			MessageType:    "Event MessageType 2",
 			EntityID:       uuid8,
@@ -150,7 +150,7 @@ func getSampleEvents() []*Event {
 			Data:           packed1,
 			Metadata:       packedMeta1,
 			Time:           time.Unix(1, 3),
-		}, &Event{
+		}, Event{
 			ID:             uuid7,
 			MessageType:    "Event MessageType 1",
 			EntityID:       uuid8,
@@ -163,14 +163,14 @@ func getSampleEvents() []*Event {
 		}}
 }
 
-func getLotsOfSampleEvents(amount, startingAt int) []*Event {
+func getLotsOfSampleEvents(amount, startingAt int) []Event {
 	packed, err := Pack(dummyData{"a"})
 	panicIf(err)
 	packedMeta, err := Pack(dummyData{"b"})
 	panicIf(err)
-	events := make([]*Event, amount)
+	events := make([]Event, amount)
 	for index, _ := range events {
-		events[index] = &Event{
+		events[index] = Event{
 			ID:             uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
 			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
 			EntityID:       uuid8,
@@ -306,9 +306,9 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 		}}
 }
 
-func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
+func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg Command) {
 	switch command := msgEnv.(type) {
-	case *Command:
+	case Command:
 		if command.ID != msg.ID {
 			t.Error("ID in message does not match")
 		}
@@ -334,9 +334,9 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 	}
 }
 
-func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
+func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg Event) {
 	switch event := msgEnv.(type) {
-	case *Event:
+	case Event:
 		if event.ID != msg.ID {
 			t.Error("ID in message does not match")
 		}
@@ -358,7 +358,7 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 			t.Error("Messages are not correct")
 		}
 	default:
-		t.Error("Unknown type of Message")
+		t.Errorf("Unknown type of Message message type: %T", event)
 	}
 }
 
@@ -435,7 +435,7 @@ func (red *mockReducer2) Type() string {
 	return "Event MessageType 2"
 }
 
-func commandsToMessageSlice(commands []*Command) []Message {
+func commandsToMessageSlice(commands []Command) []Message {
 	newMsgs := make([]Message, len(commands))
 	for i, command := range commands {
 		newMsgs[i] = command
@@ -443,7 +443,7 @@ func commandsToMessageSlice(commands []*Command) []Message {
 
 	return newMsgs
 }
-func eventsToMessageSlice(events []*Event) []Message {
+func eventsToMessageSlice(events []Event) []Message {
 	newMsgs := make([]Message, len(events))
 	for i, event := range events {
 		newMsgs[i] = event

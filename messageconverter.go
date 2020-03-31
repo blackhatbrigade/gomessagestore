@@ -48,7 +48,7 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 		if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
 			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 		}
-		command := &Command{
+		command := Command{
 			ID:             messageEnvelope.ID,
 			EntityID:       messageEnvelope.EntityID,
 			MessageType:    messageEnvelope.MessageType,
@@ -84,7 +84,7 @@ func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Messag
 			id, _ = uuid.Parse(cats[1]) // errors on parsing just leave entityID blank
 		}
 	}
-	event := &Event{
+	event := Event{
 		ID:             messageEnvelope.ID,
 		MessageVersion: messageEnvelope.Version,
 		GlobalPosition: messageEnvelope.GlobalPosition,

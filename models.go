@@ -32,22 +32,22 @@ type Command struct {
 }
 
 // Type returns the type of the command
-func (cmd *Command) Type() string {
+func (cmd Command) Type() string {
 	return cmd.MessageType
 }
 
 // Version returns the version of the command
-func (cmd *Command) Version() int64 {
+func (cmd Command) Version() int64 {
 	return cmd.MessageVersion
 }
 
 // Position returns the global position of the command
-func (cmd *Command) Position() int64 {
+func (cmd Command) Position() int64 {
 	return cmd.GlobalPosition
 }
 
 // ToEnvelope converts the command to a Message Envelope that is returned
-func (cmd *Command) ToEnvelope() (*repository.MessageEnvelope, error) {
+func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	// check to ensure all needed fields on the command are valid
 	if cmd.MessageType == "" {
 		return nil, ErrMissingMessageType
@@ -109,22 +109,22 @@ type Event struct {
 }
 
 // Type returns the type of the event
-func (event *Event) Type() string {
+func (event Event) Type() string {
 	return event.MessageType
 }
 
 // Version returns the version of the event
-func (event *Event) Version() int64 {
+func (event Event) Version() int64 {
 	return event.MessageVersion
 }
 
 // Position returns the global position of the event
-func (event *Event) Position() int64 {
+func (event Event) Position() int64 {
 	return event.GlobalPosition
 }
 
 // ToEnvelope converts the event to a MessageEnvelope which is then returned
-func (event *Event) ToEnvelope() (*repository.MessageEnvelope, error) {
+func (event Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	// check to ensure that all required fields of the event are valid
 	if event.MessageType == "" {
 		return nil, ErrMissingMessageType

@@ -8,7 +8,7 @@ import (
 	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
-func getSampleEventMissing(key string) *Event {
+func getSampleEventMissing(key string) Event {
 	event := getSampleEvent()
 
 	switch key {
@@ -27,7 +27,7 @@ func getSampleEventMissing(key string) *Event {
 	return event
 }
 
-func getSampleEventMalformed(key string) *Event {
+func getSampleEventMalformed(key string) Event {
 	event := getSampleEvent()
 
 	switch key {
@@ -38,7 +38,7 @@ func getSampleEventMalformed(key string) *Event {
 	return event
 }
 
-func getSampleCommandMissing(key string) *Command {
+func getSampleCommandMissing(key string) Command {
 	cmd := getSampleCommand()
 
 	switch key {
@@ -57,7 +57,7 @@ func getSampleCommandMissing(key string) *Command {
 	return cmd
 }
 
-func getSampleCommandMalformed(key string) *Command {
+func getSampleCommandMalformed(key string) Command {
 	cmd := getSampleCommand()
 
 	switch key {
@@ -130,7 +130,7 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 func TestCommandToEnvelope(t *testing.T) {
 	tests := []struct {
 		name             string
-		inputCommand     *Command
+		inputCommand     Command
 		expectedEnvelope *repository.MessageEnvelope
 		expectedError    error
 		failEnvMessage   string
@@ -181,7 +181,7 @@ func TestCommandToEnvelope(t *testing.T) {
 func TestEventToEnvelope(t *testing.T) {
 	tests := []struct {
 		name             string
-		inputEvent       *Event
+		inputEvent       Event
 		expectedEnvelope *repository.MessageEnvelope
 		expectedError    error
 		failEnvMessage   string
