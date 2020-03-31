@@ -1,7 +1,6 @@
 package gomessagestore
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -77,14 +76,6 @@ func (event Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if event.StreamCategory == "" {
 		return nil, ErrMissingMessageCategory
 	}
-	data, err := json.Marshal(event.Data)
-	if err != nil {
-		return nil, ErrUnserializableData
-	}
-	metadata, err := json.Marshal(event.Metadata)
-	if err != nil {
-		return nil, ErrUnserializableData
-	}
 
 	// create a new MessageEnvelope based on the event
 	msgEnv := &repository.MessageEnvelope{
@@ -92,8 +83,8 @@ func (event Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 		MessageType:    event.MessageType,
 		StreamName:     fmt.Sprintf("%s-%s", event.StreamCategory, event.EntityID),
 		StreamCategory: event.StreamCategory,
-		Data:           data,
-		Metadata:       metadata,
+		Data:           event.Data,
+		Metadata:       event.Metadata,
 		Time:           event.Time,
 		Version:        event.MessageVersion,
 		GlobalPosition: event.GlobalPosition,

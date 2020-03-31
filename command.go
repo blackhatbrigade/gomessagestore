@@ -1,7 +1,6 @@
 package gomessagestore
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -78,14 +77,6 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMessageNoEntityID
 	}
 
-	data, err := json.Marshal(cmd.Data)
-	if err != nil {
-		return nil, ErrUnserializableData
-	}
-	metadata, err := json.Marshal(cmd.Metadata)
-	if err != nil {
-		return nil, ErrUnserializableData
-	}
 	// create a new MessageEnvelope based on the command
 	msgEnv := &repository.MessageEnvelope{
 		ID:             cmd.ID,
@@ -93,8 +84,8 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		MessageType:    cmd.MessageType,
 		StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
 		StreamCategory: cmd.StreamCategory,
-		Data:           data,
-		Metadata:       metadata,
+		Data:           cmd.Data,
+		Metadata:       cmd.Metadata,
 		Time:           cmd.Time,
 		Version:        cmd.MessageVersion,
 		GlobalPosition: cmd.GlobalPosition,

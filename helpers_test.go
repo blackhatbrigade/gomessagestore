@@ -86,12 +86,12 @@ func getSampleCommands() []Command {
 	metadata1 := []byte(`{"Field1":"b"}`)
 	data2 := []byte(`{"Field1":"c"}`)
 	metadata2 := []byte(`{"Field1":"d"}`)
-	cmd1 := NewCommand(uuid4, uuid10, "test cat", "Command MessageType2", data1, metadata1)
+	cmd1 := NewCommand(uuid4, uuid10, "test cat", "Command MessageType 2", data1, metadata1)
 	cmd1.MessageVersion = 1
 	cmd1.GlobalPosition = 1011
 	cmd1.Time = time.Unix(1, 1)
 
-	cmd2 := NewCommand(uuid6, uuid10, "test cat", "Command MessageType1", data2, metadata2)
+	cmd2 := NewCommand(uuid6, uuid10, "test cat", "Command MessageType 1", data2, metadata2)
 	cmd2.MessageVersion = 2
 	cmd2.GlobalPosition = 1012
 	cmd2.Time = time.Unix(1, 2)
@@ -103,14 +103,14 @@ func getSampleEvents() []Event {
 	metadata1 := []byte(`{"Field1":"b"}`)
 	data2 := []byte(`{"Field1":"c"}`)
 	metadata2 := []byte(`{"Field1":"d"}`)
-	evt1 := NewEvent(uuid5, uuid8, "test cat", "Command MessageType2", data1, metadata1)
-	evt1.MessageVersion = 1
-	evt1.GlobalPosition = 1011
+	evt1 := NewEvent(uuid5, uuid8, "test cat", "Event MessageType 2", data1, metadata1)
+	evt1.MessageVersion = 4
+	evt1.GlobalPosition = 345
 	evt1.Time = time.Unix(1, 1)
 
-	evt2 := NewEvent(uuid7, uuid8, "test cat", "Command MessageType1", data2, metadata2)
-	evt2.MessageVersion = 2
-	evt2.GlobalPosition = 1012
+	evt2 := NewEvent(uuid7, uuid8, "test cat", "Event MessageType 1", data2, metadata2)
+	evt2.MessageVersion = 8
+	evt2.GlobalPosition = 349
 	evt2.Time = time.Unix(1, 2)
 	return []Event{evt1, evt2}
 }
@@ -271,10 +271,10 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg Command) {
 		if command.StreamCategory != msg.StreamCategory {
 			t.Error("StreamCategory in message does not match")
 		}
-		if !reflect.DeepEqual([]byte(`"Field1": "a"`), command.Data) {
+		if !reflect.DeepEqual(msg.Data, command.Data) {
 			t.Error("Messages data are not correct")
 		}
-		if !reflect.DeepEqual([]byte(`"Field1": "b"`), command.Metadata) {
+		if !reflect.DeepEqual(msg.Metadata, command.Metadata) {
 			t.Error("Messages metadata are not correct")
 		}
 	default:
@@ -297,10 +297,10 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg Event) {
 		if event.StreamCategory != msg.StreamCategory {
 			t.Error("StreamCategory in message does not match")
 		}
-		if !reflect.DeepEqual([]byte(`"Field1": "a"`), event.Data) {
+		if !reflect.DeepEqual(msg.Data, event.Data) {
 			t.Error("Messages data are not correct")
 		}
-		if !reflect.DeepEqual([]byte(`"Field1": "b"`), event.Metadata) {
+		if !reflect.DeepEqual(msg.Metadata, event.Metadata) {
 			t.Error("Messages metadata are not correct")
 		}
 	default:

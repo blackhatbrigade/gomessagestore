@@ -38,15 +38,9 @@ func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converte
 
 // convertEnvelopeToCommand strips out data from a MessageEnvelope to form a Message of type command
 func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Message, error) {
-	if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
-		//data := []byte{}
-		//if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
-		//	logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
-		//}
-		//metadata := []byte{}
-		//if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
-		//	logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
-		//}
+
+	streamStringParts := strings.SplitN(messageEnvelope.StreamName, "-", 2)
+	if strings.HasSuffix(streamStringParts[0], ":command") {
 		cmd := NewCommand(
 			messageEnvelope.ID,
 			messageEnvelope.EntityID,
@@ -66,14 +60,6 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 
 // convertEnvelopeToEvent strips out data from a MessageEnvelope to form a Message of type event
 func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Message, error) {
-	//	data := []byte{}
-	//	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
-	//		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
-	//	}
-	//	metadata := []byte{}
-	//	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
-	//		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
-	//	}
 	category := ""
 	var id uuid.UUID
 	cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
