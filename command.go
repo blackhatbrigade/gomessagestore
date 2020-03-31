@@ -18,21 +18,19 @@ type Command struct {
 	MessageType    string // Name of the message type
 	MessageVersion int64  // version number of the message
 	GlobalPosition int64  // global position of the command
-	Data           map[string]interface{}
-	Metadata       map[string]interface{}
+	Data           []byte
+	Metadata       []byte
 	Time           time.Time
 }
 
-func NewCommand(id uuid.UUID, entId uuid.UUID, category string, msgType string, data interface{}, metadata interface{}) Command {
-	packedData, _ := Pack(data)
-	packedMetadata, _ := Pack(metadata)
+func NewCommand(id uuid.UUID, entId uuid.UUID, category string, msgType string, data []byte, metadata []byte) Command {
 	cmd := Command{
 		ID:             id,
 		EntityID:       entId,
 		StreamCategory: category,
 		MessageType:    msgType,
-		Data:           packedData,
-		Metadata:       packedMetadata,
+		Data:           data,
+		Metadata:       metadata,
 	}
 
 	return cmd
@@ -81,11 +79,13 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	data, err := json.Marshal(cmd.Data)
-	metadata, errm := json.Marshal(cmd.Metadata)
-	if err != nil || errm != nil {
+	if err != nil {
 		return nil, ErrUnserializableData
 	}
-
+	metadata, err := json.Marshal(cmd.Metadata)
+	if err != nil {
+		return nil, ErrUnserializableData
+	}
 	// create a new MessageEnvelope based on the command
 	msgEnv := &repository.MessageEnvelope{
 		ID:             cmd.ID,

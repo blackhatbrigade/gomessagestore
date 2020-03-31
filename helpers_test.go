@@ -44,143 +44,93 @@ func init() {
 }
 
 func getSampleCommand() Command {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
-	return Command{
-		MessageType:    "test type",
-		StreamCategory: "test cat",
-		MessageVersion: 10,
-		GlobalPosition: 8,
-		ID:             uuid1,
-		EntityID:       uuid10,
-		Data:           packed,
-		Time:           time.Unix(1, 0),
-		Metadata:       packedMeta,
-	}
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	cmd := NewCommand(uuid1, uuid10, "test cat", "test type", data, metadata)
+	cmd.MessageVersion = 10
+	cmd.GlobalPosition = 8
+	cmd.Time = time.Unix(1, 0)
+	return cmd
 }
 
 func getSampleEvent() Event {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
-	return Event{
-		ID:             uuid2,
-		MessageType:    "test type",
-		EntityID:       uuid8,
-		MessageVersion: 9,
-		GlobalPosition: 7,
-		StreamCategory: "test cat",
-		Data:           packed,
-		Metadata:       packedMeta,
-		Time:           time.Unix(1, 0),
-	}
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	evt := NewEvent(uuid2, uuid8, "test cat", "test type", data, metadata)
+	evt.MessageVersion = 9
+	evt.GlobalPosition = 7
+	evt.Time = time.Unix(1, 0)
+	return evt
 }
 
-func getSampleOtherMessage() *otherMessage {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
-	return &otherMessage{
-		ID:             uuid3,
-		MessageType:    "test type",
-		EntityID:       uuid9,
-		MessageVersion: 9,
-		GlobalPosition: 7,
-		StreamCategory: "test cat",
-		Data:           packed,
-		Metadata:       packedMeta,
-		Time:           time.Unix(1, 0),
-	}
-}
+//func getSampleOtherMessage() *otherMessage {
+//	packed, err := pack(dummyData{"a"})
+//	panicIf(err)
+//	packedMeta, err := pack(dummyData{"b"})
+//	panicIf(err)
+//	return &otherMessage{
+//		ID:             uuid3,
+//		MessageType:    "test type",
+//		EntityID:       uuid9,
+//		MessageVersion: 9,
+//		GlobalPosition: 7,
+//		StreamCategory: "test cat",
+//		Data:           packed,
+//		Metadata:       packedMeta,
+//		Time:           time.Unix(1, 0),
+//	}
+//}
 
 func getSampleCommands() []Command {
-	packed1, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packed2, err := Pack(dummyData{"c"})
-	panicIf(err)
-	packedMeta1, err := Pack(dummyData{"b"})
-	panicIf(err)
-	packedMeta2, err := Pack(dummyData{"d"})
-	panicIf(err)
-	return []Command{
-		Command{
-			ID:             uuid4,
-			EntityID:       uuid10,
-			MessageType:    "Command MessageType 2",
-			StreamCategory: "test cat",
-			MessageVersion: 1,
-			GlobalPosition: 1011,
-			Data:           packed1,
-			Metadata:       packedMeta1,
-			Time:           time.Unix(1, 1),
-		}, Command{
-			ID:             uuid6,
-			EntityID:       uuid10,
-			MessageType:    "Command MessageType 1",
-			StreamCategory: "test cat",
-			MessageVersion: 2,
-			GlobalPosition: 1012,
-			Data:           packed2,
-			Metadata:       packedMeta2,
-			Time:           time.Unix(1, 2),
-		}}
+	data1 := []byte(`{"Field1":"a"}`)
+	metadata1 := []byte(`{"Field1":"b"}`)
+	data2 := []byte(`{"Field1":"c"}`)
+	metadata2 := []byte(`{"Field1":"d"}`)
+	cmd1 := NewCommand(uuid4, uuid10, "test cat", "Command MessageType2", data1, metadata1)
+	cmd1.MessageVersion = 1
+	cmd1.GlobalPosition = 1011
+	cmd1.Time = time.Unix(1, 1)
+
+	cmd2 := NewCommand(uuid6, uuid10, "test cat", "Command MessageType1", data2, metadata2)
+	cmd2.MessageVersion = 2
+	cmd2.GlobalPosition = 1012
+	cmd2.Time = time.Unix(1, 2)
+	return []Command{cmd1, cmd2}
 }
 
 func getSampleEvents() []Event {
-	packed1, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packed2, err := Pack(dummyData{"c"})
-	panicIf(err)
-	packedMeta1, err := Pack(dummyData{"b"})
-	panicIf(err)
-	packedMeta2, err := Pack(dummyData{"d"})
-	panicIf(err)
-	return []Event{
-		Event{
-			ID:             uuid5,
-			MessageType:    "Event MessageType 2",
-			EntityID:       uuid8,
-			StreamCategory: "test cat",
-			MessageVersion: 4,
-			GlobalPosition: 345,
-			Data:           packed1,
-			Metadata:       packedMeta1,
-			Time:           time.Unix(1, 3),
-		}, Event{
-			ID:             uuid7,
-			MessageType:    "Event MessageType 1",
-			EntityID:       uuid8,
-			MessageVersion: 8,
-			GlobalPosition: 349,
-			StreamCategory: "test cat",
-			Data:           packed2,
-			Metadata:       packedMeta2,
-			Time:           time.Unix(1, 4),
-		}}
+	data1 := []byte(`{"Field1":"a"}`)
+	metadata1 := []byte(`{"Field1":"b"}`)
+	data2 := []byte(`{"Field1":"c"}`)
+	metadata2 := []byte(`{"Field1":"d"}`)
+	evt1 := NewEvent(uuid5, uuid8, "test cat", "Command MessageType2", data1, metadata1)
+	evt1.MessageVersion = 1
+	evt1.GlobalPosition = 1011
+	evt1.Time = time.Unix(1, 1)
+
+	evt2 := NewEvent(uuid7, uuid8, "test cat", "Command MessageType1", data2, metadata2)
+	evt2.MessageVersion = 2
+	evt2.GlobalPosition = 1012
+	evt2.Time = time.Unix(1, 2)
+	return []Event{evt1, evt2}
 }
 
 func getLotsOfSampleEvents(amount, startingAt int) []Event {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
 	events := make([]Event, amount)
 	for index, _ := range events {
-		events[index] = Event{
-			ID:             uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
-			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
-			EntityID:       uuid8,
-			StreamCategory: "test cat",
-			MessageVersion: int64(4 + startingAt + index),
-			GlobalPosition: int64(500 + startingAt + index),
-			Data:           packed,
-			Metadata:       packedMeta,
-			Time:           time.Unix(1, 3),
-		}
+		events[index] = NewEvent(
+			uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
+			uuid8,
+			"test cat",
+			fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
+			data,
+			metadata,
+		)
+		events[index].Time = time.Unix(1, 3)
+		events[index].GlobalPosition = int64(500 + startingAt + index)
+		events[index].MessageVersion = int64(4 + startingAt + index)
 	}
 
 	return events
@@ -321,13 +271,11 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg Command) {
 		if command.StreamCategory != msg.StreamCategory {
 			t.Error("StreamCategory in message does not match")
 		}
-		data := new(dummyData)
-		err := Unpack(command.Data, data)
-		if err != nil {
-			t.Error("Couldn't unpack data from message")
+		if !reflect.DeepEqual([]byte(`"Field1": "a"`), command.Data) {
+			t.Error("Messages data are not correct")
 		}
-		if !reflect.DeepEqual(&dummyData{"a"}, data) {
-			t.Error("Messages are not correct")
+		if !reflect.DeepEqual([]byte(`"Field1": "b"`), command.Metadata) {
+			t.Error("Messages metadata are not correct")
 		}
 	default:
 		t.Error("Unknown type of Message")
@@ -349,46 +297,46 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg Event) {
 		if event.StreamCategory != msg.StreamCategory {
 			t.Error("StreamCategory in message does not match")
 		}
-		data := new(dummyData)
-		err := Unpack(event.Data, data)
-		if err != nil {
-			t.Error("Couldn't unpack data from message")
+		if !reflect.DeepEqual([]byte(`"Field1": "a"`), event.Data) {
+			t.Error("Messages data are not correct")
 		}
-		if !reflect.DeepEqual(&dummyData{"a"}, data) {
-			t.Error("Messages are not correct")
+		if !reflect.DeepEqual([]byte(`"Field1": "b"`), event.Metadata) {
+			t.Error("Messages metadata are not correct")
 		}
 	default:
 		t.Errorf("Unknown type of Message message type: %T", event)
 	}
 }
 
-func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMessage) {
-	switch other := msgEnv.(type) {
-	case *otherMessage:
-		if other.ID != msg.ID {
-			t.Errorf("ID in message does not match\nHave: %s\nWant: %s\n", msg.ID, other.ID)
-		}
-		if other.MessageType != msg.MessageType {
-			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
-		}
-		if other.EntityID != msg.EntityID {
-			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
-		}
-		if other.StreamCategory != msg.StreamCategory {
-			t.Errorf("StreamCategory in message does not match\nHave: %s\nWant: %s\n", msg.StreamCategory, other.StreamCategory)
-		}
-		data := new(dummyData)
-		err := Unpack(other.Data, data)
-		if err != nil {
-			t.Error("Couldn't unpack data from message")
-		}
-		if !reflect.DeepEqual(&dummyData{"a"}, data) {
-			t.Error("Messages are not correct")
-		}
-	default:
-		t.Errorf("Unknown type of Message %T", msgEnv)
-	}
-}
+//func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMessage) {
+//	switch other := msgEnv.(type) {
+//	case *otherMessage:
+//		if other.ID != msg.ID {
+//			t.Errorf("ID in message does not match\nHave: %s\nWant: %s\n", msg.ID, other.ID)
+//		}
+//		if other.MessageType != msg.MessageType {
+//			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
+//		}
+//		if other.EntityID != msg.EntityID {
+//			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
+//		}
+//		if other.StreamCategory != msg.StreamCategory {
+//			t.Errorf("StreamCategory in message does not match\nHave: %s\nWant: %s\n", msg.StreamCategory, other.StreamCategory)
+//		}
+//		data := new(dummyData)
+//		marshalledData, _ := json.Marshal(other.Data)
+//
+//		err := json.Unmarshal(marshalledData, data)
+//		if err != nil {
+//			t.Error("Couldn't unpack data from message")
+//		}
+//		if !reflect.DeepEqual(&dummyData{"a"}, data) {
+//			t.Error("Messages are not correct")
+//		}
+//	default:
+//		t.Errorf("Unknown type of Message %T", msgEnv)
+//	}
+//}
 
 type mockDataStructure struct {
 	MockReducer1Called    bool

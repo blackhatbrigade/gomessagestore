@@ -18,21 +18,19 @@ type Event struct {
 	MessageType    string    // the message type of the event
 	MessageVersion int64     // the version number of the message
 	GlobalPosition int64     // the global position of the event
-	Data           map[string]interface{}
-	Metadata       map[string]interface{}
+	Data           []byte
+	Metadata       []byte
 	Time           time.Time
 }
 
-func NewEvent(id uuid.UUID, entId uuid.UUID, category string, msgType string, data interface{}, metadata interface{}) Event {
-	packedData, _ := Pack(data)
-	packedMetadata, _ := Pack(metadata)
+func NewEvent(id uuid.UUID, entId uuid.UUID, category string, msgType string, data []byte, metadata []byte) Event {
 	evt := Event{
 		ID:             id,
 		EntityID:       entId,
 		StreamCategory: category,
 		MessageType:    msgType,
-		Data:           packedData,
-		Metadata:       packedMetadata,
+		Data:           data,
+		Metadata:       metadata,
 	}
 
 	return evt
@@ -79,10 +77,12 @@ func (event Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	if event.StreamCategory == "" {
 		return nil, ErrMissingMessageCategory
 	}
-
 	data, err := json.Marshal(event.Data)
-	metadata, errm := json.Marshal(event.Metadata)
-	if err != nil || errm != nil {
+	if err != nil {
+		return nil, ErrUnserializableData
+	}
+	metadata, err := json.Marshal(event.Metadata)
+	if err != nil {
 		return nil, ErrUnserializableData
 	}
 

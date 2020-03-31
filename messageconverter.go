@@ -1,7 +1,6 @@
 package gomessagestore
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -40,41 +39,41 @@ func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converte
 // convertEnvelopeToCommand strips out data from a MessageEnvelope to form a Message of type command
 func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 	if strings.HasSuffix(messageEnvelope.StreamName, ":command") {
-		data := make(map[string]interface{})
-		if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
-			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
-		}
-		metadata := make(map[string]interface{})
-		if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
-			logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
-		}
-		command := Command{
-			ID:             messageEnvelope.ID,
-			EntityID:       messageEnvelope.EntityID,
-			MessageType:    messageEnvelope.MessageType,
-			StreamCategory: strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
-			MessageVersion: messageEnvelope.Version,
-			GlobalPosition: messageEnvelope.GlobalPosition,
-			Data:           data,
-			Metadata:       metadata,
-			Time:           messageEnvelope.Time,
-		}
+		//data := []byte{}
+		//if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+		//	logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
+		//}
+		//metadata := []byte{}
+		//if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
+		//	logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
+		//}
+		cmd := NewCommand(
+			messageEnvelope.ID,
+			messageEnvelope.EntityID,
+			strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
+			messageEnvelope.MessageType,
+			messageEnvelope.Data,
+			messageEnvelope.Metadata,
+		)
 
-		return command, nil
+		cmd.MessageVersion = messageEnvelope.Version
+		cmd.GlobalPosition = messageEnvelope.GlobalPosition
+		cmd.Time = messageEnvelope.Time
+		return cmd, nil
 	}
 	return nil, errors.New("Failed converting Envelope to Command, moving on to next converter")
 }
 
 // convertEnvelopeToEvent strips out data from a MessageEnvelope to form a Message of type event
 func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Message, error) {
-	data := make(map[string]interface{})
-	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
-		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
-	}
-	metadata := make(map[string]interface{})
-	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
-		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
-	}
+	//	data := []byte{}
+	//	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
+	//		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
+	//	}
+	//	metadata := []byte{}
+	//	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
+	//		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
+	//	}
 	category := ""
 	var id uuid.UUID
 	cats := strings.SplitN(messageEnvelope.StreamName, "-", 2)
@@ -84,19 +83,19 @@ func convertEnvelopeToEvent(messageEnvelope *repository.MessageEnvelope) (Messag
 			id, _ = uuid.Parse(cats[1]) // errors on parsing just leave entityID blank
 		}
 	}
-	event := Event{
-		ID:             messageEnvelope.ID,
-		MessageVersion: messageEnvelope.Version,
-		GlobalPosition: messageEnvelope.GlobalPosition,
-		MessageType:    messageEnvelope.MessageType,
-		StreamCategory: category,
-		EntityID:       id,
-		Data:           data,
-		Metadata:       metadata,
-		Time:           messageEnvelope.Time,
-	}
+	evt := NewEvent(
+		messageEnvelope.ID,
+		id,
+		category,
+		messageEnvelope.MessageType,
+		messageEnvelope.Data,
+		messageEnvelope.Metadata,
+	)
 
-	return event, nil
+	evt.MessageVersion = messageEnvelope.Version
+	evt.GlobalPosition = messageEnvelope.GlobalPosition
+	evt.Time = messageEnvelope.Time
+	return evt, nil
 }
 
 func defaultConverters() []MessageConverter {
