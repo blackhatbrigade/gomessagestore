@@ -10,6 +10,7 @@ import (
 //Actual values that come out of the database
 type MessageEnvelope struct {
 	ID             uuid.UUID `db:"id"`
+	EntityID       uuid.UUID `db:"entityId"`
 	StreamName     string    `db:"stream_name"`
 	StreamCategory string    `db:"stream_category"`
 	MessageType    string    `db:"type"`
@@ -21,5 +22,5 @@ type MessageEnvelope struct {
 }
 
 func (msgEnv *MessageEnvelope) String() string {
-	return fmt.Sprintf("GlobalPosition: %d | ID: %s | MessageType: %s | StreamName: %s | StreamCategory: %s | Data: %+v| Metadata: %+v", msgEnv.GlobalPosition, msgEnv.ID, msgEnv.MessageType, msgEnv.StreamName, msgEnv.StreamCategory, string(msgEnv.Data), string(msgEnv.Metadata))
+	return fmt.Sprintf("GlobalPosition: %d | ID: %s | EntityID: %s | MessageType: %s | StreamName: %s | StreamCategory: %s | Data: %s| Metadata: %s", msgEnv.GlobalPosition, msgEnv.ID, msgEnv.EntityID, msgEnv.MessageType, msgEnv.StreamName, msgEnv.StreamCategory, string(msgEnv.Data), string(msgEnv.Metadata))
 }

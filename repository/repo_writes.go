@@ -65,8 +65,8 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 				"ID":                 msg.ID,
 				"StreamName":         msg.StreamName,
 				"MessageMessageType": msg.MessageType,
-				"Data":               msg.Data,
-				"MessageMetadata":    msg.Metadata,
+				"Data":               string(msg.Data),
+				"MessageMetadata":    string(msg.Metadata),
 			}).Debug("about to write message")
 			if _, err := r.dbx.ExecContext(ctx, query, msg.ID, msg.StreamName, msg.MessageType, msg.Data, msg.Metadata); err != nil {
 				logrus.WithError(err).Error("Failure in repo_postgres.go::WriteMessage")

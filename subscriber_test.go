@@ -311,10 +311,10 @@ func (mh *msgHandler) Process(ctx context.Context, msg Message) error {
 		return mh.retErr
 	}
 	switch msg.(type) {
-	case *Event:
+	case Event:
 		mh.class = msg.Type()
 		mh.handled = append(mh.handled, mh.class)
-	case *Command:
+	case Command:
 		mh.class = msg.Type()
 		mh.handled = append(mh.handled, mh.class)
 	default:

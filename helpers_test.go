@@ -22,15 +22,16 @@ func panicIf(err error) {
 }
 
 var (
-	uuid1 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000001"))
-	uuid2 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000002"))
-	uuid3 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000003"))
-	uuid4 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000004"))
-	uuid5 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000005"))
-	uuid6 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000006"))
-	uuid7 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000007"))
-	uuid8 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000008"))
-	uuid9 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000009"))
+	uuid1  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000001"))
+	uuid2  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000002"))
+	uuid3  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000003"))
+	uuid4  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000004"))
+	uuid5  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000005"))
+	uuid6  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000006"))
+	uuid7  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000007"))
+	uuid8  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000008"))
+	uuid9  = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000009"))
+	uuid10 = uuid.Must(uuid.Parse("10000000-0000-0000-0000-000000000010"))
 )
 
 type dummyData struct {
@@ -42,46 +43,29 @@ func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
-func getSampleCommand() *Command {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
-	return &Command{
-		MessageType:    "test type",
-		StreamCategory: "test cat",
-		MessageVersion: 10,
-		GlobalPosition: 8,
-		ID:             uuid1,
-		Data:           packed,
-		Time:           time.Unix(1, 0),
-		Metadata:       packedMeta,
-	}
+func getSampleCommand() Command {
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	cmd := NewCommand(uuid1, NilUUID, "test cat", "test type", data, metadata)
+	cmd.MessageVersion = 10
+	cmd.GlobalPosition = 8
+	cmd.Time = time.Unix(1, 0)
+	return cmd
 }
 
-func getSampleEvent() *Event {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
-	return &Event{
-		ID:             uuid2,
-		MessageType:    "test type",
-		EntityID:       uuid8,
-		MessageVersion: 9,
-		GlobalPosition: 7,
-		StreamCategory: "test cat",
-		Data:           packed,
-		Metadata:       packedMeta,
-		Time:           time.Unix(1, 0),
-	}
+func getSampleEvent() Event {
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	evt := NewEvent(uuid2, uuid8, "test cat", "test type", data, metadata)
+	evt.MessageVersion = 9
+	evt.GlobalPosition = 7
+	evt.Time = time.Unix(1, 0)
+	return evt
 }
 
 func getSampleOtherMessage() *otherMessage {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
 	return &otherMessage{
 		ID:             uuid3,
 		MessageType:    "test type",
@@ -89,94 +73,62 @@ func getSampleOtherMessage() *otherMessage {
 		MessageVersion: 9,
 		GlobalPosition: 7,
 		StreamCategory: "test cat",
-		Data:           packed,
-		Metadata:       packedMeta,
+		Data:           data,
+		Metadata:       metadata,
 		Time:           time.Unix(1, 0),
 	}
 }
 
-func getSampleCommands() []*Command {
-	packed1, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packed2, err := Pack(dummyData{"c"})
-	panicIf(err)
-	packedMeta1, err := Pack(dummyData{"b"})
-	panicIf(err)
-	packedMeta2, err := Pack(dummyData{"d"})
-	panicIf(err)
-	return []*Command{
-		&Command{
-			ID:             uuid4,
-			MessageType:    "Command MessageType 2",
-			StreamCategory: "test cat",
-			MessageVersion: 1,
-			GlobalPosition: 1011,
-			Data:           packed1,
-			Metadata:       packedMeta1,
-			Time:           time.Unix(1, 1),
-		}, &Command{
-			ID:             uuid6,
-			MessageType:    "Command MessageType 1",
-			StreamCategory: "test cat",
-			MessageVersion: 2,
-			GlobalPosition: 1012,
-			Data:           packed2,
-			Metadata:       packedMeta2,
-			Time:           time.Unix(1, 2),
-		}}
+func getSampleCommands() []Command {
+	data1 := []byte(`{"Field1":"a"}`)
+	metadata1 := []byte(`{"Field1":"b"}`)
+	data2 := []byte(`{"Field1":"c"}`)
+	metadata2 := []byte(`{"Field1":"d"}`)
+	cmd1 := NewCommand(uuid4, uuid10, "test cat", "Command MessageType 2", data1, metadata1)
+	cmd1.MessageVersion = 1
+	cmd1.GlobalPosition = 1011
+	cmd1.Time = time.Unix(1, 1)
+
+	cmd2 := NewCommand(uuid6, uuid10, "test cat", "Command MessageType 1", data2, metadata2)
+	cmd2.MessageVersion = 2
+	cmd2.GlobalPosition = 1012
+	cmd2.Time = time.Unix(1, 2)
+	return []Command{cmd1, cmd2}
 }
 
-func getSampleEvents() []*Event {
-	packed1, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packed2, err := Pack(dummyData{"c"})
-	panicIf(err)
-	packedMeta1, err := Pack(dummyData{"b"})
-	panicIf(err)
-	packedMeta2, err := Pack(dummyData{"d"})
-	panicIf(err)
-	return []*Event{
-		&Event{
-			ID:             uuid5,
-			MessageType:    "Event MessageType 2",
-			EntityID:       uuid8,
-			StreamCategory: "test cat",
-			MessageVersion: 4,
-			GlobalPosition: 345,
-			Data:           packed1,
-			Metadata:       packedMeta1,
-			Time:           time.Unix(1, 3),
-		}, &Event{
-			ID:             uuid7,
-			MessageType:    "Event MessageType 1",
-			EntityID:       uuid8,
-			MessageVersion: 8,
-			GlobalPosition: 349,
-			StreamCategory: "test cat",
-			Data:           packed2,
-			Metadata:       packedMeta2,
-			Time:           time.Unix(1, 4),
-		}}
+func getSampleEvents() []Event {
+	data1 := []byte(`{"Field1":"a"}`)
+	metadata1 := []byte(`{"Field1":"b"}`)
+	data2 := []byte(`{"Field1":"c"}`)
+	metadata2 := []byte(`{"Field1":"d"}`)
+	evt1 := NewEvent(uuid5, uuid8, "test cat", "Event MessageType 2", data1, metadata1)
+	evt1.MessageVersion = 4
+	evt1.GlobalPosition = 345
+	evt1.Time = time.Unix(1, 1)
+
+	evt2 := NewEvent(uuid7, uuid8, "test cat", "Event MessageType 1", data2, metadata2)
+	evt2.MessageVersion = 8
+	evt2.GlobalPosition = 349
+	evt2.Time = time.Unix(1, 2)
+	return []Event{evt1, evt2}
 }
 
-func getLotsOfSampleEvents(amount, startingAt int) []*Event {
-	packed, err := Pack(dummyData{"a"})
-	panicIf(err)
-	packedMeta, err := Pack(dummyData{"b"})
-	panicIf(err)
-	events := make([]*Event, amount)
+func getLotsOfSampleEvents(amount, startingAt int) []Event {
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	events := make([]Event, amount)
 	for index, _ := range events {
-		events[index] = &Event{
-			ID:             uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
-			MessageType:    fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
-			EntityID:       uuid8,
-			StreamCategory: "test cat",
-			MessageVersion: int64(4 + startingAt + index),
-			GlobalPosition: int64(500 + startingAt + index),
-			Data:           packed,
-			Metadata:       packedMeta,
-			Time:           time.Unix(1, 3),
-		}
+		events[index] = NewEvent(
+			uuid.Must(uuid.Parse(fmt.Sprintf("10000000-0000-0000-0000-%012d", startingAt+index))),
+			uuid8,
+			"test cat",
+			fmt.Sprintf("Event MessageType %d", (startingAt+index)%2+1), // be a 1 or a 2
+			data,
+			metadata,
+		)
+		events[index].Time = time.Unix(1, 3)
+		events[index].GlobalPosition = int64(500 + startingAt + index)
+		events[index].MessageVersion = int64(4 + startingAt + index)
 	}
 
 	return events
@@ -258,7 +210,7 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 		}}
 }
 
-func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
+func getSampleCommandAsEnvelopeEntityIDMissing() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
 		ID:             uuid1,
 		MessageType:    "test type",
@@ -274,10 +226,28 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 	return msgEnv
 }
 
+func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
+	msgEnv := &repository.MessageEnvelope{
+		ID:             uuid1,
+		EntityID:       uuid10,
+		MessageType:    "test type",
+		Version:        10,
+		GlobalPosition: 8,
+		StreamName:     fmt.Sprintf("%s:command-%s", "test cat", uuid10),
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
+		Metadata:       []byte(`{"Field1":"b"}`),
+		Time:           time.Unix(1, 0),
+	}
+
+	return msgEnv
+}
+
 func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 	return []*repository.MessageEnvelope{
 		&repository.MessageEnvelope{
 			ID:             uuid4,
+			EntityID:       uuid10,
 			MessageType:    "Command MessageType 2",
 			StreamName:     "test cat:command",
 			StreamCategory: "test cat",
@@ -288,6 +258,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			Time:           time.Unix(1, 1),
 		}, &repository.MessageEnvelope{
 			ID:             uuid6,
+			EntityID:       uuid10,
 			MessageType:    "Command MessageType 1",
 			StreamName:     "test cat:command",
 			Version:        2,
@@ -299,11 +270,14 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 		}}
 }
 
-func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
+func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg Command) {
 	switch command := msgEnv.(type) {
-	case *Command:
+	case Command:
 		if command.ID != msg.ID {
 			t.Error("ID in message does not match")
+		}
+		if command.EntityID != msg.EntityID {
+			t.Error("EntityID in message does not match")
 		}
 		if command.MessageType != msg.MessageType {
 			t.Error("MessageType in message does not match")
@@ -311,22 +285,20 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg *Command) {
 		if command.StreamCategory != msg.StreamCategory {
 			t.Error("StreamCategory in message does not match")
 		}
-		data := new(dummyData)
-		err := Unpack(command.Data, data)
-		if err != nil {
-			t.Error("Couldn't unpack data from message")
+		if !reflect.DeepEqual(msg.Data, command.Data) {
+			t.Error("Messages data are not correct")
 		}
-		if !reflect.DeepEqual(&dummyData{"a"}, data) {
-			t.Error("Messages are not correct")
+		if !reflect.DeepEqual(msg.Metadata, command.Metadata) {
+			t.Error("Messages metadata are not correct")
 		}
 	default:
 		t.Error("Unknown type of Message")
 	}
 }
 
-func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
+func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg Event) {
 	switch event := msgEnv.(type) {
-	case *Event:
+	case Event:
 		if event.ID != msg.ID {
 			t.Error("ID in message does not match")
 		}
@@ -339,16 +311,14 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg *Event) {
 		if event.StreamCategory != msg.StreamCategory {
 			t.Error("StreamCategory in message does not match")
 		}
-		data := new(dummyData)
-		err := Unpack(event.Data, data)
-		if err != nil {
-			t.Error("Couldn't unpack data from message")
+		if !reflect.DeepEqual(msg.Data, event.Data) {
+			t.Error("Messages data are not correct")
 		}
-		if !reflect.DeepEqual(&dummyData{"a"}, data) {
-			t.Error("Messages are not correct")
+		if !reflect.DeepEqual(msg.Metadata, event.Metadata) {
+			t.Error("Messages metadata are not correct")
 		}
 	default:
-		t.Error("Unknown type of Message")
+		t.Errorf("Unknown type of Message message type: %T", event)
 	}
 }
 
@@ -368,7 +338,9 @@ func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMe
 			t.Errorf("StreamCategory in message does not match\nHave: %s\nWant: %s\n", msg.StreamCategory, other.StreamCategory)
 		}
 		data := new(dummyData)
-		err := Unpack(other.Data, data)
+		marshalledData, _ := json.Marshal(other.Data)
+
+		err := json.Unmarshal(marshalledData, data)
 		if err != nil {
 			t.Error("Couldn't unpack data from message")
 		}
@@ -425,7 +397,7 @@ func (red *mockReducer2) Type() string {
 	return "Event MessageType 2"
 }
 
-func commandsToMessageSlice(commands []*Command) []Message {
+func commandsToMessageSlice(commands []Command) []Message {
 	newMsgs := make([]Message, len(commands))
 	for i, command := range commands {
 		newMsgs[i] = command
@@ -433,7 +405,7 @@ func commandsToMessageSlice(commands []*Command) []Message {
 
 	return newMsgs
 }
-func eventsToMessageSlice(events []*Event) []Message {
+func eventsToMessageSlice(events []Event) []Message {
 	newMsgs := make([]Message, len(events))
 	for i, event := range events {
 		newMsgs[i] = event
@@ -450,8 +422,8 @@ type otherMessage struct {
 	MessageType    string
 	MessageVersion int64
 	GlobalPosition int64
-	Data           map[string]interface{}
-	Metadata       map[string]interface{}
+	Data           []byte
+	Metadata       []byte
 	Time           time.Time
 }
 
@@ -515,11 +487,11 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 
-	data := make(map[string]interface{})
+	data := []byte{}
 	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
 	}
-	metadata := make(map[string]interface{})
+	metadata := []byte{}
 	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 	}

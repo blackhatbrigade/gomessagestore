@@ -20,7 +20,7 @@ func TestWriteMessage(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := getSampleCommandAsEnvelope()
+	msgEnv := getSampleCommandAsEnvelopeEntityIDMissing()
 
 	mockRepo.
 		EXPECT().
@@ -41,7 +41,7 @@ func TestWriteWithAtPosition(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := getSampleCommandAsEnvelope()
+	msgEnv := getSampleCommandAsEnvelopeEntityIDMissing()
 	var expectedPosition int64
 
 	expectedPosition = 42

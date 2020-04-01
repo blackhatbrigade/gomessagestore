@@ -48,6 +48,7 @@ import "errors"
 //	ErrUnserializableData                           |	./models.go | ./worker_getposition.go
 //	ErrDataIsNilPointer                             |	no uses
 //	ErrMissingGetOptions                            |	./get.go
+// ErrMessageNoEntityID                             | ./models.go
 var (
 	ErrInvalidOptionCombination                      = errors.New("Cannot have the current combination of options for Get()")
 	ErrSubscriberCannotUseBothStreamAndCategory      = errors.New("Subscriber function cannot use both Stream and Category")
@@ -90,4 +91,5 @@ var (
 	ErrDataIsNilPointer                              = errors.New("Message data is a nil pointer")
 	ErrMissingGetOptions                             = errors.New("Options are required for the Get command")
 	ErrExpectedVersionFailed                         = errors.New("Provided version does not match the expected version")
+	ErrMessageNoEntityID                             = errors.New("Message cannot be written without an EntityID")
 )
