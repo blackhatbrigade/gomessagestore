@@ -28,6 +28,18 @@ func getSampleCommandMissing(key string) Command {
 	return cmd
 }
 
+func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
+	cmd := getSampleCommand()
+
+	cmd.StreamCategory = "something-bad"
+
+	_, err := cmd.ToEnvelope()
+
+	if err != ErrInvalidMessageCategory {
+		t.Error("Expected ErrInvalidMessageCategory from ToEnvelope Call")
+	}
+}
+
 func TestCommandToEnvelopeReturnsMessageEnvelope(t *testing.T) {
 	cmd := getSampleCommand()
 

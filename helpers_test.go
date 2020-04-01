@@ -63,23 +63,21 @@ func getSampleEvent() Event {
 	return evt
 }
 
-//func getSampleOtherMessage() *otherMessage {
-//	packed, err := pack(dummyData{"a"})
-//	panicIf(err)
-//	packedMeta, err := pack(dummyData{"b"})
-//	panicIf(err)
-//	return &otherMessage{
-//		ID:             uuid3,
-//		MessageType:    "test type",
-//		EntityID:       uuid9,
-//		MessageVersion: 9,
-//		GlobalPosition: 7,
-//		StreamCategory: "test cat",
-//		Data:           packed,
-//		Metadata:       packedMeta,
-//		Time:           time.Unix(1, 0),
-//	}
-//}
+func getSampleOtherMessage() *otherMessage {
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	return &otherMessage{
+		ID:             uuid3,
+		MessageType:    "test type",
+		EntityID:       uuid9,
+		MessageVersion: 9,
+		GlobalPosition: 7,
+		StreamCategory: "test cat",
+		Data:           data,
+		Metadata:       metadata,
+		Time:           time.Unix(1, 0),
+	}
+}
 
 func getSampleCommands() []Command {
 	data1 := []byte(`{"Field1":"a"}`)
@@ -324,35 +322,35 @@ func assertMessageMatchesEvent(t *testing.T, msgEnv Message, msg Event) {
 	}
 }
 
-//func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMessage) {
-//	switch other := msgEnv.(type) {
-//	case *otherMessage:
-//		if other.ID != msg.ID {
-//			t.Errorf("ID in message does not match\nHave: %s\nWant: %s\n", msg.ID, other.ID)
-//		}
-//		if other.MessageType != msg.MessageType {
-//			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
-//		}
-//		if other.EntityID != msg.EntityID {
-//			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
-//		}
-//		if other.StreamCategory != msg.StreamCategory {
-//			t.Errorf("StreamCategory in message does not match\nHave: %s\nWant: %s\n", msg.StreamCategory, other.StreamCategory)
-//		}
-//		data := new(dummyData)
-//		marshalledData, _ := json.Marshal(other.Data)
-//
-//		err := json.Unmarshal(marshalledData, data)
-//		if err != nil {
-//			t.Error("Couldn't unpack data from message")
-//		}
-//		if !reflect.DeepEqual(&dummyData{"a"}, data) {
-//			t.Error("Messages are not correct")
-//		}
-//	default:
-//		t.Errorf("Unknown type of Message %T", msgEnv)
-//	}
-//}
+func assertMessageMatchesOtherMessage(t *testing.T, msgEnv Message, msg *otherMessage) {
+	switch other := msgEnv.(type) {
+	case *otherMessage:
+		if other.ID != msg.ID {
+			t.Errorf("ID in message does not match\nHave: %s\nWant: %s\n", msg.ID, other.ID)
+		}
+		if other.MessageType != msg.MessageType {
+			t.Errorf("MessageType in message does not match\nHave: %s\nWant: %s\n", msg.MessageType, other.MessageType)
+		}
+		if other.EntityID != msg.EntityID {
+			t.Errorf("EntityID in message does not match\nHave: %s\nWant: %s\n", msg.EntityID, other.EntityID)
+		}
+		if other.StreamCategory != msg.StreamCategory {
+			t.Errorf("StreamCategory in message does not match\nHave: %s\nWant: %s\n", msg.StreamCategory, other.StreamCategory)
+		}
+		data := new(dummyData)
+		marshalledData, _ := json.Marshal(other.Data)
+
+		err := json.Unmarshal(marshalledData, data)
+		if err != nil {
+			t.Error("Couldn't unpack data from message")
+		}
+		if !reflect.DeepEqual(&dummyData{"a"}, data) {
+			t.Error("Messages are not correct")
+		}
+	default:
+		t.Errorf("Unknown type of Message %T", msgEnv)
+	}
+}
 
 type mockDataStructure struct {
 	MockReducer1Called    bool
@@ -424,8 +422,8 @@ type otherMessage struct {
 	MessageType    string
 	MessageVersion int64
 	GlobalPosition int64
-	Data           map[string]interface{}
-	Metadata       map[string]interface{}
+	Data           []byte
+	Metadata       []byte
 	Time           time.Time
 }
 
@@ -489,11 +487,11 @@ func (other *otherMessage) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 func convertEnvelopeToOtherMessage(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 
-	data := make(map[string]interface{})
+	data := []byte{}
 	if err := json.Unmarshal(messageEnvelope.Data, &data); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope data")
 	}
-	metadata := make(map[string]interface{})
+	metadata := []byte{}
 	if err := json.Unmarshal(messageEnvelope.Metadata, &metadata); err != nil {
 		logrus.WithError(err).Error("Can't unmarshal JSON from message envelope metadata")
 	}

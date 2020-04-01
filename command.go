@@ -2,6 +2,7 @@ package gomessagestore
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -66,6 +67,10 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 
 	if cmd.Data == nil {
 		return nil, ErrMissingMessageData
+	}
+
+	if strings.Contains(cmd.StreamCategory, "-") {
+		return nil, ErrInvalidMessageCategory
 	}
 
 	var msgEnv *repository.MessageEnvelope
