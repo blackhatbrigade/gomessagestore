@@ -61,10 +61,6 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageCategory
 	}
 
-	if strings.Contains(cmd.StreamCategory, "-") {
-		return nil, ErrInvalidMessageCategory
-	}
-
 	if cmd.ID == NilUUID {
 		return nil, ErrMessageNoID
 	}
@@ -73,22 +69,35 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 		return nil, ErrMissingMessageData
 	}
 
-	if cmd.EntityID == NilUUID {
-		return nil, ErrMessageNoEntityID
-	}
-
-	// create a new MessageEnvelope based on the command
-	msgEnv := &repository.MessageEnvelope{
-		ID:             cmd.ID,
-		EntityID:       cmd.EntityID,
-		MessageType:    cmd.MessageType,
-		StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
-		StreamCategory: cmd.StreamCategory,
-		Data:           cmd.Data,
-		Metadata:       cmd.Metadata,
-		Time:           cmd.Time,
-		Version:        cmd.MessageVersion,
-		GlobalPosition: cmd.GlobalPosition,
+	var msgEnv *repository.MessageEnvelope
+	streamStringParts := strings.SplitN(cmd.StreamCategory, "-", 2)
+	if len(streamStringParts) < 2 {
+		// create a new MessageEnvelope based on the command
+		msgEnv = &repository.MessageEnvelope{
+			ID:             cmd.ID,
+			EntityID:       cmd.EntityID,
+			MessageType:    cmd.MessageType,
+			StreamName:     fmt.Sprintf("%s:command", streamStringParts[0]),
+			StreamCategory: cmd.StreamCategory,
+			Data:           cmd.Data,
+			Metadata:       cmd.Metadata,
+			Time:           cmd.Time,
+			Version:        cmd.MessageVersion,
+			GlobalPosition: cmd.GlobalPosition,
+		}
+	} else {
+		msgEnv = &repository.MessageEnvelope{
+			ID:             cmd.ID,
+			EntityID:       cmd.EntityID,
+			MessageType:    cmd.MessageType,
+			StreamName:     fmt.Sprintf("%s:command-%s", streamStringParts[0], streamStringParts[1]),
+			StreamCategory: streamStringParts[0],
+			Data:           cmd.Data,
+			Metadata:       cmd.Metadata,
+			Time:           cmd.Time,
+			Version:        cmd.MessageVersion,
+			GlobalPosition: cmd.GlobalPosition,
+		}
 	}
 	return msgEnv, nil
 }

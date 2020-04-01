@@ -229,6 +229,23 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 	return msgEnv
 }
 
+func getSampleCommandAsEnvelopeWithID() *repository.MessageEnvelope {
+	msgEnv := &repository.MessageEnvelope{
+		ID:             uuid1,
+		EntityID:       uuid10,
+		MessageType:    "test type",
+		Version:        10,
+		GlobalPosition: 8,
+		StreamName:     fmt.Sprintf("%s:command-%s", "test cat", uuid10),
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
+		Metadata:       []byte(`{"Field1":"b"}`),
+		Time:           time.Unix(1, 0),
+	}
+
+	return msgEnv
+}
+
 func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 	return []*repository.MessageEnvelope{
 		&repository.MessageEnvelope{

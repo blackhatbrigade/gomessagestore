@@ -2,6 +2,7 @@ package gomessagestore
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -40,20 +41,43 @@ func MsgEnvelopesToMessages(msgEnvelopes []*repository.MessageEnvelope, converte
 func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Message, error) {
 
 	streamStringParts := strings.SplitN(messageEnvelope.StreamName, "-", 2)
-	if strings.HasSuffix(streamStringParts[0], ":command") {
-		cmd := NewCommand(
-			messageEnvelope.ID,
-			messageEnvelope.EntityID,
-			strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
-			messageEnvelope.MessageType,
-			messageEnvelope.Data,
-			messageEnvelope.Metadata,
-		)
 
-		cmd.MessageVersion = messageEnvelope.Version
-		cmd.GlobalPosition = messageEnvelope.GlobalPosition
-		cmd.Time = messageEnvelope.Time
-		return cmd, nil
+	if len(streamStringParts) == 2 {
+		_, err := uuid.Parse(streamStringParts[1])
+		if err != nil {
+			if strings.HasSuffix(streamStringParts[0], ":command") {
+				category := fmt.Sprintf("%s-%s", strings.TrimSuffix(streamStringParts[0], ":command"), messageEnvelope.EntityID)
+				cmd := NewCommand(
+					messageEnvelope.ID,
+					messageEnvelope.EntityID,
+					category,
+					messageEnvelope.MessageType,
+					messageEnvelope.Data,
+					messageEnvelope.Metadata,
+				)
+
+				cmd.MessageVersion = messageEnvelope.Version
+				cmd.GlobalPosition = messageEnvelope.GlobalPosition
+				cmd.Time = messageEnvelope.Time
+				return cmd, nil
+			}
+		}
+	} else {
+		if strings.HasSuffix(streamStringParts[0], ":command") {
+			cmd := NewCommand(
+				messageEnvelope.ID,
+				messageEnvelope.EntityID,
+				strings.TrimSuffix(messageEnvelope.StreamName, ":command"),
+				messageEnvelope.MessageType,
+				messageEnvelope.Data,
+				messageEnvelope.Metadata,
+			)
+
+			cmd.MessageVersion = messageEnvelope.Version
+			cmd.GlobalPosition = messageEnvelope.GlobalPosition
+			cmd.Time = messageEnvelope.Time
+			return cmd, nil
+		}
 	}
 	return nil, errors.New("Failed converting Envelope to Command, moving on to next converter")
 }

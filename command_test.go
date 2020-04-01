@@ -1,8 +1,10 @@
 package gomessagestore_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	. "github.com/blackhatbrigade/gomessagestore"
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -22,17 +24,6 @@ func getSampleCommandMissing(key string) Command {
 		cmd.Data = nil
 	case "EntityID":
 		cmd.EntityID = NilUUID
-	}
-
-	return cmd
-}
-
-func getSampleCommandMalformed(key string) Command {
-	cmd := getSampleCommand()
-
-	switch key {
-	case "CategoryHyphen":
-		cmd.StreamCategory = "something-bad"
 	}
 
 	return cmd
@@ -72,17 +63,17 @@ func TestCommandToEnvelopeErrorsIfNoCategory(t *testing.T) {
 	}
 }
 
-func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
-	cmd := getSampleCommand()
-
-	cmd.StreamCategory = "something-bad"
-
-	_, err := cmd.ToEnvelope()
-
-	if err != ErrInvalidMessageCategory {
-		t.Error("Expected ErrInvalidMessageCategory from ToEnvelope Call")
-	}
-}
+//func TestCommandToEnvelopeErrorsIfCategoryContainsAHyphen(t *testing.T) {
+//	cmd := getSampleCommand()
+//
+//	cmd.StreamCategory = "something-bad"
+//
+//	_, err := cmd.ToEnvelope()
+//
+//	if err != ErrInvalidMessageCategory {
+//		t.Error("Expected ErrInvalidMessageCategory from ToEnvelope Call")
+//	}
+//}
 
 func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 	cmd := getSampleCommand()
@@ -98,6 +89,16 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 
 //TestCommandToEnvelope tests command.ToEnvelope
 func TestCommandToEnvelope(t *testing.T) {
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	categoryWithID := fmt.Sprintf("%s-%s", "test cat", uuid10)
+	cmd1 := NewCommand(
+		uuid1, uuid10, categoryWithID, "test type", data, metadata,
+	)
+	cmd1.MessageVersion = 10
+	cmd1.GlobalPosition = 8
+	cmd1.Time = time.Unix(1, 0)
+
 	tests := []struct {
 		name             string
 		inputCommand     Command
@@ -107,9 +108,9 @@ func TestCommandToEnvelope(t *testing.T) {
 		failErrMessage   string
 	}{{
 		name:             "Returns message envelope",
-		inputCommand:     getSampleCommand(),
+		inputCommand:     cmd1,
 		failEnvMessage:   "Did not get a valid MessageEnvelope back from ToEnvelope",
-		expectedEnvelope: getSampleCommandAsEnvelope(),
+		expectedEnvelope: getSampleCommandAsEnvelopeWithID(),
 	}, {
 		name:           "Errors if no MessageType",
 		inputCommand:   getSampleCommandMissing("MessageType"),
@@ -125,11 +126,6 @@ func TestCommandToEnvelope(t *testing.T) {
 		inputCommand:   getSampleCommandMissing("ID"),
 		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
-	}, {
-		name:           "Errors if no EntityID is present",
-		inputCommand:   getSampleCommandMissing("EntityID"),
-		expectedError:  ErrMessageNoEntityID,
-		failErrMessage: "Expected ErrMessageNoEntityID from ToEnvelope",
 	}}
 
 	for _, test := range tests {
