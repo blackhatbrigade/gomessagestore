@@ -108,6 +108,11 @@ func TestCommandToEnvelope(t *testing.T) {
 		failErrMessage   string
 	}{{
 		name:             "Returns message envelope",
+		inputCommand:     getSampleCommand(),
+		failEnvMessage:   "Did not get a valid MessageEnvelope back from ToEnvelope",
+		expectedEnvelope: getSampleCommandAsEnvelope(),
+	}, {
+		name:             "Returns message envelope when command has identifier",
 		inputCommand:     cmd1,
 		failEnvMessage:   "Did not get a valid MessageEnvelope back from ToEnvelope",
 		expectedEnvelope: getSampleCommandAsEnvelopeWithID(),
@@ -126,6 +131,11 @@ func TestCommandToEnvelope(t *testing.T) {
 		inputCommand:   getSampleCommandMissing("ID"),
 		expectedError:  ErrMessageNoID,
 		failErrMessage: "Expected ErrMessageNoID from ToEnvelope",
+	}, {
+		name:             "If EntityID is not present, the command still converts to envelope",
+		inputCommand:     getSampleCommandMissing("EntityID"),
+		failErrMessage:   "Expected ErrMessageNoID from ToEnvelope",
+		expectedEnvelope: getSampleCommandAsEnvelopeEntityIDMissing(),
 	}}
 
 	for _, test := range tests {

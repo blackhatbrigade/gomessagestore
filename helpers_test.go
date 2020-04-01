@@ -212,6 +212,22 @@ func getSampleEventsAsEnvelopes() []*repository.MessageEnvelope {
 		}}
 }
 
+func getSampleCommandAsEnvelopeEntityIDMissing() *repository.MessageEnvelope {
+	msgEnv := &repository.MessageEnvelope{
+		ID:             uuid1,
+		MessageType:    "test type",
+		Version:        10,
+		GlobalPosition: 8,
+		StreamName:     "test cat:command",
+		StreamCategory: "test cat",
+		Data:           []byte(`{"Field1":"a"}`),
+		Metadata:       []byte(`{"Field1":"b"}`),
+		Time:           time.Unix(1, 0),
+	}
+
+	return msgEnv
+}
+
 func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
 		ID:             uuid1,
