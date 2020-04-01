@@ -2,7 +2,6 @@ package gomessagestore
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -70,14 +69,13 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	var msgEnv *repository.MessageEnvelope
-	streamStringParts := strings.SplitN(cmd.StreamCategory, "-", 2)
-	if len(streamStringParts) < 2 {
+	if cmd.EntityID == NilUUID {
 		// create a new MessageEnvelope based on the command
 		msgEnv = &repository.MessageEnvelope{
 			ID:             cmd.ID,
 			EntityID:       cmd.EntityID,
 			MessageType:    cmd.MessageType,
-			StreamName:     fmt.Sprintf("%s:command", streamStringParts[0]),
+			StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
 			StreamCategory: cmd.StreamCategory,
 			Data:           cmd.Data,
 			Metadata:       cmd.Metadata,
@@ -90,8 +88,8 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 			ID:             cmd.ID,
 			EntityID:       cmd.EntityID,
 			MessageType:    cmd.MessageType,
-			StreamName:     fmt.Sprintf("%s:command-%s", streamStringParts[0], streamStringParts[1]),
-			StreamCategory: streamStringParts[0],
+			StreamName:     fmt.Sprintf("%s:command-%s", cmd.StreamCategory, cmd.EntityID),
+			StreamCategory: cmd.StreamCategory,
 			Data:           cmd.Data,
 			Metadata:       cmd.Metadata,
 			Time:           cmd.Time,

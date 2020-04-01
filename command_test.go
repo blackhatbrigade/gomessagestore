@@ -1,7 +1,6 @@
 package gomessagestore_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -91,9 +90,9 @@ func TestCommandToEnvelopeErrorsIfNoIDPresent(t *testing.T) {
 func TestCommandToEnvelope(t *testing.T) {
 	data := []byte(`{"Field1":"a"}`)
 	metadata := []byte(`{"Field1":"b"}`)
-	categoryWithID := fmt.Sprintf("%s-%s", "test cat", uuid10)
+
 	cmd1 := NewCommand(
-		uuid1, uuid10, categoryWithID, "test type", data, metadata,
+		uuid1, uuid10, "test cat", "test type", data, metadata,
 	)
 	cmd1.MessageVersion = 10
 	cmd1.GlobalPosition = 8
@@ -110,12 +109,12 @@ func TestCommandToEnvelope(t *testing.T) {
 		name:             "Returns message envelope",
 		inputCommand:     getSampleCommand(),
 		failEnvMessage:   "Did not get a valid MessageEnvelope back from ToEnvelope",
-		expectedEnvelope: getSampleCommandAsEnvelope(),
+		expectedEnvelope: getSampleCommandAsEnvelopeEntityIDMissing(),
 	}, {
 		name:             "Returns message envelope when command has identifier",
 		inputCommand:     cmd1,
 		failEnvMessage:   "Did not get a valid MessageEnvelope back from ToEnvelope",
-		expectedEnvelope: getSampleCommandAsEnvelopeWithID(),
+		expectedEnvelope: getSampleCommandAsEnvelope(),
 	}, {
 		name:           "Errors if no MessageType",
 		inputCommand:   getSampleCommandMissing("MessageType"),

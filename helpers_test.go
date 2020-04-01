@@ -46,7 +46,7 @@ func init() {
 func getSampleCommand() Command {
 	data := []byte(`{"Field1":"a"}`)
 	metadata := []byte(`{"Field1":"b"}`)
-	cmd := NewCommand(uuid1, uuid10, "test cat", "test type", data, metadata)
+	cmd := NewCommand(uuid1, NilUUID, "test cat", "test type", data, metadata)
 	cmd.MessageVersion = 10
 	cmd.GlobalPosition = 8
 	cmd.Time = time.Unix(1, 0)
@@ -229,23 +229,6 @@ func getSampleCommandAsEnvelopeEntityIDMissing() *repository.MessageEnvelope {
 }
 
 func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
-	msgEnv := &repository.MessageEnvelope{
-		ID:             uuid1,
-		EntityID:       uuid10,
-		MessageType:    "test type",
-		Version:        10,
-		GlobalPosition: 8,
-		StreamName:     "test cat:command",
-		StreamCategory: "test cat",
-		Data:           []byte(`{"Field1":"a"}`),
-		Metadata:       []byte(`{"Field1":"b"}`),
-		Time:           time.Unix(1, 0),
-	}
-
-	return msgEnv
-}
-
-func getSampleCommandAsEnvelopeWithID() *repository.MessageEnvelope {
 	msgEnv := &repository.MessageEnvelope{
 		ID:             uuid1,
 		EntityID:       uuid10,

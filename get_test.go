@@ -22,7 +22,7 @@ func TestGetWithCommandStream(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := getSampleCommandAsEnvelope()
+	msgEnv := getSampleCommandAsEnvelopeEntityIDMissing()
 
 	logrusLogger := logrus.New()
 	logrusLogger.Out = ioutil.Discard
@@ -54,7 +54,7 @@ func TestGetWithBatchSize(t *testing.T) {
 	msg := getSampleCommand()
 	ctx := context.Background()
 
-	msgEnv := getSampleCommandAsEnvelope()
+	msgEnv := getSampleCommandAsEnvelopeEntityIDMissing()
 
 	mockRepo.
 		EXPECT().
@@ -269,7 +269,7 @@ func TestGetWithCommandStreamAndSince(t *testing.T) {
 	logrusLogger.Out = ioutil.Discard
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-	msgEnv := getSampleCommandAsEnvelope()
+	msgEnv := getSampleCommandAsEnvelopeEntityIDMissing()
 
 	mockRepo.
 		EXPECT().
