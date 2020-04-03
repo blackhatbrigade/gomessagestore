@@ -1,20 +1,21 @@
-package repository
+package postgres
 
 import (
 	"context"
 
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
-func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamName string, batchSize int) ([]*MessageEnvelope, error) {
+func (r postgresRepo) GetAllMessagesInStream(ctx context.Context, streamName string, batchSize int) ([]*repository.MessageEnvelope, error) {
 	return r.GetAllMessagesInStreamSince(ctx, streamName, 0, batchSize)
 }
 
-func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName string) (*MessageEnvelope, error) {
+func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName string) (*repository.MessageEnvelope, error) {
 	if streamName == "" {
-		logrus.WithError(ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetLastMessageInStream")
+		logrus.WithError(repository.ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 
-		return nil, ErrInvalidStreamName
+		return nil, repository.ErrInvalidStreamName
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled
@@ -25,7 +26,7 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName str
 			retChan <- returnPair{nil, nil}
 		}()
 
-		var msgs []*MessageEnvelope
+		var msgs []*repository.MessageEnvelope
 		/*get_last_message(
 		  _stream_name varchar,
 		)*/
@@ -37,7 +38,7 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName str
 		}
 
 		if len(msgs) == 0 {
-			retChan <- returnPair{[]*MessageEnvelope{nil}, nil}
+			retChan <- returnPair{[]*repository.MessageEnvelope{nil}, nil}
 			return
 		}
 
@@ -58,16 +59,16 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName str
 	}
 }
 
-func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error) {
+func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamName string, globalPosition int64, batchSize int) ([]*repository.MessageEnvelope, error) {
 	if streamName == "" {
-		logrus.WithError(ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
+		logrus.WithError(repository.ErrInvalidStreamName).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 
-		return nil, ErrInvalidStreamName
+		return nil, repository.ErrInvalidStreamName
 	}
 	if batchSize < 0 {
-		logrus.WithError(ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+		logrus.WithError(repository.ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 
-		return nil, ErrNegativeBatchSize
+		return nil, repository.ErrNegativeBatchSize
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled
@@ -78,7 +79,7 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamNam
 			retChan <- returnPair{nil, nil}
 		}()
 
-		var msgs []*MessageEnvelope
+		var msgs []*repository.MessageEnvelope
 		/*get_stream_messages(
 		  _stream_name varchar,
 		  _position bigint DEFAULT 0,
@@ -93,7 +94,7 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamNam
 		}
 
 		if len(msgs) == 0 {
-			retChan <- returnPair{[]*MessageEnvelope{}, nil}
+			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
 		}
 
@@ -105,6 +106,6 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamNam
 	case retval := <-retChan:
 		return retval.messages, retval.err
 	case <-ctx.Done():
-		return []*MessageEnvelope{}, nil
+		return []*repository.MessageEnvelope{}, nil
 	}
 }

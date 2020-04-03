@@ -1,4 +1,4 @@
-package repository_test
+package postgres_test
 
 import (
 	"context"
@@ -7,7 +7,8 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
-	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository"
+	. "github.com/blackhatbrigade/gomessagestore/repository/postgres"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,8 +17,8 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
-		expectedMessages []*MessageEnvelope
+		existingMessages []*repository.MessageEnvelope
+		expectedMessages []*repository.MessageEnvelope
 		expectedErr      error
 		streamName       string
 		callCancel       bool
@@ -39,21 +40,21 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamName:       "some_other_non_existant_type-124555",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamName:       "some_type-12345",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:        "when asking for messages from a stream with a blank Name, an error is returned",
-		expectedErr: ErrInvalidStreamName,
+		expectedErr: repository.ErrInvalidStreamName,
 		batchSize:   1000,
 	}, {
 		name:        "when asking for messages with a negative batch size, an error is returned",
 		streamName:  "something-12345",
-		expectedErr: ErrNegativeBatchSize,
+		expectedErr: repository.ErrNegativeBatchSize,
 		batchSize:   -10,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
@@ -66,7 +67,7 @@ func TestPostgresRepoFindAllMessagesInStream(t *testing.T) {
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		callCancel:       true,
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}}
 
@@ -115,9 +116,9 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
+		existingMessages []*repository.MessageEnvelope
 		messagesMetadata []string
-		expectedMessages []*MessageEnvelope
+		expectedMessages []*repository.MessageEnvelope
 		expectedErr      error
 		streamName       string
 		callCancel       bool
@@ -148,7 +149,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		position:         10,
 		batchSize:        1000,
 	}, {
@@ -162,21 +163,21 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamName:       "some_other_non_existant_type-124555",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamName:       "some_type-12345",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:        "when asking for messages from a stream with a blank Name, an error is returned",
-		expectedErr: ErrInvalidStreamName,
+		expectedErr: repository.ErrInvalidStreamName,
 		batchSize:   1000,
 	}, {
 		name:        "when asking for messages with a negative batch size, an error is returned",
 		streamName:  "something-12345",
-		expectedErr: ErrNegativeBatchSize,
+		expectedErr: repository.ErrNegativeBatchSize,
 		batchSize:   -10,
 	}, {
 		name:        "when there is an issue getting the messages an error should be returned",
@@ -189,7 +190,7 @@ func TestPostgresRepoFindAllMessagesInStreamSince(t *testing.T) {
 		existingMessages: mockMessages,
 		streamName:       "some_type-12345",
 		callCancel:       true,
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}}
 
@@ -238,9 +239,9 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
+		existingMessages []*repository.MessageEnvelope
 		messagesMetadata []string
-		expectedMessage  *MessageEnvelope
+		expectedMessage  *repository.MessageEnvelope
 		expectedErr      error
 		streamName       string
 		callCancel       bool
@@ -264,7 +265,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 		streamName: "some_type-12345",
 	}, {
 		name:        "when asking for messages from a stream with a blank Name, an error is returned",
-		expectedErr: ErrInvalidStreamName,
+		expectedErr: repository.ErrInvalidStreamName,
 	}, {
 		name:        "when there is an issue getting the message an error should be returned",
 		streamName:  "some_type-12345",
@@ -292,7 +293,7 @@ func TestPostgresRepoFindLastMessageInStream(t *testing.T) {
 
 			addedMessage := -1
 			if test.dbError == nil {
-				var lastRow *MessageEnvelope
+				var lastRow *repository.MessageEnvelope
 				for _, row := range test.existingMessages {
 					if row.StreamName == test.streamName {
 						addedMessage++

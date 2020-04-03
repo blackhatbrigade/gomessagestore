@@ -1,4 +1,4 @@
-package repository_test
+package postgres_test
 
 import (
 	"context"
@@ -7,7 +7,8 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
-	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository"
+	. "github.com/blackhatbrigade/gomessagestore/repository/postgres"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,8 +17,8 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
-		expectedMessages []*MessageEnvelope
+		existingMessages []*repository.MessageEnvelope
+		expectedMessages []*repository.MessageEnvelope
 		expectedErr      error
 		streamCategory   string
 		callCancel       bool
@@ -39,26 +40,26 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamCategory:   "some_other_non_existant_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamCategory:   "other_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:           "when asking for messages from a stream with a invalid category, an error is returned",
 		streamCategory: "something-with-a-hyphen",
-		expectedErr:    ErrInvalidCategory,
+		expectedErr:    repository.ErrInvalidCategory,
 		batchSize:      1000,
 	}, {
 		name:        "when asking for messages from a stream with a blank category, an error is returned",
-		expectedErr: ErrBlankCategory,
+		expectedErr: repository.ErrBlankCategory,
 		batchSize:   1000,
 	}, {
 		name:           "when asking for messages with a negative batch size, an error is returned",
 		streamCategory: "something",
-		expectedErr:    ErrNegativeBatchSize,
+		expectedErr:    repository.ErrNegativeBatchSize,
 		batchSize:      -10,
 	}, {
 		name:           "when there is an issue getting the messages an error should be returned",
@@ -71,7 +72,7 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 		existingMessages: mockMessages,
 		streamCategory:   "other_type",
 		callCancel:       true,
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}}
 
@@ -121,8 +122,8 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 	tests := []struct {
 		name             string
 		dbError          error
-		existingMessages []*MessageEnvelope
-		expectedMessages []*MessageEnvelope
+		existingMessages []*repository.MessageEnvelope
+		expectedMessages []*repository.MessageEnvelope
 		expectedErr      error
 		streamType       string
 		callCancel       bool
@@ -153,7 +154,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		name:             "when there are existing messages past position 10 it should return them",
 		existingMessages: mockMessages,
 		streamType:       "other_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		position:         10,
 		batchSize:        1000,
 	}, {
@@ -166,25 +167,25 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		name:             "when there are no messages in my stream it should return no messages",
 		existingMessages: mockMessages,
 		streamType:       "some_other_non_existant_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:             "when there are no existing messages it should return no messages",
 		streamType:       "other_type",
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}, {
 		name:        "when asking for messages from a category, if blank, an error is returned",
-		expectedErr: ErrBlankCategory,
+		expectedErr: repository.ErrBlankCategory,
 		batchSize:   1000,
 	}, {
 		name:        "when asking for messages with a negative batch size, an error is returned",
 		streamType:  "something",
-		expectedErr: ErrNegativeBatchSize,
+		expectedErr: repository.ErrNegativeBatchSize,
 		batchSize:   -10,
 	}, {
 		name:        "when asking for messages from a category, if is invalid, an error is returned",
-		expectedErr: ErrInvalidCategory,
+		expectedErr: repository.ErrInvalidCategory,
 		streamType:  "something-bad",
 		batchSize:   1000,
 	}, {
@@ -198,7 +199,7 @@ func TestPostgresRepoFindAllMessagesInCategorySince(t *testing.T) {
 		existingMessages: mockMessages,
 		streamType:       "other_type",
 		callCancel:       true,
-		expectedMessages: []*MessageEnvelope{},
+		expectedMessages: []*repository.MessageEnvelope{},
 		batchSize:        1000,
 	}}
 

@@ -1,4 +1,4 @@
-package repository_test
+package postgres_test
 
 import (
 	"context"
@@ -7,7 +7,8 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
-	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository"
+	. "github.com/blackhatbrigade/gomessagestore/repository/postgres"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +16,7 @@ import (
 func TestPostgresRepoWriteMessage(t *testing.T) {
 	tests := []struct {
 		name         string
-		msg          *MessageEnvelope
+		msg          *repository.MessageEnvelope
 		dbError      error
 		expectedErr  error
 		callCancel   bool
@@ -27,15 +28,15 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 		expectedErr: errors.New("bad things with db happened"),
 	}, {
 		name:        "when there is a nil message, an error is returned",
-		expectedErr: ErrNilMessage,
+		expectedErr: repository.ErrNilMessage,
 	}, {
 		name:        "when the message has no ID, an error is returned",
 		msg:         mockMessageNoID,
-		expectedErr: ErrMessageNoID,
+		expectedErr: repository.ErrMessageNoID,
 	}, {
 		name:        "when the message has no stream name, an error is returned",
 		msg:         mockMessageNoStream,
-		expectedErr: ErrInvalidStreamName,
+		expectedErr: repository.ErrInvalidStreamName,
 	}, {
 		name: "when there is no db error, it should write the message",
 		msg:  mockMessages[0],
@@ -86,7 +87,7 @@ func TestPostgresRepoWriteMessage(t *testing.T) {
 func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 	tests := []struct {
 		name        string
-		msg         *MessageEnvelope
+		msg         *repository.MessageEnvelope
 		dbError     error
 		expectedErr error
 		position    int64
@@ -99,17 +100,17 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 		position:    1,
 	}, {
 		name:        "when there is a nil message, an error is returned",
-		expectedErr: ErrNilMessage,
+		expectedErr: repository.ErrNilMessage,
 		position:    1,
 	}, {
 		name:        "when the message has no ID, an error is returned",
 		msg:         mockMessageNoID,
-		expectedErr: ErrMessageNoID,
+		expectedErr: repository.ErrMessageNoID,
 		position:    1,
 	}, {
 		name:        "when the message has no stream name, an error is returned",
 		msg:         mockMessageNoStream,
-		expectedErr: ErrInvalidStreamName,
+		expectedErr: repository.ErrInvalidStreamName,
 		position:    1,
 	}, {
 		name:     "when the position is at 0, no error is returned",
@@ -122,7 +123,7 @@ func TestPostgresRepoWriteMessageWithExpectedPosition(t *testing.T) {
 	}, {
 		name:        "when the position is below -1, an error is returned",
 		msg:         mockMessages[0],
-		expectedErr: ErrInvalidPosition,
+		expectedErr: repository.ErrInvalidPosition,
 		position:    -2,
 	}, {
 		name:     "when there is no db error, it should write the message",

@@ -1,11 +1,11 @@
-package inmem_repository_test
+package inmemory_test
 
 import (
 	"context"
 	"testing"
 
-	. "github.com/blackhatbrigade/gomessagestore/inmem_repository"
 	. "github.com/blackhatbrigade/gomessagestore/repository"
+	. "github.com/blackhatbrigade/gomessagestore/repository/inmemory"
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/stretchr/testify/assert"
 )

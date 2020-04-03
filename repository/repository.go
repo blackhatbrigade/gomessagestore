@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 )
 
 //go:generate bash -c "${GOPATH}/bin/mockgen github.com/blackhatbrigade/gomessagestore/repository Repository > mocks/repository.go"
@@ -20,14 +19,3 @@ type Repository interface {
 	GetAllMessagesInCategory(ctx context.Context, category string, batchSize int) ([]*MessageEnvelope, error)
 	GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64, batchSize int) ([]*MessageEnvelope, error)
 }
-
-//Errors
-var (
-	ErrInvalidSubscriberID       = errors.New("Subscriber ID cannot be blank")
-	ErrInvalidStreamName         = errors.New("Stream Name cannot be blank")
-	ErrBlankCategory             = errors.New("Category cannot be blank")
-	ErrInvalidCategory           = errors.New("Category cannot contain a hyphen")
-	ErrInvalidSubscriberPosition = errors.New("Subscriber position must be greater than or equal to -1")
-	ErrNilMessage                = errors.New("Message cannot be nil")
-	ErrInvalidPosition           = errors.New("position must be greater than equal to -1")
-)
