@@ -1,10 +1,10 @@
-package repository_test
+package postgres_test
 
 import (
 	"io/ioutil"
 	"time"
 
-	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -15,8 +15,8 @@ func init() {
 }
 
 // prevent weirdness with pointers
-func copyAndAppend(i []*MessageEnvelope, vals ...*MessageEnvelope) []*MessageEnvelope {
-	j := make([]*MessageEnvelope, len(i), len(i)+len(vals))
+func copyAndAppend(i []*repository.MessageEnvelope, vals ...*repository.MessageEnvelope) []*repository.MessageEnvelope {
+	j := make([]*repository.MessageEnvelope, len(i), len(i)+len(vals))
 	copy(j, i)
 	return append(j, vals...)
 }
@@ -29,7 +29,7 @@ var (
 	uuid5 = uuid.Must(uuid.Parse("00000000-0000-0000-0000-000000000005"))
 )
 
-var mockMessages = []*MessageEnvelope{{
+var mockMessages = []*repository.MessageEnvelope{{
 	GlobalPosition: 3,
 	ID:             uuid1,
 	MessageType:    "some_type",

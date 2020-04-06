@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/blackhatbrigade/gomessagestore/inmem_repository"
 	"github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository/inmemory"
+	"github.com/blackhatbrigade/gomessagestore/repository/postgres"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,7 @@ type msgStore struct {
 
 // NewMessageStore creates a new MessageStore instance using an injected DB.
 func NewMessageStore(injectedDB *sql.DB, logger logrus.FieldLogger) MessageStore {
-	pgRepo := repository.NewPostgresRepository(injectedDB, logger)
+	pgRepo := postgres.NewPostgresRepository(injectedDB, logger)
 	msgstr := &msgStore{
 		repo: pgRepo,
 		log:  logger,
@@ -56,7 +57,7 @@ func NewMockMessageStoreWithMessages(msgs []Message) MessageStore {
 		msgEnvs[i] = *msgEnv
 	}
 
-	r := inmem_repository.NewInMemoryRepository(msgEnvs)
+	r := inmemory.NewInMemoryRepository(msgEnvs)
 	return NewMessageStoreFromRepository(r, logrus.New()) // passing in a log from the outside doesn't make sense here as we're just doing testing
 }
 

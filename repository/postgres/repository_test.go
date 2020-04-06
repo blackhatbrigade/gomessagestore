@@ -1,12 +1,12 @@
-package repository_test
+package postgres_test
 
 import (
 	"time"
 
-	. "github.com/blackhatbrigade/gomessagestore/repository"
+	"github.com/blackhatbrigade/gomessagestore/repository"
 )
 
-var mockMessagesWithNoMetaData = []*MessageEnvelope{{
+var mockMessagesWithNoMetaData = []*repository.MessageEnvelope{{
 	GlobalPosition: 5,
 	ID:             uuid3,
 	MessageType:    "some_other_type",
@@ -35,7 +35,7 @@ var mockMessagesWithNoMetaData = []*MessageEnvelope{{
 	Time:           time.Unix(1545549339, 0),
 }}
 
-var mockMessageNoID = &MessageEnvelope{
+var mockMessageNoID = &repository.MessageEnvelope{
 	GlobalPosition: 7,
 	MessageType:    "some_type",
 	StreamName:     "some_type-12345",
@@ -45,7 +45,7 @@ var mockMessageNoID = &MessageEnvelope{
 	Time:           time.Unix(1545549339, 0),
 }
 
-var mockMessageNoStream = &MessageEnvelope{
+var mockMessageNoStream = &repository.MessageEnvelope{
 	GlobalPosition: 7,
 	ID:             uuid5,
 	MessageType:    "some_type",

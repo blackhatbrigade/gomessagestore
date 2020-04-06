@@ -1,30 +1,31 @@
-package repository
+package postgres
 
 import (
 	"context"
 	"strings"
 
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
 )
 
-func (r postgresRepo) GetAllMessagesInCategory(ctx context.Context, category string, batchSize int) (m []*MessageEnvelope, err error) {
+func (r postgresRepo) GetAllMessagesInCategory(ctx context.Context, category string, batchSize int) (m []*repository.MessageEnvelope, err error) {
 	return r.GetAllMessagesInCategorySince(ctx, category, 0, batchSize)
 }
 
-func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64, batchSize int) (m []*MessageEnvelope, err error) {
+func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, category string, globalPosition int64, batchSize int) (m []*repository.MessageEnvelope, err error) {
 	if category == "" {
-		logrus.WithError(ErrBlankCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+		logrus.WithError(repository.ErrBlankCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 
-		return nil, ErrBlankCategory
+		return nil, repository.ErrBlankCategory
 	}
 	if batchSize < 0 {
-		logrus.WithError(ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+		logrus.WithError(repository.ErrNegativeBatchSize).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 
-		return nil, ErrNegativeBatchSize
+		return nil, repository.ErrNegativeBatchSize
 	}
 	if strings.Contains(category, "-") {
-		logrus.WithError(ErrInvalidCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
-		return nil, ErrInvalidCategory
+		logrus.WithError(repository.ErrInvalidCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
+		return nil, repository.ErrInvalidCategory
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled
@@ -35,7 +36,7 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 			retChan <- returnPair{nil, nil}
 		}()
 
-		var msgs []*MessageEnvelope
+		var msgs []*repository.MessageEnvelope
 		/*get_category_messages(
 		  _stream_name varchar,
 		  _position bigint DEFAULT 0,
@@ -51,7 +52,7 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 		}
 
 		if len(msgs) == 0 {
-			retChan <- returnPair{[]*MessageEnvelope{}, nil}
+			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
 		}
 
@@ -63,6 +64,6 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 	case retval := <-retChan:
 		return retval.messages, retval.err
 	case <-ctx.Done():
-		return []*MessageEnvelope{}, nil
+		return []*repository.MessageEnvelope{}, nil
 	}
 }

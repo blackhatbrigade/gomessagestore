@@ -1,31 +1,32 @@
-package repository
+package postgres
 
 import (
 	"context"
 
+	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/blackhatbrigade/gomessagestore/uuid"
 	"github.com/sirupsen/logrus"
 )
 
-func (r postgresRepo) WriteMessage(ctx context.Context, msg *MessageEnvelope) error {
+func (r postgresRepo) WriteMessage(ctx context.Context, msg *repository.MessageEnvelope) error {
 	return r.writeMessageEitherWay(ctx, msg)
 }
 
-func (r postgresRepo) WriteMessageWithExpectedPosition(ctx context.Context, msg *MessageEnvelope, position int64) error {
+func (r postgresRepo) WriteMessageWithExpectedPosition(ctx context.Context, msg *repository.MessageEnvelope, position int64) error {
 	return r.writeMessageEitherWay(ctx, msg, position)
 }
 
-func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnvelope, position ...int64) error {
+func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *repository.MessageEnvelope, position ...int64) error {
 	if msg == nil {
-		return ErrNilMessage
+		return repository.ErrNilMessage
 	}
 
 	if msg.ID == uuid.Nil {
-		return ErrMessageNoID
+		return repository.ErrMessageNoID
 	}
 
 	if msg.StreamName == "" {
-		return ErrInvalidStreamName
+		return repository.ErrInvalidStreamName
 	}
 
 	// our return channel for our goroutine that will either finish or be cancelled
@@ -46,7 +47,7 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *MessageEnv
 		)"*/
 		if len(position) > 0 {
 			if position[0] < -1 {
-				retChan <- ErrInvalidPosition
+				retChan <- repository.ErrInvalidPosition
 				return
 			}
 
