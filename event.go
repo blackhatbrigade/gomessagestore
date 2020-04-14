@@ -1,6 +1,7 @@
 package gomessagestore
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -91,4 +92,21 @@ func (event Event) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	return msgEnv, nil
+}
+
+//MarshalJSON allows for easier debugging (converts the byte slices to strings first)
+func (e Event) MarshalJSON() ([]byte, error) {
+	holder := map[string]interface{}{
+		"id":             e.ID,
+		"entityId":       e.EntityID,
+		"streamCategory": e.StreamCategory,
+		"messageType":    e.MessageType,
+		"messageVersion": e.MessageVersion,
+		"globalPosition": e.GlobalPosition,
+		"data":           json.RawMessage(string(e.Data)),
+		"metadata":       json.RawMessage(string(e.Metadata)),
+		"time":           e.Time,
+	}
+
+	return json.Marshal(holder)
 }
