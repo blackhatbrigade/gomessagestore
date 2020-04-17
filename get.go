@@ -182,6 +182,21 @@ func Category(category string) GetOption {
 	}
 }
 
+// CommandCategory allows for getting messages by category
+func CommandCategory(category string) GetOption {
+	return func(g *getOpts) error {
+		if g.category != nil {
+			return ErrInvalidOptionCombination
+		}
+		if strings.Contains(category, "-") {
+			return ErrInvalidMessageCategory
+		}
+		category := fmt.Sprintf("%s:command", category)
+		g.category = &category
+		return nil
+	}
+}
+
 // PositionStream allows for getting messages by position subscriber
 func PositionStream(subscriberID string) GetOption {
 	return func(g *getOpts) error {

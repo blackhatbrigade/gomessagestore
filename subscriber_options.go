@@ -58,6 +58,20 @@ func SubscribeToCommandStream(category string) SubscriberOption {
 	}
 }
 
+//SubscribeToCommandCategory subscribes to a category of streams and ensures that it is not also subscribed to a stream
+func SubscribeToCommandCategory(category string) SubscriberOption {
+	return func(sub *SubscriberConfig) error {
+		if sub.stream {
+			return ErrSubscriberCannotUseBothStreamAndCategory
+		}
+		if sub.category != "" {
+			return ErrSubscriberCannotSubscribeToMultipleCategories
+		}
+		sub.category = category + ":command"
+		return nil
+	}
+}
+
 //SubscribeToCategory subscribes to a category of streams and ensures that it is not also subscribed to a stream
 func SubscribeToCategory(category string) SubscriberOption {
 	return func(sub *SubscriberConfig) error {
