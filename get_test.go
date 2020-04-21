@@ -33,7 +33,7 @@ func TestGetWithCommandStream(t *testing.T) {
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
-	msgs, err := msgStore.Get(ctx, CommandStream(msgEnv.StreamCategory))
+	msgs, err := msgStore.Get(ctx, CommandStream(msg.StreamCategory))
 
 	if err != nil {
 		t.Error("An error has ocurred while getting messages from message store")
@@ -66,7 +66,7 @@ func TestGetWithBatchSize(t *testing.T) {
 	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 	msgs, err := msgStore.Get(
 		ctx,
-		CommandStream(msgEnv.StreamCategory),
+		CommandStream(msg.StreamCategory),
 		BatchSize(50),
 	)
 
@@ -144,7 +144,7 @@ func TestGetWithCommandCategory(t *testing.T) {
 
 	mockRepo.
 		EXPECT().
-		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory+":command", 1000).
+		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory, 1000).
 		Return([]*repository.MessageEnvelope{msgEnv}, nil)
 
 	logrusLogger := logrus.New()

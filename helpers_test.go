@@ -43,7 +43,6 @@ func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
-// TODO: add :commmand on the test StreamCategory for commands
 func getSampleCommand() Command {
 	data := []byte(`{"Field1":"a"}`)
 	metadata := []byte(`{"Field1":"b"}`)
@@ -228,7 +227,7 @@ func getSampleCommandAsEnvelopeEntityIDMissing() *repository.MessageEnvelope {
 		Version:        10,
 		GlobalPosition: 8,
 		StreamName:     "test cat:command",
-		StreamCategory: "test cat",
+		StreamCategory: "test cat:command",
 		Data:           []byte(`{"Field1":"a"}`),
 		Metadata:       []byte(`{"Field1":"b"}`),
 		Time:           time.Unix(1, 0),
@@ -245,7 +244,7 @@ func getSampleCommandAsEnvelope() *repository.MessageEnvelope {
 		Version:        10,
 		GlobalPosition: 8,
 		StreamName:     fmt.Sprintf("%s:command-%s", "test cat", uuid10),
-		StreamCategory: "test cat",
+		StreamCategory: "test cat:command",
 		Data:           []byte(`{"Field1":"a"}`),
 		Metadata:       []byte(`{"Field1":"b"}`),
 		Time:           time.Unix(1, 0),
@@ -261,7 +260,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			EntityID:       uuid10,
 			MessageType:    "Command MessageType 2",
 			StreamName:     "test cat:command",
-			StreamCategory: "test cat",
+			StreamCategory: "test cat:command",
 			Version:        1,
 			GlobalPosition: 1011,
 			Data:           []byte(`{"Field1":"a"}`),
@@ -274,7 +273,7 @@ func getSampleCommandsAsEnvelopes() []*repository.MessageEnvelope {
 			StreamName:     "test cat:command",
 			Version:        2,
 			GlobalPosition: 1012,
-			StreamCategory: "test cat",
+			StreamCategory: "test cat:command",
 			Data:           []byte(`{"Field1":"c"}`),
 			Metadata:       []byte(`{"Field1":"d"}`),
 			Time:           time.Unix(1, 2),
