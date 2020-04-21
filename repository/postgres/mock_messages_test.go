@@ -1,7 +1,6 @@
 package postgres_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -28,6 +27,7 @@ var (
 	uuid3 = uuid.Must(uuid.Parse("00000000-0000-0000-0000-000000000003"))
 	uuid4 = uuid.Must(uuid.Parse("00000000-0000-0000-0000-000000000004"))
 	uuid5 = uuid.Must(uuid.Parse("00000000-0000-0000-0000-000000000005"))
+	uuid6 = uuid.Must(uuid.Parse("00000000-0000-0000-0000-000000000006"))
 )
 
 var mockMessages = []*repository.MessageEnvelope{{
@@ -117,17 +117,17 @@ var mockMessagesWithCommand = []*repository.MessageEnvelope{{
 	GlobalPosition: 7,
 	ID:             uuid5,
 	MessageType:    "some_type",
-	StreamName:     "some_type-12345",
-	StreamCategory: "other_type:command",
+	StreamName:     "some_type:command",
+	StreamCategory: "some_type:command",
 	Version:        1,
 	Data:           []byte("{a:{b:1}, c:\"123\"}"),
 	Time:           time.Unix(1545549339, 0),
 }, {
 	GlobalPosition: 8,
-	ID:             uuid5,
+	ID:             uuid6,
 	MessageType:    "some_type",
-	StreamName:     "some_type-12345",
-	StreamCategory: fmt.Sprintf("other_type:command-%s", uuid5),
+	StreamName:     "other_type:command-12345",
+	StreamCategory: "other_type:command",
 	Version:        2,
 	Data:           []byte("{a:{b:1}, c:\"123\"}"),
 	Time:           time.Unix(1545549339, 0),

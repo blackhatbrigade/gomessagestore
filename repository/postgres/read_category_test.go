@@ -3,7 +3,6 @@ package postgres_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -28,13 +27,13 @@ func TestPostgresRepoFindAllMessagesInCategory(t *testing.T) {
 	}{{
 		name:             "When the category has command+identifier, nothing bad happens",
 		existingMessages: mockMessagesWithCommand,
-		streamCategory:   fmt.Sprintf("other_type:command-%s", uuid5),
-		expectedMessages: copyAndAppend(mockMessagesWithCommand[5:]),
+		streamCategory:   "other_type:command",
+		expectedMessages: []*repository.MessageEnvelope{mockMessagesWithCommand[5]},
 		batchSize:        1000,
 	}, {
 		name:             "When the category has command, nothing bad happens",
 		existingMessages: mockMessagesWithCommand,
-		streamCategory:   "other_type:command",
+		streamCategory:   "some_type:command",
 		expectedMessages: []*repository.MessageEnvelope{mockMessagesWithCommand[4]},
 		batchSize:        1000,
 	}, {

@@ -24,7 +24,7 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 
 		return nil, repository.ErrNegativeBatchSize
 	}
-	if strings.Contains(category, "-") && !strings.Contains(category, "command") {
+	if strings.Contains(category, "-") {
 		logrus.WithError(repository.ErrInvalidCategory).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 		return nil, repository.ErrInvalidCategory
 	}
