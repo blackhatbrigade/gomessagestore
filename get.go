@@ -137,6 +137,7 @@ func CommandStream(category string) GetOption {
 			return ErrInvalidCommandStream
 		}
 		stream := fmt.Sprintf("%s:command", category)
+
 		g.stream = &stream
 		return nil
 	}

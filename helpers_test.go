@@ -43,10 +43,21 @@ func init() {
 	logrus.SetOutput(ioutil.Discard)
 }
 
+// TODO: add :commmand on the test StreamCategory for commands
 func getSampleCommand() Command {
 	data := []byte(`{"Field1":"a"}`)
 	metadata := []byte(`{"Field1":"b"}`)
 	cmd := NewCommand(uuid1, NilUUID, "test cat", "test type", data, metadata)
+	cmd.MessageVersion = 10
+	cmd.GlobalPosition = 8
+	cmd.Time = time.Unix(1, 0)
+	return cmd
+}
+
+func getSampleCommandWithEntityID() Command {
+	data := []byte(`{"Field1":"a"}`)
+	metadata := []byte(`{"Field1":"b"}`)
+	cmd := NewCommand(uuid1, uuid10, "test cat", "test type", data, metadata)
 	cmd.MessageVersion = 10
 	cmd.GlobalPosition = 8
 	cmd.Time = time.Unix(1, 0)
@@ -277,13 +288,13 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg Command) {
 			t.Error("ID in message does not match")
 		}
 		if command.EntityID != msg.EntityID {
-			t.Error("EntityID in message does not match")
+			t.Errorf("EntityID in message does not match:\ncmd.EntityID: %s\nmsg.EntityID: %s\nOG message: %+v\n matching against: %+v\n", command.EntityID, msg.EntityID, command, msg)
 		}
 		if command.MessageType != msg.MessageType {
 			t.Error("MessageType in message does not match")
 		}
 		if command.StreamCategory != msg.StreamCategory {
-			t.Error("StreamCategory in message does not match")
+			t.Errorf("StreamCategory in message does not match\nGOT: %s\nWANT: %s\n\nOG message: %+v\n\nmatching against: %+v\n", command.StreamCategory, msg.StreamCategory, command, msg)
 		}
 		if !reflect.DeepEqual(msg.Data, command.Data) {
 			t.Error("Messages data are not correct")
@@ -292,7 +303,7 @@ func assertMessageMatchesCommand(t *testing.T, msgEnv Message, msg Command) {
 			t.Error("Messages metadata are not correct")
 		}
 	default:
-		t.Error("Unknown type of Message")
+		t.Errorf("Unknown type of Message type: %T", msgEnv)
 	}
 }
 

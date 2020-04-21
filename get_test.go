@@ -131,6 +131,37 @@ func TestGetWithEventStream(t *testing.T) {
 	}
 }
 
+func TestGetWithCommandCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	msg := getSampleCommandWithEntityID()
+	ctx := context.Background()
+
+	msgEnv := getSampleCommandAsEnvelope()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInCategory(ctx, msgEnv.StreamCategory+":command", 1000).
+		Return([]*repository.MessageEnvelope{msgEnv}, nil)
+
+	logrusLogger := logrus.New()
+	logrusLogger.Out = ioutil.Discard
+	msgStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
+	msgs, err := msgStore.Get(ctx, CommandCategory(msg.StreamCategory))
+
+	if err != nil {
+		t.Error("An error has ocurred while getting messages from message store")
+	}
+	if len(msgs) != 1 {
+		t.Error("Incorrect number of messages returned")
+	} else {
+		assertMessageMatchesCommand(t, msgs[0], msg)
+	}
+}
+
 func TestGetWithCategory(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

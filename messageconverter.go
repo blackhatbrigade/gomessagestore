@@ -2,7 +2,6 @@ package gomessagestore
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -44,9 +43,9 @@ func convertEnvelopeToCommand(messageEnvelope *repository.MessageEnvelope) (Mess
 
 	if len(streamStringParts) == 2 {
 		_, err := uuid.Parse(streamStringParts[1])
-		if err != nil {
+		if err == nil {
 			if strings.HasSuffix(streamStringParts[0], ":command") {
-				category := fmt.Sprintf("%s-%s", strings.TrimSuffix(streamStringParts[0], ":command"), messageEnvelope.EntityID)
+				category := strings.TrimSuffix(streamStringParts[0], ":command")
 				cmd := NewCommand(
 					messageEnvelope.ID,
 					messageEnvelope.EntityID,
