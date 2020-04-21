@@ -137,6 +137,7 @@ func CommandStream(category string) GetOption {
 			return ErrInvalidCommandStream
 		}
 		stream := fmt.Sprintf("%s:command", category)
+
 		g.stream = &stream
 		return nil
 	}
@@ -177,6 +178,21 @@ func Category(category string) GetOption {
 		if strings.Contains(category, "-") {
 			return ErrInvalidMessageCategory
 		}
+		g.category = &category
+		return nil
+	}
+}
+
+// CommandCategory allows for getting messages by category
+func CommandCategory(category string) GetOption {
+	return func(g *getOpts) error {
+		if g.category != nil {
+			return ErrInvalidOptionCombination
+		}
+		if strings.Contains(category, "-") {
+			return ErrInvalidMessageCategory
+		}
+		category := fmt.Sprintf("%s:command", category)
 		g.category = &category
 		return nil
 	}

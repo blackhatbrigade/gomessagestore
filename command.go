@@ -75,6 +75,7 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 	}
 
 	var msgEnv *repository.MessageEnvelope
+
 	if cmd.EntityID == NilUUID {
 		// create a new MessageEnvelope based on the command
 		msgEnv = &repository.MessageEnvelope{
@@ -82,7 +83,7 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 			EntityID:       cmd.EntityID,
 			MessageType:    cmd.MessageType,
 			StreamName:     fmt.Sprintf("%s:command", cmd.StreamCategory),
-			StreamCategory: cmd.StreamCategory,
+			StreamCategory: fmt.Sprintf("%s:command", cmd.StreamCategory),
 			Data:           cmd.Data,
 			Metadata:       cmd.Metadata,
 			Time:           cmd.Time,
@@ -95,7 +96,7 @@ func (cmd Command) ToEnvelope() (*repository.MessageEnvelope, error) {
 			EntityID:       cmd.EntityID,
 			MessageType:    cmd.MessageType,
 			StreamName:     fmt.Sprintf("%s:command-%s", cmd.StreamCategory, cmd.EntityID),
-			StreamCategory: cmd.StreamCategory,
+			StreamCategory: fmt.Sprintf("%s:command", cmd.StreamCategory),
 			Data:           cmd.Data,
 			Metadata:       cmd.Metadata,
 			Time:           cmd.Time,

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -52,6 +53,9 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 		}
 
 		if len(msgs) == 0 {
+			if strings.Contains(category, "command") {
+				fmt.Println("category: ", category)
+			}
 			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
 		}

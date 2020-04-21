@@ -47,6 +47,14 @@ func TestSubscriberGetsMessages(t *testing.T) {
 			SubscribeToCategory("some category"),
 		},
 	}, {
+		name:             "When subscriber is called with SubscribeToCommandCategory() option, repository is called correctly",
+		expectedCategory: "some category:command",
+		handlers:         []MessageHandler{messageHandler},
+		expectedPosition: 5,
+		opts: []SubscriberOption{
+			SubscribeToCommandCategory("some category"),
+		},
+	}, {
 		name:           "When subscriber is called with SubscribeToEntityStream() option, repository is called correctly",
 		handlers:       []MessageHandler{messageHandler},
 		expectedStream: "some category:command",
