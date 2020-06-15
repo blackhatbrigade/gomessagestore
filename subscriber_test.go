@@ -95,6 +95,13 @@ func TestCreateSubscriberOptions(t *testing.T) {
 			SubscribeToCategory("some category"),
 		},
 	}, {
+		name:          "both category and stream cannot be set for commands",
+		expectedError: ErrSubscriberCannotUseBothStreamAndCategory,
+		opts: []SubscriberOption{
+			SubscribeToCommandStream("some stream"),
+			SubscribeToCommandCategory("some category"),
+		},
+	}, {
 		name: "Subscribe to command stream does not return error",
 		opts: []SubscriberOption{
 			SubscribeToCommandStream("some category"),
@@ -131,11 +138,25 @@ func TestCreateSubscriberOptions(t *testing.T) {
 			SubscribeToEntityStream("some category", uuid1),
 		},
 	}, {
+		name:          "Subscribe should only accept one category subscription request, (entity and entity)",
+		expectedError: ErrSubscriberCannotSubscribeToMultipleCategories,
+		opts: []SubscriberOption{
+			SubscribeToCategory("some entity category"),
+			SubscribeToCategory("some entity category"),
+		},
+	}, {
 		name:          "Subscribe should only accept one category subscription request, (command and entity)",
 		expectedError: ErrSubscriberCannotSubscribeToMultipleCategories,
 		opts: []SubscriberOption{
-			SubscribeToCategory("some category"),
-			SubscribeToCategory("some category"),
+			SubscribeToCommandCategory("some command category"),
+			SubscribeToCategory("some entity category"),
+		},
+	}, {
+		name:          "Subscribe should only accept one category subscription request, (command and command)",
+		expectedError: ErrSubscriberCannotSubscribeToMultipleCategories,
+		opts: []SubscriberOption{
+			SubscribeToCommandCategory("some command category"),
+			SubscribeToCommandCategory("some command category"),
 		},
 	}, {
 		name:          "Cannot set 0 poll time",
