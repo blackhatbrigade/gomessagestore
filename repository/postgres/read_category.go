@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
@@ -45,6 +46,14 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 		)*/
 
 		query := "SELECT * FROM get_category_messages($1, $2, $3)"
+		logrus.WithFields(map[string]interface{}{
+			"query": query,
+			"params": []string{
+				category,
+				fmt.Sprintf("%d", globalPosition),
+				fmt.Sprintf("%d", batchSize),
+			},
+		}).Debug("Running query on DB")
 		if err := r.dbx.SelectContext(ctx, &msgs, query, category, globalPosition, batchSize); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInCategorySince")
 			retChan <- returnPair{nil, err}
@@ -52,8 +61,17 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 		}
 
 		if len(msgs) == 0 {
+			logrus.WithFields(map[string]interface{}{
+				"category": category,
+			}).Debug("read nothing from category")
 			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
+		}
+
+		for _, msg := range msgs {
+			logrus.WithFields(map[string]interface{}{
+				"category": category,
+			}).Debugf("read from category %s", msg.StreamName)
 		}
 
 		retChan <- returnPair{msgs, nil}

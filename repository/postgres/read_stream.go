@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/blackhatbrigade/gomessagestore/repository"
 	"github.com/sirupsen/logrus"
@@ -31,6 +32,12 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName str
 		  _stream_name varchar,
 		)*/
 		query := "SELECT * FROM get_last_message($1)"
+		logrus.WithFields(map[string]interface{}{
+			"query": query,
+			"params": []string{
+				streamName,
+			},
+		}).Debug("Running query on DB")
 		if err := r.dbx.SelectContext(ctx, &msgs, query, streamName); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetLastMessageInStream")
 			retChan <- returnPair{nil, err}
@@ -40,6 +47,10 @@ func (r postgresRepo) GetLastMessageInStream(ctx context.Context, streamName str
 		if len(msgs) == 0 {
 			retChan <- returnPair{[]*repository.MessageEnvelope{nil}, nil}
 			return
+		}
+
+		for _, msg := range msgs {
+			logrus.Debugf("read from stream %s", msg.StreamName)
 		}
 
 		retChan <- returnPair{msgs, nil}
@@ -87,6 +98,13 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamNam
 		  _condition varchar DEFAULT NULL
 		)*/
 		query := "SELECT * FROM get_stream_messages($1, $2)"
+		logrus.WithFields(map[string]interface{}{
+			"query": query,
+			"params": []string{
+				streamName,
+				fmt.Sprintf("%d", globalPosition),
+			},
+		}).Debug("Running query on DB")
 		if err := r.dbx.SelectContext(ctx, &msgs, query, streamName, globalPosition); err != nil {
 			logrus.WithError(err).Error("Failure in repo_postgres.go::GetAllMessagesInStreamSince")
 			retChan <- returnPair{nil, err}
@@ -94,8 +112,13 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamNam
 		}
 
 		if len(msgs) == 0 {
+			logrus.Debugf("read nothing from stream %s", streamName)
 			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
+		}
+
+		for _, msg := range msgs {
+			logrus.Debugf("read from stream %s", msg.StreamName)
 		}
 
 		retChan <- returnPair{msgs, nil}
