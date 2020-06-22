@@ -61,12 +61,17 @@ func (r postgresRepo) GetAllMessagesInCategorySince(ctx context.Context, categor
 		}
 
 		if len(msgs) == 0 {
+			logrus.WithFields(map[string]interface{}{
+				"category": category,
+			}).Debug("read nothing from category")
 			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
 		}
 
 		for _, msg := range msgs {
-			logrus.Debugf("read from category %s", msg.StreamName)
+			logrus.WithFields(map[string]interface{}{
+				"category": category,
+			}).Debugf("read from category %s", msg.StreamName)
 		}
 
 		retChan <- returnPair{msgs, nil}

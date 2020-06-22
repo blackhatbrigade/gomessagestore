@@ -85,6 +85,8 @@ func (r postgresRepo) writeMessageEitherWay(ctx context.Context, msg *repository
 				return
 			}
 		}
+
+		logrus.Debugf("wrote successfully to stream %s", msg.StreamName)
 	}()
 
 	// wait for our return channel or the context to cancel

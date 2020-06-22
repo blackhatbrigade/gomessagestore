@@ -112,6 +112,7 @@ func (r postgresRepo) GetAllMessagesInStreamSince(ctx context.Context, streamNam
 		}
 
 		if len(msgs) == 0 {
+			logrus.Debugf("read nothing from stream %s", streamName)
 			retChan <- returnPair{[]*repository.MessageEnvelope{}, nil}
 			return
 		}
