@@ -14,15 +14,23 @@ import (
 // UUID can hold any valid UUID, regardless of version
 type UUID struct {
 	internal [16]byte
+	AllCaps  bool
 }
 
 // A zeroed out UUID
 var Nil UUID
 
+// String will give a lowercase uuid unless AllCaps is set to true
 func (uuid UUID) String() string {
 	b := [16]byte(uuid.internal)
+	if uuid.AllCaps {
+		return fmt.Sprintf("%08X-%04X-%04X-%04X-%012X",
+			b[:4], b[4:6], b[6:8], b[8:10], b[10:])
+	}
+
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
 		b[:4], b[4:6], b[6:8], b[8:10], b[10:])
+
 }
 
 func randomBits(b []byte) {
@@ -43,7 +51,7 @@ func NewRandom() UUID {
 	randomBits(uuid[:])
 	uuid[6] = (uuid[6] & 0x0f) | 0x40 // Version 4
 	uuid[8] = (uuid[8] & 0x3f) | 0x80 // Variant is 10
-	return UUID{uuid}
+	return UUID{internal: uuid, AllCaps: false}
 }
 
 func Parse(s string) (UUID, error) {
@@ -105,6 +113,7 @@ func xtob(x1, x2 byte) (byte, bool) {
 
 var rander = rand.Reader // random function
 
+// MarshalJSON will give a lowercase uuid unless AllCaps is set to true
 func (uuid UUID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(uuid.String())
 }
