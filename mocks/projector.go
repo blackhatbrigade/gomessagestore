@@ -66,12 +66,13 @@ func (mr *MockProjectorMockRecorder) RunOnStream(arg0, arg1 interface{}) *gomock
 }
 
 // Step mocks base method
-func (m *MockProjector) Step(arg0 gomessagestore.Message, arg1 interface{}) (interface{}, bool) {
+func (m *MockProjector) Step(arg0 gomessagestore.Message, arg1 interface{}) (interface{}, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Step", arg0, arg1)
 	ret0, _ := ret[0].(interface{})
 	ret1, _ := ret[1].(bool)
-	return ret0, ret1
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // Step indicates an expected call of Step

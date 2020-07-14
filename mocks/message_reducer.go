@@ -34,11 +34,12 @@ func (m *MockMessageReducer) EXPECT() *MockMessageReducerMockRecorder {
 }
 
 // Reduce mocks base method
-func (m *MockMessageReducer) Reduce(arg0 gomessagestore.Message, arg1 interface{}) interface{} {
+func (m *MockMessageReducer) Reduce(arg0 gomessagestore.Message, arg1 interface{}) (interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Reduce", arg0, arg1)
 	ret0, _ := ret[0].(interface{})
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Reduce indicates an expected call of Reduce

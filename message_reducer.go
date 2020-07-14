@@ -4,7 +4,7 @@ package gomessagestore
 
 //MessageReducer Defines the expected behaviours of a reducer that ultimately is used by the projectors.
 type MessageReducer interface {
-	Reduce(msg Message, previousState interface{}) interface{}
+	Reduce(msg Message, previousState interface{}) (interface{}, error)
 	Type() string
 }
 
@@ -15,7 +15,7 @@ type MessageReducerConfig struct {
 }
 
 //MessageReducerFunc is a functional way to create a reducer (for use with WithReducerFunc)
-type MessageReducerFunc func(msg Message, previousState interface{}) interface{}
+type MessageReducerFunc func(msg Message, previousState interface{}) (interface{}, error)
 
 type genericReducer struct {
 	msgType string
@@ -26,6 +26,6 @@ func (g *genericReducer) Type() string {
 	return g.msgType
 }
 
-func (g *genericReducer) Reduce(msg Message, previousState interface{}) interface{} {
+func (g *genericReducer) Reduce(msg Message, previousState interface{}) (interface{}, error) {
 	return g.msgFunc(msg, previousState)
 }
