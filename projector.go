@@ -42,7 +42,7 @@ type ProjectorOption func(proj *projector)
 type Projector interface {
 	Run(ctx context.Context, category string, entityID uuid.UUID) (interface{}, error)
 	RunOnStream(ctx context.Context, stream string) (interface{}, error)
-	Step(msg Message, previousState interface{}) (interface{}, bool)
+	Step(msg Message, previousState interface{}) (interface{}, bool, error)
 }
 
 // projector The base projector struct.
@@ -72,7 +72,9 @@ func (proj *projector) run(ctx context.Context, stream string) (interface{}, err
 
 	state := proj.defaultState
 	for _, message := range msgs {
-		if newState, ok := proj.Step(message, state); ok {
+		if newState, ok, err := proj.Step(message, state); err != nil {
+			return nil, err
+		} else if ok {
 			state = newState
 		}
 	}
@@ -81,13 +83,17 @@ func (proj *projector) run(ctx context.Context, stream string) (interface{}, err
 }
 
 // Step is ran for each message, iterating the state for the reducer mapped to that message
-func (proj *projector) Step(msg Message, previousState interface{}) (interface{}, bool) {
+func (proj *projector) Step(msg Message, previousState interface{}) (interface{}, bool, error) {
 	for _, reducer := range proj.reducers {
 		if reducer.Type() == msg.Type() {
-			return reducer.Reduce(msg, previousState), true
+			if reduction, err := reducer.Reduce(msg, previousState); err == nil {
+				return reduction, true, nil
+			} else {
+				return nil, false, err
+			}
 		}
 	}
-	return nil, false
+	return nil, false, nil
 }
 
 //WithReducer registers a ruducer with the new projector

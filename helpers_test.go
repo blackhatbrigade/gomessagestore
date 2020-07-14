@@ -374,14 +374,14 @@ type mockReducer1 struct {
 	ReceivedMessage Message
 }
 
-func (red *mockReducer1) Reduce(msg Message, previousState interface{}) interface{} {
+func (red *mockReducer1) Reduce(msg Message, previousState interface{}) (interface{}, error) {
 	switch state := previousState.(type) {
 	case mockDataStructure:
 		state.MockReducer1Called = true
 		state.MockReducer1CallCount++
-		return state
+		return state, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (red *mockReducer1) Type() string {
@@ -393,14 +393,14 @@ type mockReducer2 struct {
 	ReceivedMessage Message
 }
 
-func (red *mockReducer2) Reduce(msg Message, previousState interface{}) interface{} {
+func (red *mockReducer2) Reduce(msg Message, previousState interface{}) (interface{}, error) {
 	switch state := previousState.(type) {
 	case mockDataStructure:
 		state.MockReducer2Called = true
 		state.MockReducer2CallCount++
-		return state
+		return state, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (red *mockReducer2) Type() string {

@@ -2,6 +2,7 @@ package gomessagestore_test
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -57,14 +58,14 @@ func TestProjectorAcceptsAReducerFunc(t *testing.T) {
 	logrusLogger.Out = ioutil.Discard
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-	mockred := func(msg Message, previousState interface{}) interface{} {
+	mockred := func(msg Message, previousState interface{}) (interface{}, error) {
 		switch state := previousState.(type) {
 		case mockDataStructure:
 			state.MockReducer1Called = true
 			state.MockReducer1CallCount++
-			return state
+			return state, nil
 		}
-		return nil
+		return nil, nil
 	}
 
 	myprojector, err := myMessageStore.CreateProjector(
@@ -119,14 +120,14 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 	logrusLogger.Out = ioutil.Discard
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-	mockReducerFunc := func(msg Message, previousState interface{}) interface{} {
+	mockReducerFunc := func(msg Message, previousState interface{}) (interface{}, error) {
 		switch state := previousState.(type) {
 		case mockDataStructure:
 			state.MockReducer2Called = true
 			state.MockReducer2CallCount++
-			return state
+			return state, nil
 		}
-		return nil
+		return nil, nil
 	}
 
 	defstate := mockDataStructure{}
@@ -181,6 +182,60 @@ func TestProjectorRunsWithReducers(t *testing.T) {
 		default:
 			t.Errorf("Received incorrect type of state back: %T", projection)
 		}
+	}
+}
+
+func TestProjectorRunsWithReducerErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockRepository(ctrl)
+
+	var logrusLogger = logrus.New()
+	logrusLogger.Out = ioutil.Discard
+	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
+
+	mockError := fmt.Errorf("failed to reduce")
+	mockReducerFunc := func(msg Message, previousState interface{}) (interface{}, error) {
+		switch state := previousState.(type) {
+		case mockDataStructure:
+			state.MockReducer2Called = true
+			state.MockReducer2CallCount++
+			return state, mockError
+		}
+		return nil, nil
+	}
+
+	defstate := mockDataStructure{}
+
+	myprojector, err := myMessageStore.CreateProjector(
+		DefaultState(defstate),
+		WithReducer(new(mockReducer1)),
+		WithReducerFunc("Event MessageType 2", mockReducerFunc),
+	)
+
+	if err != nil {
+		t.Errorf("Error creating projector: %s", err)
+	}
+
+	if myprojector == nil {
+		t.Errorf("Failed to create projector: %s", myprojector)
+		return
+	}
+
+	mockEventEnvs := getSampleEventsAsEnvelopes()
+	expectedEvents := getSampleEvents()
+	ctx := context.Background()
+
+	mockRepo.
+		EXPECT().
+		GetAllMessagesInStream(ctx, mockEventEnvs[0].StreamName, 1000).
+		Return(mockEventEnvs, nil)
+
+	_, err = myprojector.Run(ctx, expectedEvents[0].StreamCategory, expectedEvents[0].EntityID)
+
+	if err != mockError {
+		t.Errorf("An incorrect error has occurred with running a projector, err: %s", err)
 	}
 }
 
@@ -330,14 +385,14 @@ func TestProjectorRunsWithReducersForStream(t *testing.T) {
 	logrusLogger.Out = ioutil.Discard
 	myMessageStore := NewMessageStoreFromRepository(mockRepo, logrusLogger)
 
-	mockReducerFunc := func(msg Message, previousState interface{}) interface{} {
+	mockReducerFunc := func(msg Message, previousState interface{}) (interface{}, error) {
 		switch state := previousState.(type) {
 		case mockDataStructure:
 			state.MockReducer2Called = true
 			state.MockReducer2CallCount++
-			return state
+			return state, nil
 		}
-		return nil
+		return nil, nil
 	}
 
 	defstate := mockDataStructure{}
